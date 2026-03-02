@@ -5,6 +5,9 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+  ssr: {
+    noExternal: ["@base-ui/react"],
+  },
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),

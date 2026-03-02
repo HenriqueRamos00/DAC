@@ -6,6 +6,10 @@
   ],
   "compilerOptions": {
     "checkJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./app/*"]
+    },
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "strict": true,
