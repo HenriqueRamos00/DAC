@@ -1,0 +1,332 @@
+const jsonServer = require("json-server");
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
+
+const server = jsonServer.create();
+const router = jsonServer.router("db.json");
+const middlewares = jsonServer.defaults();
+
+const SECRET = "mock-secret";
+
+server.use(middlewares);
+server.use(jsonServer.bodyParser);
+
+function getDb() {
+  return router.db;
+}
+
+function seedDatabase() {
+  const seed = JSON.parse(fs.readFileSync("./db.seed.json", "utf8"));
+  router.db.setState(seed).write();
+}
+
+function findUserByLogin(login, senha) {
+  return getDb()
+    .get("auth")
+    .find((u) => (u.email === login || u.cpf === login) && u.senha === senha)
+    .value();
+}
+
+function authMiddleware(req, res, next) {
+  const publicRoutes = [
+    { method: "POST", path: "/login" },
+    { method: "GET", path: "/reboot" },
+    { method: "POST", path: "/clientes" }
+  ];
+
+  const isPublic = publicRoutes.some(
+    (r) => r.method === req.method && r.path === req.path
+  );
+
+  if (isPublic) return next();
+
+  const authHeader = req.headers.authorization || "";
+  if (!authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "O usuário não está logado" });
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+
+  try {
+    req.user = jwt.verify(token, SECRET);
+    next();
+  } catch {
+    return res.status(401).json({ message: "Token inválido" });
+  }
+}
+
+function getContaByNumero(numero) {
+  return getDb().get("contas").find({ numero }).value();
+}
+
+function getClienteByCpf(cpf) {
+  return getDb().get("clientes").find({ cpf }).value();
+}
+
+function getGerenteByCpf(cpf) {
+  return getDb().get("gerentes").find({ cpf }).value();
+}
+
+function buildUsuario(user) {
+  if (user.tipo === "CLIENTE") {
+    return getClienteByCpf(user.cpf);
+  }
+  return getGerenteByCpf(user.cpf);
+}
+
+function buildClienteCompleto(cliente) {
+  const conta = getDb().get("contas").find({ clienteCpf: cliente.cpf }).value();
+  const gerente = conta ? getGerenteByCpf(conta.gerenteCpf) : null;
+
+  return {
+    cpf: cliente.cpf,
+    nome: cliente.nome,
+    telefone: cliente.telefone,
+    email: cliente.email,
+    endereco: cliente.endereco,
+    cidade: cliente.cidade,
+    estado: cliente.estado,
+    salario: cliente.salario,
+    conta: conta?.numero || null,
+    saldo: conta?.saldo ?? null,
+    limite: conta?.limite ?? null,
+    gerente: gerente?.cpf || null,
+    gerente_nome: gerente?.nome || null,
+    gerente_email: gerente?.email || null
+  };
+}
+
+// reboot
+server.get("/reboot", (req, res) => {
+  seedDatabase();
+  res.status(200).json({ message: "Banco de dados reiniciado com sucesso" });
+});
+
+// login
+server.post("/login", (req, res) => {
+  const { login, senha } = req.body;
+
+  const user = findUserByLogin(login, senha);
+
+  if (!user) {
+    return res.status(401).json({ message: "Usuário/Senha incorretos" });
+  }
+
+  const access_token = jwt.sign(
+    {
+      sub: user.cpf,
+      email: user.email,
+      tipo: user.tipo
+    },
+    SECRET,
+    { expiresIn: "8h" }
+  );
+
+  res.json({
+    access_token,
+    token_type: "bearer",
+    tipo: user.tipo,
+    usuario: buildUsuario(user)
+  });
+});
+
+// logout
+server.post("/logout", authMiddleware, (req, res) => {
+  res.json({
+    cpf: req.user.sub,
+    nome: "Logout efetuado",
+    email: req.user.email,
+    tipo: req.user.tipo
+  });
+});
+
+server.use(authMiddleware);
+
+// listar clientes
+server.get("/clientes", (req, res) => {
+  const filtro = req.query.filtro;
+  const clientes = getDb().get("clientes").value();
+
+  if (filtro === "melhores_clientes") {
+    const melhores = clientes
+      .map(buildClienteCompleto)
+      .sort((a, b) => (b.saldo ?? 0) - (a.saldo ?? 0))
+      .slice(0, 3);
+
+    return res.json(melhores);
+  }
+
+  return res.json(clientes.map(buildClienteCompleto));
+});
+
+// cliente por cpf
+server.get("/clientes/:cpf", (req, res) => {
+  const cliente = getClienteByCpf(req.params.cpf);
+
+  if (!cliente) {
+    return res.status(404).json({ message: "Usuário não encontrado" });
+  }
+
+  res.json(buildClienteCompleto(cliente));
+});
+
+// saldo
+server.get("/contas/:numero/saldo", (req, res) => {
+  const conta = getContaByNumero(req.params.numero);
+
+  if (!conta) {
+    return res.status(404).json({ message: "Conta não encontrada" });
+  }
+
+  res.json({
+    cliente: conta.clienteCpf,
+    conta: conta.numero,
+    saldo: conta.saldo
+  });
+});
+
+// extrato
+server.get("/contas/:numero/extrato", (req, res) => {
+  const conta = getContaByNumero(req.params.numero);
+
+  if (!conta) {
+    return res.status(404).json({ message: "Conta não encontrada" });
+  }
+
+  const movimentacoes = getDb()
+    .get("movimentacoes")
+    .filter(
+      (m) => m.origem === conta.numero || m.destino === conta.numero
+    )
+    .value()
+    .map((m) => ({
+      data: m.data,
+      tipo: m.tipo,
+      origem: m.origem,
+      destino: m.destino,
+      valor: m.valor
+    }));
+
+  res.json({
+    conta: conta.numero,
+    saldo: conta.saldo,
+    movimentacoes
+  });
+});
+
+// depositar
+server.post("/contas/:numero/depositar", (req, res) => {
+  const conta = getContaByNumero(req.params.numero);
+  const valor = Number(req.body.valor);
+
+  if (!conta) {
+    return res.status(404).json({ message: "Conta não encontrada" });
+  }
+
+  if (!valor || valor <= 0) {
+    return res.status(400).json({ message: "Valor inválido" });
+  }
+
+  const novoSaldo = conta.saldo + valor;
+
+  getDb().get("contas").find({ numero: conta.numero }).assign({ saldo: novoSaldo }).write();
+
+  getDb().get("movimentacoes").push({
+    id: Date.now(),
+    data: new Date().toISOString(),
+    tipo: "depósito",
+    origem: null,
+    destino: conta.numero,
+    valor
+  }).write();
+
+  res.json({
+    conta: conta.numero,
+    data: new Date().toISOString(),
+    saldo: novoSaldo
+  });
+});
+
+// sacar
+server.post("/contas/:numero/sacar", (req, res) => {
+  const conta = getContaByNumero(req.params.numero);
+  const valor = Number(req.body.valor);
+
+  if (!conta) {
+    return res.status(404).json({ message: "Conta não encontrada" });
+  }
+
+  if (!valor || valor <= 0) {
+    return res.status(400).json({ message: "Valor inválido" });
+  }
+
+  if (conta.saldo - valor < -conta.limite) {
+    return res.status(400).json({ message: "Saldo insuficiente" });
+  }
+
+  const novoSaldo = conta.saldo - valor;
+
+  getDb().get("contas").find({ numero: conta.numero }).assign({ saldo: novoSaldo }).write();
+
+  getDb().get("movimentacoes").push({
+    id: Date.now(),
+    data: new Date().toISOString(),
+    tipo: "saque",
+    origem: conta.numero,
+    destino: null,
+    valor
+  }).write();
+
+  res.json({
+    conta: conta.numero,
+    data: new Date().toISOString(),
+    saldo: novoSaldo
+  });
+});
+
+// transferir
+server.post("/contas/:numero/transferir", (req, res) => {
+  const origem = getContaByNumero(req.params.numero);
+  const destino = getContaByNumero(req.body.destino);
+  const valor = Number(req.body.valor);
+
+  if (!origem || !destino) {
+    return res.status(404).json({ message: "Conta de origem ou destino não encontrada" });
+  }
+
+  if (!valor || valor <= 0) {
+    return res.status(400).json({ message: "Valor inválido" });
+  }
+
+  if (origem.saldo - valor < -origem.limite) {
+    return res.status(400).json({ message: "Saldo insuficiente" });
+  }
+
+  const novoSaldoOrigem = origem.saldo - valor;
+  const novoSaldoDestino = destino.saldo + valor;
+  const data = new Date().toISOString();
+
+  getDb().get("contas").find({ numero: origem.numero }).assign({ saldo: novoSaldoOrigem }).write();
+  getDb().get("contas").find({ numero: destino.numero }).assign({ saldo: novoSaldoDestino }).write();
+
+  getDb().get("movimentacoes").push({
+    id: Date.now(),
+    data,
+    tipo: "transferência",
+    origem: origem.numero,
+    destino: destino.numero,
+    valor
+  }).write();
+
+  res.json({
+    conta: origem.numero,
+    data,
+    destino: destino.numero,
+    saldo: novoSaldoOrigem,
+    valor
+  });
+});
+
+server.listen(4010, () => {
+  console.log("Mock API running on http://localhost:4010");
+});
