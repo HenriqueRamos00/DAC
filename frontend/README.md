@@ -32,6 +32,16 @@ npm run dev
 
 Your application will be available at `http://localhost:5173`.
 
+### Development with Docker
+
+Start the application with Docker Compose:
+
+```bash
+docker compose up
+```
+
+After the containers are up, access the app at `http://localhost:5173`.
+
 ## Previewing the Production Build
 
 Preview the production build locally:

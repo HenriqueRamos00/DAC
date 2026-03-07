@@ -1,0 +1,24 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: dac-frontend
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      TTY: "true"
+    volumes:
+      - .:/app
+      - frontend_node_modules:/app/node_modules
+      - npm_cache:/root/.npm
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    stdin_open: true
+    tty: true
+
+volumes:
+  frontend_node_modules:
+  npm_cache:
