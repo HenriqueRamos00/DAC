@@ -1,0 +1,314 @@
+{
+  "auth": [
+    {
+      "cpf": "12912861012",
+      "email": "cli1@bantads.com.br",
+      "senha": "tads",
+      "tipo": "CLIENTE",
+      "nome": "Catharyna"
+    },
+    {
+      "cpf": "09506382000",
+      "email": "cli2@bantads.com.br",
+      "senha": "tads",
+      "tipo": "CLIENTE",
+      "nome": "Cleuddônio"
+    },
+    {
+      "cpf": "85733854057",
+      "email": "cli3@bantads.com.br",
+      "senha": "tads",
+      "tipo": "CLIENTE",
+      "nome": "Catianna"
+    },
+    {
+      "cpf": "58872160006",
+      "email": "cli4@bantads.com.br",
+      "senha": "tads",
+      "tipo": "CLIENTE",
+      "nome": "Cutardo"
+    },
+    {
+      "cpf": "76179646090",
+      "email": "cli5@bantads.com.br",
+      "senha": "tads",
+      "tipo": "CLIENTE",
+      "nome": "Coândrya"
+    },
+    {
+      "cpf": "98574307084",
+      "email": "ger1@bantads.com.br",
+      "senha": "tads",
+      "tipo": "GERENTE",
+      "nome": "Geniéve"
+    },
+    {
+      "cpf": "64065268052",
+      "email": "ger2@bantads.com.br",
+      "senha": "tads",
+      "tipo": "GERENTE",
+      "nome": "Godophredo"
+    },
+    {
+      "cpf": "23862179060",
+      "email": "ger3@bantads.com.br",
+      "senha": "tads",
+      "tipo": "GERENTE",
+      "nome": "Gyândula"
+    },
+    {
+      "cpf": "40501740066",
+      "email": "adm1@bantads.com.br",
+      "senha": "tads",
+      "tipo": "ADMINISTRADOR",
+      "nome": "Adamântio"
+    }
+  ],
+  "clientes": [
+    {
+      "cpf": "12912861012",
+      "nome": "Catharyna",
+      "email": "cli1@bantads.com.br",
+      "telefone": "(41) 99999-1111",
+      "salario": 10000,
+      "endereco": "Rua A, 100",
+      "CEP": "80000000",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    },
+    {
+      "cpf": "09506382000",
+      "nome": "Cleuddônio",
+      "email": "cli2@bantads.com.br",
+      "telefone": "(41) 99999-2222",
+      "salario": 20000,
+      "endereco": "Rua B, 200",
+      "CEP": "80000001",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    },
+    {
+      "cpf": "85733854057",
+      "nome": "Catianna",
+      "email": "cli3@bantads.com.br",
+      "telefone": "(41) 99999-3333",
+      "salario": 3000,
+      "endereco": "Rua C, 300",
+      "CEP": "80000002",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    },
+    {
+      "cpf": "58872160006",
+      "nome": "Cutardo",
+      "email": "cli4@bantads.com.br",
+      "telefone": "(41) 99999-4444",
+      "salario": 500,
+      "endereco": "Rua D, 400",
+      "CEP": "80000003",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    },
+    {
+      "cpf": "76179646090",
+      "nome": "Coândrya",
+      "email": "cli5@bantads.com.br",
+      "telefone": "(41) 99999-5555",
+      "salario": 1500,
+      "endereco": "Rua E, 500",
+      "CEP": "80000004",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    }
+  ],
+  "gerentes": [
+    {
+      "cpf": "98574307084",
+      "nome": "Geniéve",
+      "email": "ger1@bantads.com.br",
+      "tipo": "GERENTE"
+    },
+    {
+      "cpf": "64065268052",
+      "nome": "Godophredo",
+      "email": "ger2@bantads.com.br",
+      "tipo": "GERENTE"
+    },
+    {
+      "cpf": "23862179060",
+      "nome": "Gyândula",
+      "email": "ger3@bantads.com.br",
+      "tipo": "GERENTE"
+    },
+    {
+      "cpf": "40501740066",
+      "nome": "Adamântio",
+      "email": "adm1@bantads.com.br",
+      "tipo": "ADMINISTRADOR"
+    }
+  ],
+  "contas": [
+    {
+      "numero": "1291",
+      "clienteCpf": "12912861012",
+      "saldo": 800,
+      "limite": 5000,
+      "gerenteCpf": "98574307084",
+      "criacao": "2000-01-01T00:00:00-03:00"
+    },
+    {
+      "numero": "0950",
+      "clienteCpf": "09506382000",
+      "saldo": -10000,
+      "limite": 10000,
+      "gerenteCpf": "64065268052",
+      "criacao": "1990-10-10T00:00:00-03:00"
+    },
+    {
+      "numero": "8573",
+      "clienteCpf": "85733854057",
+      "saldo": -1000,
+      "limite": 1500,
+      "gerenteCpf": "23862179060",
+      "criacao": "2012-12-12T00:00:00-03:00"
+    },
+    {
+      "numero": "5887",
+      "clienteCpf": "58872160006",
+      "saldo": 150000,
+      "limite": 0,
+      "gerenteCpf": "98574307084",
+      "criacao": "2022-02-22T00:00:00-03:00"
+    },
+    {
+      "numero": "7617",
+      "clienteCpf": "76179646090",
+      "saldo": 1500,
+      "limite": 0,
+      "gerenteCpf": "64065268052",
+      "criacao": "2025-01-01T00:00:00-03:00"
+    }
+  ],
+  "movimentacoes": [
+    {
+      "id": 1,
+      "data": "2020-01-01T10:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "1291",
+      "valor": 1000
+    },
+    {
+      "id": 2,
+      "data": "2020-01-01T11:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "1291",
+      "valor": 900
+    },
+    {
+      "id": 3,
+      "data": "2020-01-01T12:00:00-03:00",
+      "tipo": "saque",
+      "origem": "1291",
+      "destino": null,
+      "valor": 550
+    },
+    {
+      "id": 4,
+      "data": "2020-01-01T13:00:00-03:00",
+      "tipo": "saque",
+      "origem": "1291",
+      "destino": null,
+      "valor": 350
+    },
+    {
+      "id": 5,
+      "data": "2020-01-10T15:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "1291",
+      "valor": 2000
+    },
+    {
+      "id": 6,
+      "data": "2020-01-15T08:00:00-03:00",
+      "tipo": "saque",
+      "origem": "1291",
+      "destino": null,
+      "valor": 500
+    },
+    {
+      "id": 7,
+      "data": "2020-01-20T12:00:00-03:00",
+      "tipo": "transferência",
+      "origem": "1291",
+      "destino": "0950",
+      "valor": 1700
+    },
+    {
+      "id": 8,
+      "data": "2025-01-01T12:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "0950",
+      "valor": 1000
+    },
+    {
+      "id": 9,
+      "data": "2025-01-02T10:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "0950",
+      "valor": 5000
+    },
+    {
+      "id": 10,
+      "data": "2025-01-10T10:00:00-03:00",
+      "tipo": "saque",
+      "origem": "0950",
+      "destino": null,
+      "valor": 200
+    },
+    {
+      "id": 11,
+      "data": "2025-02-05T10:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "0950",
+      "valor": 7000
+    },
+    {
+      "id": 12,
+      "data": "2025-05-05T10:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "8573",
+      "valor": 1000
+    },
+    {
+      "id": 13,
+      "data": "2025-05-06T10:00:00-03:00",
+      "tipo": "saque",
+      "origem": "8573",
+      "destino": null,
+      "valor": 2000
+    },
+    {
+      "id": 14,
+      "data": "2025-06-01T10:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "5887",
+      "valor": 150000
+    },
+    {
+      "id": 15,
+      "data": "2025-07-01T10:00:00-03:00",
+      "tipo": "depósito",
+      "origem": null,
+      "destino": "7617",
+      "valor": 1500
+    }
+  ]
+}
