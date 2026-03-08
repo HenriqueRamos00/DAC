@@ -5,7 +5,7 @@
 @custom-variant dark (&:not(.light *));
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+  --font-sans: ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --font-pixel: "Press Start 2P", cursive;
@@ -51,20 +51,23 @@
 
 :root {
   --radius: var(--radius-sm);
+  --customer: oklch(0.8722 0.251776 148.1033);
+  --manager:  oklch(0.8559 0.1465 206.33);
+  --admin:    oklch(0.621 0.2498 302.44);
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.70 0.15 162);
-  --primary-foreground: oklch(0.26 0.05 173);
+  --primary: oklch(0.8722 0.251776 148.1033);
+  --primary-foreground: oklch(0.20 0.06 145);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
   --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.70 0.15 162);
-  --accent-foreground: oklch(0.26 0.05 173);
+  --accent: oklch(0.8722 0.251776 148.1033);
+  --accent-foreground: oklch(0.20 0.06 145);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -76,10 +79,10 @@
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.21 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.77 0.15 163);
-  --sidebar-primary-foreground: oklch(0.26 0.05 173);
-  --sidebar-accent: oklch(0.70 0.15 162);
-  --sidebar-accent-foreground: oklch(0.26 0.05 173);
+  --sidebar-primary: oklch(0.8722 0.251776 148.1033);
+  --sidebar-primary-foreground: oklch(0.20 0.06 145);
+  --sidebar-accent: oklch(0.8722 0.251776 148.1033);
+  --sidebar-accent-foreground: oklch(0.20 0.06 145);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
 }
@@ -124,5 +127,13 @@
   }
   body {
     @apply bg-background text-foreground font-pixel;
+  }
+}
+
+@layer utilities {
+  .retro-glow {
+    text-shadow:
+      var(--color-primary) 0px 0px 10px,
+      var(--color-primary) 0px 0px 20px;
   }
 }
