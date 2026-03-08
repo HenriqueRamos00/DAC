@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+Dockerfile*
+compose*.yml
+.dockerignore
+.wrangler
+dist
+build
+coverage
