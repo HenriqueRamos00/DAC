@@ -2,6 +2,7 @@ import {
   ArrowDownToLine,
   ArrowLeftRight,
   ArrowUpFromLine,
+  ChevronRight,
   ClipboardList,
   FileText,
   LayoutDashboard,
@@ -22,17 +23,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
+import type { AppRole } from "~/auth/permissions"
 
 interface SidebarProps {
-  role?: "cliente" | "gerente" | "admin"
+  role: AppRole | null;
 }
 
 const sidebarItems = {
   cliente: {
+    label: "Cliente",
     color: "text-[var(--customer)]",
     items: [
       { label: "Dashboard", path: "/cliente", icon: LayoutDashboard },
-      { label: "Meu Perfil", path: "/cliente/perfil", icon: User },
       { label: "Depositar", path: "/cliente/deposito", icon: ArrowDownToLine },
       { label: "Sacar", path: "/cliente/saque", icon: ArrowUpFromLine },
       { label: "Transferir", path: "/cliente/transferencia", icon: ArrowLeftRight },
@@ -40,6 +42,7 @@ const sidebarItems = {
     ],
   },
   gerente: {
+    label: "Gerente",
     color: "text-[var(--manager)]",
     items: [
       { label: "Dashboard", path: "/gerente", icon: LayoutDashboard },
@@ -49,6 +52,7 @@ const sidebarItems = {
     ],
   },
   admin: {
+    label: "Administrador",
     color: "text-[var(--admin)]",
     items: [
       { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
@@ -59,8 +63,10 @@ const sidebarItems = {
   },
 };
 
-export function AppSidebar({ role="cliente" }: SidebarProps) {
-  const { color, items } = sidebarItems[role]
+export function AppSidebar({ role }: SidebarProps) {
+  if (!role) return null;
+
+  const { label, color, items } = sidebarItems[role]
   const { pathname } = useLocation()
 
   return (
@@ -71,8 +77,8 @@ export function AppSidebar({ role="cliente" }: SidebarProps) {
               <NavLink to="/" className="text-base text-primary retro-glow hover:brightness-125 transition">
                 Retro-bank
               </NavLink>
-            <div className={`flex text-sm ${color}`}>
-              ► {role}
+            <div className={`flex items-center gap-1 text-xs ${color}`}>
+              <ChevronRight size={16} />{label}
             </div>
           </SidebarMenuItem>
         </SidebarMenu>
