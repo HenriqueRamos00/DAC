@@ -8,7 +8,8 @@
 	"compatibility_date": "2025-04-04",
 	"main": "./workers/app.ts",
 	"vars": {
-		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
+		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
+		"SESSION_SECRET": "trocar-em-producao"
 	},
 	"observability": {
 		"enabled": true
