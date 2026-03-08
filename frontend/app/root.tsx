@@ -10,6 +10,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { Toaster } from "~/components/ui/sonner";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -34,10 +35,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <Toaster />
-        <ScrollRestoration />
-        <Scripts />
+        <TooltipProvider>
+          {children}
+          <Toaster />
+          <ScrollRestoration />
+          <Scripts />
+        </TooltipProvider>
       </body>
     </html>
   );
