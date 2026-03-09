@@ -1,17 +1,34 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { CrtMonitor } from "~/components/crt-monitor";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Retro-bank" },
+    { name: "description", content: "Seu banco com power up de nostalgia" },
   ];
 }
 
-export function loader({ context }: Route.LoaderArgs) {
-  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE };
-}
-
-export default function Home({ loaderData }: Route.ComponentProps) {
-  return <Welcome message={loaderData.message} />;
+export default function Home() {
+  return (
+    <div className="crt-page">
+      <CrtMonitor
+        title="SEU BANCO COM"
+        subtitle="power up de nostalgia"
+        buttons={[
+          {
+            label: "LOGIN",
+            fillColor: "oklch(0.5386 0.1812 152.33)",
+            to: "/cliente",
+          },
+          {
+            label: "CADASTRO",
+            fillColor: "oklch(0.5148 0.214 260.38)",
+            to: "/cadastro",
+          },
+        ]}
+        footer="SISTEMA ONLINE"
+        footerColor="#FFB800"
+      />
+    </div>
+  );
 }
