@@ -165,7 +165,10 @@ export function CrtMonitor(props: CrtMonitorProps) {
     src.width = CANVAS_W;
     src.height = CANVAS_H;
     const srcCtx = src.getContext("2d")!;
-    document.fonts.ready.then(() => {
+    Promise.all([
+      document.fonts.load("96px 'VT323'"),
+      document.fonts.load("bold 24px 'Press Start 2P'"),
+    ]).then(() => {
       drawSource(srcCtx, props);
     });
 
