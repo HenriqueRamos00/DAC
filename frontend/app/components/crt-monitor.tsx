@@ -13,6 +13,7 @@ export interface CrtMonitorProps {
   buttons?: CrtButton[];
   footer?: string;
   footerColor?: string;
+  children?: React.ReactNode;
 }
 
 const VERTEX_SHADER = `
@@ -148,7 +149,7 @@ function drawSource(
 }
 
 export function CrtMonitor(props: CrtMonitorProps) {
-  const { buttons = [] } = props;
+  const { buttons = [], children } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number>(0);
@@ -266,6 +267,7 @@ export function CrtMonitor(props: CrtMonitorProps) {
               />
             );
           })}
+          {children}
         </div>
       </div>
     </div>
