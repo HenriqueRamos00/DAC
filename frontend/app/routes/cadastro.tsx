@@ -23,7 +23,7 @@ export default function Autocadastro() {
       <CrtMonitor title="">
         <Card className="w-full max-w-2xl pointer-events-auto bg-[#1a1f2e] border-slate-700 text-slate-300 rounded-none">
           <CardHeader className="items-center pb-6">
-            <CardTitle className="text-center text-lg text-[#f8f8f2] tracking-wider uppercase">
+            <CardTitle className="text-center text-base text-primary retro-glow">
               Autocadastro
             </CardTitle>
           </CardHeader>
