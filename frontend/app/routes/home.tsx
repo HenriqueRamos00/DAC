@@ -18,7 +18,7 @@ export default function Home() {
           {
             label: "LOGIN",
             fillColor: "oklch(0.5386 0.1812 152.33)",
-            to: "/cliente",
+            to: "/login",
           },
           {
             label: "CADASTRO",
