@@ -137,9 +137,6 @@ export default function Autocadastro() {
               >
                 ▶ Enviar Solicitação
               </Button>
-              <Button className="bg-[#ff3333] text-white hover:bg-[#cc0000] font-bold uppercase rounded-none border-b-4 border-r-4 border-[#990000] transition-all active:translate-y-1 active:translate-x-1 active:border-b-0 active:border-r-0 h-12 sm:w-1/3">
-                Simular Erro
-              </Button>
             </div>
           </CardContent>
 
