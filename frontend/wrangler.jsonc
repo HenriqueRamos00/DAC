@@ -8,7 +8,8 @@
 	"compatibility_date": "2025-04-04",
 	"main": "./workers/app.ts",
 	"vars": {
-		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
+		"API_URL": "http://retrobank.example.com",
+		"NODE_ENV": "production",
 		"SESSION_SECRET": "trocar-em-producao"
 	},
 	"observability": {
