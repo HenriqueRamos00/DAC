@@ -9,7 +9,10 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
   },
   ssr: {
-    noExternal: ["@base-ui/react"],
+    noExternal: ["@base-ui/react", "@stepperize/react"],
+    optimizeDeps: {
+      include: ["@stepperize/react"],
+    },
   },
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),

@@ -90,7 +90,7 @@ export default function Login({actionData} : Route.ComponentProps) {
           <CardHeader className="items-center">
             <CardTitle className="text-center text-base text-primary retro-glow">LOGIN</CardTitle>
           </CardHeader>
-          <Form method="post">
+          <Form method="post" viewTransition>
             <CardContent className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <label htmlFor="email" className="text-sm font-medium">Email</label>
@@ -104,10 +104,14 @@ export default function Login({actionData} : Route.ComponentProps) {
             </CardContent>
           </Form>
           <CardFooter className="flex flex-col gap-2 items-center">
-            <Link to="/cadastro" className="text-sm text-muted-foreground underline hover:text-foreground">
+            <Link to="/cadastro"
+                  viewTransition
+                  className="text-sm text-muted-foreground underline hover:text-foreground">
               Criar nova conta
             </Link>
-            <Link to="/" className="text-sm text-muted-foreground underline hover:text-foreground">
+            <Link to="/" 
+                  viewTransition
+                  className="text-sm text-muted-foreground underline hover:text-foreground">
               Voltar ao início
             </Link>
           </CardFooter>
