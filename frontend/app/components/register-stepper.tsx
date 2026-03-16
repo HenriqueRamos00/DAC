@@ -90,30 +90,41 @@ const { Stepper, useStepper } = defineStepper(
 //Root: handles restore dialog + initial step
 
 export function RegisterStepper() {
-  const [savedState] = useState(() => getSavedState());
-  const [showRestoreDialog, setShowRestoreDialog] = useState(!!savedState);
+  const [savedState, setSavedState] = useState<SavedState | null>(null);
   const [initialForm, setInitialForm] = useState<FormData>(EMPTY_FORM);
   const [initialStep, setInitialStep] = useState<StepId>("dados");
-  const [ready, setReady] = useState(!savedState);
+  const [ready, setReady] = useState(false);
+  const [checked, setChecked] = useState(false);
+
+  // Checa localStorage só no client, após hydration
+  useEffect(() => {
+    const saved = getSavedState();
+    if (saved) {
+      setSavedState(saved);
+    } else {
+      setReady(true);
+    }
+    setChecked(true);
+  }, []);
+
+  if (!checked) return null;
 
   function handleRestore() {
     if (savedState) {
       setInitialForm(savedState.form);
       setInitialStep(savedState.step);
     }
-    setShowRestoreDialog(false);
     setReady(true);
   }
 
   function handleDiscard() {
     clearSavedState();
-    setShowRestoreDialog(false);
     setReady(true);
   }
 
   return (
     <>
-      {!ready ? (
+      {!ready && savedState ? (
         <Card className="w-full max-w-md pointer-events-auto">
             <CardHeader className="items-center">
             <CardTitle className="text-center text-base text-primary retro-glow">
@@ -134,11 +145,11 @@ export function RegisterStepper() {
             </div>
             </CardContent>
         </Card>
-        ) : (
+        ) : ready ? (
         <Stepper.Root initialStep={initialStep}>
             <RegisterStepperContent initialForm={initialForm} />
         </Stepper.Root>
-        )}
+    ) : null}
     </>
   );
 }
