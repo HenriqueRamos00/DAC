@@ -1,9 +1,8 @@
 import { AppSidebar } from "~/components/app-sidebar";
-import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
+import { SidebarProvider } from "~/components/ui/sidebar";
 import { Outlet } from "react-router";
-import { initSessionStorage } from "~/auth/session-server";
-import { enforcePermissions } from "~/auth/guard-server";
 import type { Route } from "./+types/app-layout";
+import AppNav from "~/components/app-nav";
 
 /* export async function loader({ request, context }: Route.LoaderArgs) {
   initSessionStorage(context.cloudflare.env.SESSION_SECRET);
@@ -12,6 +11,7 @@ import type { Route } from "./+types/app-layout";
 } */
 
 export async function loader({ request, context }: Route.LoaderArgs) {
+  await new Promise<void>((resolve) => setTimeout(resolve, 500));
   // TODO: remover quando login estiver pronto
   return { role: "cliente" as const }; // troca pra "cliente" ou "gerente" ou "admin" pra testar
 }
@@ -20,10 +20,12 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
   return (
     <SidebarProvider>
       <AppSidebar role={loaderData.role} />
-      <main>
-        <SidebarTrigger />
-        <Outlet />
-      </main>
+      <div className="flex flex-col flex-1">
+        <AppNav />
+        <main className="flex-1 p-10 md:px-5 md:py-5">
+          <Outlet />
+        </main>
+      </div>
     </SidebarProvider>
   );
 }
