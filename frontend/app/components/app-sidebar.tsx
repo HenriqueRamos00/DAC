@@ -6,8 +6,8 @@ import {
   ClipboardList,
   FileText,
   LayoutDashboard,
+  LogOut,
   Trophy,
-  User,
   UserCheck,
   UserPlus,
   Users
@@ -20,7 +20,6 @@ import {
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
 import type { AppRole } from "~/auth/permissions"
@@ -108,10 +107,11 @@ export function AppSidebar({ role }: SidebarProps) {
 
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <User /> Username
-            </SidebarMenuButton>
+          <SidebarMenuItem className="border-t border-sidebar-border" >
+            <NavLink to={"/"} className="flex items-center text-green-200 text-sm pl-5 gap-3 py-3 hover:bg-sidebar-accent/2">
+              <LogOut size={16} />
+              <span>Sair</span>
+            </NavLink>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
