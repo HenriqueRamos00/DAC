@@ -1,5 +1,4 @@
 import { Fragment } from "react";
-import { Link } from "react-router";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -28,16 +27,16 @@ export function AppBreadcrumb({ items }: AppBreadcrumbProps) {
           const isLast = index === items.length - 1;
 
           return (
-            <BreadcrumbItem className="flex items-center gap-2 text-xs text-muted-foreground mb-4" key={`${item.label}-${index}`}>
-              {!isLast && item.href ? (
-                <>
+            <Fragment key={`${item.label}-${index}`}>
+              <BreadcrumbItem className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+                {!isLast && item.href ? (
                   <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
-                  <BreadcrumbSeparator />
-                </>
-              ) : (
-                <BreadcrumbPage className="text-primary">{item.label}</BreadcrumbPage>
-              )}
-            </BreadcrumbItem>
+                ) : (
+                  <BreadcrumbPage className="text-primary">{item.label}</BreadcrumbPage>
+                )}
+              </BreadcrumbItem>
+              {!isLast && <BreadcrumbSeparator className="mb-4" />}
+            </Fragment>
           );
         })}
       </BreadcrumbList>

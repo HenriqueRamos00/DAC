@@ -1,0 +1,42 @@
+import { cn } from "~/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+
+const UF_OPTIONS = [
+  "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG",
+  "PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
+] as const;
+
+interface UfSelectProps {
+  id?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  className?: string;
+}
+
+export function UfSelect({ id, value, onValueChange, className }: UfSelectProps) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="text-sm font-medium">
+        UF *
+      </label>
+      <Select value={value} onValueChange={(v) => { if (v) onValueChange?.(v); }}>
+        <SelectTrigger id={id} className={cn("w-full", className)}>
+          <SelectValue placeholder="UF..." />
+        </SelectTrigger>
+        <SelectContent alignItemWithTrigger={false} className="max-h-48">
+          {UF_OPTIONS.map((uf) => (
+            <SelectItem key={uf} value={uf}>
+              {uf}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
