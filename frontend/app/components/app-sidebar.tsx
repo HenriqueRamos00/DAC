@@ -12,7 +12,7 @@ import {
   UserPlus,
   Users
 } from "lucide-react"
-import { NavLink, useLocation } from "react-router"
+import { Form, NavLink, useLocation } from "react-router"
 import {
   Sidebar,
   SidebarContent,
@@ -108,10 +108,15 @@ export function AppSidebar({ role }: SidebarProps) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem className="border-t border-sidebar-border" >
-            <NavLink to={"/"} className="flex items-center text-green-200 text-sm pl-5 gap-3 py-3 hover:bg-sidebar-accent/2">
-              <LogOut size={16} />
-              <span>Sair</span>
-            </NavLink>
+            <Form method="post" action="/logout" viewTransition>
+              <button
+                type="submit"
+                className="flex items-center text-green-200 text-sm pl-5 gap-3 py-3 hover:bg-sidebar-accent/2 w-full"
+              >
+                <LogOut size={16} />
+                <span>Sair</span>
+              </button>
+            </Form>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

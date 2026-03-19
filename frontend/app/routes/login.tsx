@@ -4,16 +4,16 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/componen
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import type { Route } from "../+types/root";
-import { authCookie, sessionCookie } from "~/auth/cookie";
 import { api } from "~/services/api.server";
+import { commitSession, getSession } from "~/auth/sessions.server";
 
 export async function loader({request} : Route.LoaderArgs) {
-  const token = await authCookie.parse(request.headers.get("Cookie"))
+  const session = await getSession(request.headers.get("Cookie"));
+  const token = session.get("token");
+  const tipo = session.get("tipo");
 
   if (token) {
-    const session = await sessionCookie.parse(request.headers.get("Cookie"))
-
-    switch (session?.tipo) {
+    switch (tipo) {
       case "CLIENTE":
         return redirect("/cliente");
       case "GERENTE":
@@ -24,7 +24,6 @@ export async function loader({request} : Route.LoaderArgs) {
         return redirect("/");
     }
   }
-  return null;
 }
 
 export async function action({request} : Route.ActionArgs) {
@@ -33,28 +32,28 @@ export async function action({request} : Route.ActionArgs) {
   const senha = formData.get("senha");
 
   if (!email || !senha) {
-    return data(
-      { error: "Email e Senha Obrigatórios" },
-      { status: 400 }
-    )
+    return data({ error: "Email e Senha Obrigatórios" }, { status: 400 });
   }
 
   const apiClient = api(request);
-  const res = await apiClient.post("/login", {login: email, senha});
+  const res = await apiClient.post("/login", { login: email, senha });
 
-    if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    return data(
-      { error: "Email ou senha inválidos." },
-      { status: 401 }
-    );
+  if (!res.ok) {
+    return data({ error: "Email ou senha inválidos." }, { status: 401 });
   }
 
   const { access_token, tipo, usuario } = (await res.json()) as {
     access_token: string;
-    tipo: string;
+    tipo: "CLIENTE" | "GERENTE" | "ADMIN";
     usuario: { nome: string; email: string; cpf: string };
   };
+
+  const session = await getSession(request.headers.get("Cookie"));
+  session.set("token", access_token);
+  session.set("tipo", tipo);
+  session.set("nome", usuario.nome);
+  session.set("email", usuario.email);
+  session.set("cpf", usuario.cpf);
 
   let redirectTo = "/";
   switch (tipo) {
@@ -70,15 +69,9 @@ export async function action({request} : Route.ActionArgs) {
   }
 
   return redirect(redirectTo, {
-    headers: [
-      ["Set-Cookie", await authCookie.serialize(access_token)],
-      ["Set-Cookie", await sessionCookie.serialize({
-        tipo,
-        nome: usuario.nome,
-        email: usuario.email,
-        cpf: usuario.cpf,
-      })],
-    ],
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
   });
 }
 
