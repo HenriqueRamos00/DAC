@@ -8,7 +8,7 @@
 	"compatibility_date": "2025-04-04",
 	"main": "./workers/app.ts",
 	"vars": {
-		"API_URL": "http://retrobank.example.com",
+		"API_URL": "https://dac-json-server.tail041186.ts.net",
 		"NODE_ENV": "production",
 		"SESSION_SECRET": "trocar-em-producao"
 	},
