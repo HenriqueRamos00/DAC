@@ -1,8 +1,10 @@
+import { useAuth } from "./auth-provider";
 import CustomSidebarTrigger from "./custom-sidebar-trigger";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export default function  AppNav() {
-  const user = { name: "João da silva"}
+  const { auth } = useAuth()
+  const user = { name: auth.nome ?? "Cliente"}
   return (
     <div className="flex bg justify-between items-center py-2 pr-3 bg-sidebar">
         <CustomSidebarTrigger />

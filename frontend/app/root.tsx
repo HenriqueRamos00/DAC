@@ -13,6 +13,9 @@ import "./app.css";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { GlobalSpinner } from "./components/global-spinner";
+import { getSession } from "./auth/sessions.server";
+import { AuthProvider } from "./components/auth-provider";
+import { sanitizeAuth } from "./models/auth/AuthUser";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -26,6 +29,14 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;600;700&family=VT323&display=swap",
   },
 ];
+
+export async function loader( {request} : Route.LoaderArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+
+  const auth = sanitizeAuth(session);
+
+  return { auth }
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const navigation = useNavigation();
@@ -51,8 +62,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
-  return <Outlet />;
+export default function App({ loaderData } : Route.ComponentProps) {
+  const { auth } = loaderData
+
+  return (
+    <AuthProvider initialAuth={auth}>
+        <Outlet />
+    </AuthProvider>
+);
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
