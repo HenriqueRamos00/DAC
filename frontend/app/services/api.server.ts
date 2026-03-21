@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { authCookie } from "~/auth/cookie"
+import { getSession } from "~/auth/sessions.server";
 
 const API_URL = env.API_URL;
 
@@ -8,7 +8,8 @@ function myFetch(request: Request) {
         endpoint: string,
         init?: RequestInit
     ): Promise<Response> => {
-        const token = await authCookie.parse(request.headers.get("Cookie"))
+        const session = await getSession(request.headers.get("Cookie"));
+        const token = session.get("token");
 
         return fetch(`${API_URL}${endpoint}`, {
             ...init,

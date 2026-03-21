@@ -4,6 +4,7 @@ export default [
   index("routes/home.tsx"),
   route("login", "routes/login.tsx"),
   route("/cadastro", "routes/cadastro.tsx"),
+  route("/logout", "routes/logout.tsx"),
   layout("./layout/app-layout.tsx", [
     route("cliente", "routes/cliente/dashboard.tsx"),
     route("/cliente/deposito", "routes/cliente/depositar.tsx"),
