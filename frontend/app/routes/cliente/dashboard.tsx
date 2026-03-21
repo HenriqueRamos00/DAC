@@ -1,7 +1,7 @@
 import Painel from "~/components/app-painel";
 import type { Route } from "./+types/dashboard";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
-import { Upload, User, Wallet } from "lucide-react";
+import { CombineIcon, Upload, User, Wallet } from "lucide-react";
 import { useAuth } from "~/components/auth-provider";
 import { api } from "~/services/api.server";
 import { getSession } from "~/auth/sessions.server";

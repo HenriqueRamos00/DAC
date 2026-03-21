@@ -6,6 +6,7 @@ import { Button } from "~/components/ui/button";
 import type { Route } from "../+types/root";
 import { api } from "~/services/api.server";
 import { commitSession, getSession } from "~/auth/sessions.server";
+import type { Cliente } from "~/models/dto/Cliente";
 
 export async function loader({request} : Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -18,7 +19,7 @@ export async function loader({request} : Route.LoaderArgs) {
         return redirect("/cliente");
       case "GERENTE":
         return redirect("/gerente");
-      case "ADMIN":
+      case "ADMINISTRADOR":
         return redirect("/admin");
       default:
         return redirect("/");
@@ -44,7 +45,7 @@ export async function action({request} : Route.ActionArgs) {
 
   const { access_token, tipo, usuario } = (await res.json()) as {
     access_token: string;
-    tipo: "CLIENTE" | "GERENTE" | "ADMIN";
+    tipo: "CLIENTE" | "GERENTE" | "ADMINISTRADOR";
     usuario: { nome: string; email: string; cpf: string };
   };
 
@@ -54,6 +55,13 @@ export async function action({request} : Route.ActionArgs) {
   session.set("nome", usuario.nome);
   session.set("email", usuario.email);
   session.set("cpf", usuario.cpf);
+  if (tipo === "CLIENTE") {
+    const res_cliente = await apiClient.get(`/clientes/${usuario.cpf}`, {
+      headers: { Authorization: `Bearer ${access_token}` }
+    })
+    const cliente = await res_cliente.json() as Cliente;
+    session.set("conta", cliente.conta);
+  }
 
   let redirectTo = "/";
   switch (tipo) {
@@ -63,7 +71,7 @@ export async function action({request} : Route.ActionArgs) {
     case "GERENTE":
       redirectTo = "/gerente";
       break;
-    case "ADMIN":
+    case "ADMINISTRADOR":
       redirectTo = "/admin";
       break;
   }
