@@ -19,10 +19,6 @@ const dados = {
     disponivel: "R$ 11.742,50",
 };
 
-const EMPTY_FORM: FormData = {
-    valor: "",
-};
-
 export default function Saque() {
     const currencyRef = useCurrencyMask();
     const [form, setForm] = useState<FormData>({ valor: "" });
@@ -78,9 +74,9 @@ export default function Saque() {
                     />
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 mt-2">
-                    <Button type="button" variant="confirm" className="flex-1">
-                        Sacar
+                <div className="flex flex-col gap-4 mt-2">
+                    <Button type="button" variant="confirm">
+                        ► Sacar
                     </Button>
                 </div>
             </div>

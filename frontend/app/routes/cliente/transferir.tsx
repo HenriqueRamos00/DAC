@@ -82,12 +82,9 @@ export default function Transferencia() {
                     />
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 mt-2">
-                    <Button type="button" className="flex-1 bg-primary text-black hover:bg-primary/80">
+                <div className="flex flex-col gap-4 mt-2">
+                    <Button type="button" variant="confirm">
                         ► CONFIRMAR
-                    </Button>
-                    <Button type="button" variant="destructive" className="w-full sm:w-auto">
-                        SIMULAR ERRO
                     </Button>
                 </div>
             </div>
