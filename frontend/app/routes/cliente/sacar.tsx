@@ -5,6 +5,7 @@ import { useCurrencyMask } from "~/lib/pipe/currency-mask";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
+import { ArrowUpFromLine } from "lucide-react"
 
 export function meta({}: Route.MetaArgs) {
     return [{ title: "Saque" }, { name: "description", content: "Tela de saque do cliente" }];
@@ -41,7 +42,7 @@ export default function Saque() {
 
             <div className="flex flex-col bg-card border-3 border-border p-4 gap-4 max-w-3xl">
                 <div className="border-b border-border pb-4">
-                    <span className="text-primary font-pixel uppercase">↑ REALIZAR SAQUE</span>
+                    <span className="text-primary font-pixel uppercase flex items-center gap-2"><ArrowUpFromLine size={14} /> REALIZAR SAQUE</span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4">

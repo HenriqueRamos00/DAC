@@ -3,7 +3,7 @@ import type { Route } from "./+types/dashboard";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { useCurrencyMask } from "~/lib/pipe/currency-mask";
 import { useState } from "react";
-import { toast } from "sonner";
+import { ArrowLeftRight } from "lucide-react"
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 
@@ -47,7 +47,7 @@ export default function Transferencia() {
 
             <div className="flex flex-col bg-card border-3 border-border p-4 gap-4 max-w-3xl">
                 <div className="border-b border-border pb-4">
-                    <span className="text-primary uppercase font-pixel">NOVA TRANSFERÊNCIA</span>
+                    <span className="text-primary uppercase font-pixel flex items-center gap-2"><ArrowLeftRight size={14} /> NOVA TRANSFERÊNCIA</span>
                 </div>
 
                 <div className="bg-muted/30 border border-border p-4 flex flex-col gap-1">

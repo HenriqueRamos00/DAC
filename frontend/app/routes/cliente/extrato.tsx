@@ -10,7 +10,7 @@ import {
 } from "~/components/ui/popover";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Funnel } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import { Label } from "~/components/ui/label";
 
@@ -47,7 +47,7 @@ export default function Extrato() {
       {/* Filtros */}
       <div className="flex flex-col bg-card border-3 border-border p-4 gap-4">
         <div className="border-b border-border pb-4">
-          <span className="text-primary font-pixel uppercase">FILTROS</span>
+          <span className="text-primary uppercase font-pixel flex items-center gap-2"><Funnel size={14} /> FILTROS</span>
         </div>
 
         <Label className="text-muted-foreground uppercase">
