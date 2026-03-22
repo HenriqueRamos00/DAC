@@ -41,10 +41,10 @@ export default function Extrato() {
         ]}
       />
 
-      <h1 className="text-xl text-primary font-pixel uppercase">EXTRATO</h1>
+      <h1 className="text-xl text-primary uppercase">EXTRATO</h1>
 
       {/* Filtros */}
-      <div className="flex flex-col bg-card border-3 border-border p-4 gap-4 max-w-3xl">
+      <div className="flex flex-col bg-card border-3 border-border p-4 gap-4">
         <div className="border-b border-border pb-4">
           <span className="text-primary font-pixel uppercase">FILTROS</span>
         </div>

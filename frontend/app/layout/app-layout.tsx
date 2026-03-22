@@ -22,7 +22,7 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
       <AppSidebar role={loaderData.role} />
       <div className="flex flex-col flex-1">
         <AppNav />
-        <main className="flex-1 p-10 md:px-5 md:py-5">
+        <main className="flex-1 p-10 md:px-8 md:py-6">
           <Outlet />
         </main>
       </div>
