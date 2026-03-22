@@ -5,6 +5,7 @@ import { useCurrencyMask } from "~/lib/pipe/currency-mask";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
 
 export function meta({}: Route.MetaArgs) {
     return [{ title: "Transferência" }, { name: "description", content: "Tela de transferência do cliente" }];
@@ -55,9 +56,9 @@ export default function Transferencia() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm text-muted-foreground uppercase">
+                    <Label className="text-muted-foreground uppercase">
                         CONTA DESTINO
-                    </label>
+                    </Label>
                     <Input
                         id="contaDestino"
                         name="contaDestino"
@@ -68,9 +69,9 @@ export default function Transferencia() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm text-muted-foreground uppercase">
+                    <Label className="text-muted-foreground uppercase">
                         VALOR (R$)
-                    </label>
+                    </Label>
                     <Input
                         ref={currencyRef}
                         id="valor"

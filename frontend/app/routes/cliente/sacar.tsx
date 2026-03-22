@@ -4,6 +4,7 @@ import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { useCurrencyMask } from "~/lib/pipe/currency-mask";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
 
 export function meta({}: Route.MetaArgs) {
     return [{ title: "Saque" }, { name: "description", content: "Tela de saque do cliente" }];
@@ -60,9 +61,9 @@ export default function Saque() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm text-muted-foreground uppercase">
+                    <Label className="text-muted-foreground uppercase">
                         VALOR DO SAQUE (R$)
-                    </label>
+                    </Label>
                     <Input
                         ref={currencyRef}
                         id="valor"

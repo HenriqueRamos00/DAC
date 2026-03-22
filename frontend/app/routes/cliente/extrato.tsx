@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import type { DateRange } from "react-day-picker";
+import { Label } from "~/components/ui/label";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -49,9 +50,9 @@ export default function Extrato() {
           <span className="text-primary font-pixel uppercase">FILTROS</span>
         </div>
 
-        <label className="text-sm text-muted-foreground uppercase">
+        <Label className="text-muted-foreground uppercase">
           PERÍODO
-        </label>
+        </Label>
 
         <div className="flex flex-row gap-4 items-center">
           <Popover>
