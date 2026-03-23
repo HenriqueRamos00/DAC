@@ -63,17 +63,17 @@ export default function Dashboard( { loaderData } : Route.ComponentProps ) {
         <span className="text-xs">Bem-vindo ao seu painel bancário.</span>
       </div>
       <div className="py-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <Painel icon={Wallet} title="Saldo atual" content={getFormattedCurrency(parseFloat(cliente.saldo))} color="text-primary"/>
-        <Painel icon={Upload} title="Limite disponível" content={getFormattedCurrency(cliente.limite)} color="text-[var(--manager)]"/>
-        <Painel icon={Wallet} title="Conta" content={`Nº ${cliente.conta}`} color="text-chart-1"/>
-        <Painel icon={User} title="Gerente" content={cliente.gerente_nome} color="text-chart-4"/>
+        <Painel icon={Wallet} title="Saldo atual" content={getFormattedCurrency(parseFloat(cliente.saldo))} className="text-primary"/>
+        <Painel icon={Upload} title="Limite disponível" content={getFormattedCurrency(cliente.limite)} className="text-(--manager)"/>
+        <Painel icon={Wallet} title="Conta" content={`Nº ${cliente.conta}`} className="text-chart-1"/>
+        <Painel icon={User} title="Gerente" content={cliente.gerente_nome} className="text-chart-4"/>
       </div>
       <div className="py-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
-        <LinkRetro link="/cliente/perfil" icon={User} title="Perfil" color="text-chart-4"/>
-        <LinkRetro link="/cliente/deposito" icon={Download} title="Depositar" color="text-primary"/>
-        <LinkRetro link="/cliente/saque" icon={Upload} title="Sacar" color="text-chart-3"/>
-        <LinkRetro link="/cliente/transferencia" icon={ArrowLeftRight} title="Transferir" color="text-[var(--manager)]"/>
-        <LinkRetro link="/cliente/extrato" icon={FileText} title="Extrato" color="text-chart-1"/>
+        <LinkRetro link="/cliente/perfil" icon={User} title="Perfil" className="text-chart-4"/>
+        <LinkRetro link="/cliente/deposito" icon={Download} title="Depositar" className="text-primary"/>
+        <LinkRetro link="/cliente/saque" icon={Upload} title="Sacar" className="text-chart-3"/>
+        <LinkRetro link="/cliente/transferencia" icon={ArrowLeftRight} title="Transferir" className="text-(--manager)"/>
+        <LinkRetro link="/cliente/extrato" icon={FileText} title="Extrato" className="text-chart-1"/>
       </div>
       <UltimasMovimentacoes extrato={extrato} />
     </div>
