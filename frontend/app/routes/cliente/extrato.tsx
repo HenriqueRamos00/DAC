@@ -1,6 +1,6 @@
 import type { Route } from "./+types/extrato";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import {
@@ -8,16 +8,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { format, isWithinInterval } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, FileText, Funnel, Play } from "lucide-react";
 import type { DateRange } from "react-day-picker";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnFiltersState } from "@tanstack/react-table";
 import { Label } from "~/components/ui/label";
-import { DataTable } from "~/features/data-table/data-table";
 import { getFormattedCurrency } from "~/lib/utils/formatCurrency";
-import { api } from "~/services/api.server";
-import { getSession } from "~/auth/sessions.server";
+import { getSessionAutenticada } from "~/services/auth.server";
+import type { Extrato as ExtratoDTO } from "~/models/dto/Movimentacao";
+import { TabelaMovimentacao } from "~/features/tabela-movimentacao/tabela-movimentacao";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -26,170 +26,40 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-type MovimentacaoAPI = {
-  id: number;
-  data: string;
-  tipo: string;
-  origem: string | null;
-  destino: string | null;
-  valor: number;
-};
-
-type Movimentacao = {
-  id: number;
-  data: string;
-  operacao: string;
-  origemDestino: string;
-  valor: number;
-  tipo: "entrada" | "saida";
-};
-
-function mapOperacao(tipo: string): string {
-  switch (tipo.toLowerCase()) {
-    case "depósito": return "Depósito";
-    case "saque": return "Saque";
-    case "transferência": return "Transferência";
-    default: return tipo;
-  }
-}
-
-function mapMovimentacao(mov: MovimentacaoAPI, contaNumero: string): Movimentacao {
-  const isEntrada = mov.destino === contaNumero;
-  const tipo = isEntrada ? "entrada" as const : "saida" as const;
-
-  let operacao = mapOperacao(mov.tipo);
-  if (mov.tipo.toLowerCase() === "transferência") {
-    operacao = isEntrada ? "Transferência recebida" : "Transferência enviada";
-  }
-
-  const origemDestino = mov.tipo.toLowerCase() === "transferência"
-    ? (isEntrada ? mov.origem ?? "—" : mov.destino ?? "—")
-    : "—";
-
-  return {
-    id: mov.id,
-    data: format(new Date(mov.data), "yyyy-MM-dd HH:mm"),
-    operacao,
-    origemDestino,
-    valor: mov.valor,
-    tipo,
-  };
-}
-
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const token = session.get("token");
-  const cpf = session.get("cpf");
+  const { apiClient, cpf } = await getSessionAutenticada(request);
 
-  if (typeof token !== "string") {
-    throw new Response("Unauthorized", { status: 401 });
+  const clienteResponse = await apiClient.get(`/clientes/${cpf}`);
+  if (!clienteResponse.ok) {
+    throw new Response("Erro ao carregar dados do cliente", { status: clienteResponse.status });
   }
 
-  const apiClient = api(request);
+  const cliente = await clienteResponse.json() as { conta: string };
 
-  const clienteRes = await apiClient.get(`/clientes/${cpf}`);
-  if (!clienteRes.ok) {
-    throw new Response("Erro ao carregar dados do cliente", { status: clienteRes.status });
+  const extratoResponse = await apiClient.get(`/contas/${cliente.conta}/extrato`);
+  if (!extratoResponse.ok) {
+    throw new Response("Erro ao carregar extrato", { status: extratoResponse.status });
   }
 
-  const cliente = await clienteRes.json() as { conta: string };
+  const extrato = await extratoResponse.json() as ExtratoDTO;
 
-  const extratoRes = await apiClient.get(`/contas/${cliente.conta}/extrato`);
-  if (!extratoRes.ok) {
-    throw new Response("Erro ao carregar extrato", { status: extratoRes.status });
-  }
-
-  const extrato = await extratoRes.json() as {
-    conta: string;
-    saldo: number;
-    movimentacoes: MovimentacaoAPI[];
-  };
-
-  const movimentacoes = extrato.movimentacoes.map((m) =>
-    mapMovimentacao(m, cliente.conta)
-  );
-
-  return { movimentacoes };
+  return { extrato, conta: cliente.conta };
 }
-
-const columns: ColumnDef<Movimentacao>[] = [
-  {
-    accessorKey: "data",
-    header: "Data/Hora",
-    cell: ({ row }) => (
-      <span className="text-muted-foreground font-mono">
-        {row.getValue("data")}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "operacao",
-    header: "Operação",
-  },
-  {
-    accessorKey: "origemDestino",
-    header: "Origem/Destino",
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">
-        {row.getValue("origemDestino")}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "valor",
-    header: () => <div className="text-right">Valor</div>,
-    cell: ({ row }) => {
-      const mov = row.original;
-      return (
-        <div
-          className={`text-right font-mono font-bold ${
-            mov.tipo === "entrada" ? "text-info" : "text-destructive"
-          }`}
-        >
-          {mov.tipo === "entrada" ? "+" : "-"}
-          {getFormattedCurrency(mov.valor)}
-        </div>
-      );
-    },
-  },
-];
 
 export default function Extrato({ loaderData }: Route.ComponentProps) {
-  const { movimentacoes } = loaderData;
+  const { extrato, conta } = loaderData;
   const [date, setDate] = useState<DateRange | undefined>();
-  const [filtro, setFiltro] = useState<DateRange | undefined>();
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [saldoPeriodo, setSaldoPeriodo] = useState(0);
 
   function handleFiltrar() {
-    setFiltro(date);
+    setColumnFilters(date?.from ? [{ id: "data", value: date }] : []);
   }
 
   function handleLimpar() {
     setDate(undefined);
-    setFiltro(undefined);
+    setColumnFilters([]);
   }
-
-  const dadosFiltrados = useMemo(() => {
-    if (!filtro?.from) return movimentacoes;
-
-    return movimentacoes.filter((mov) => {
-      const [datePart] = mov.data.split(" ");
-      const [year, month, day] = datePart.split("-").map(Number);
-      const movDate = new Date(year, month - 1, day);
-      const from = filtro.from!;
-      const to = filtro.to ?? filtro.from!;
-
-      return isWithinInterval(movDate, {
-        start: new Date(from.getFullYear(), from.getMonth(), from.getDate(), 0, 0, 0),
-        end: new Date(to.getFullYear(), to.getMonth(), to.getDate(), 23, 59, 59),
-      });
-    });
-  }, [filtro, movimentacoes]);
-
-  const saldoPeriodo = useMemo(() => {
-    return dadosFiltrados.reduce((acc, mov) => {
-      return acc + (mov.tipo === "entrada" ? mov.valor : -mov.valor);
-    }, 0);
-  }, [dadosFiltrados]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -286,7 +156,13 @@ export default function Extrato({ loaderData }: Route.ComponentProps) {
           </span>
         </div>
 
-        <DataTable columns={columns} data={dadosFiltrados} pageSize={10} />
+        <TabelaMovimentacao
+          movimentacoes={extrato.movimentacoes}
+          conta={conta}
+          pageSize={10}
+          columnFilters={columnFilters}
+          onSaldoChange={setSaldoPeriodo}
+        />
 
         <div className="border-t-2 border-border pt-3 flex justify-between items-center">
           <span className="text-xs text-muted-foreground normal-case">

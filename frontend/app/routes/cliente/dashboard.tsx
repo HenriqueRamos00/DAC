@@ -3,8 +3,7 @@ import type { Route } from "./+types/dashboard";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { Upload, User, Wallet } from "lucide-react";
 import { useAuth } from "~/components/auth-provider";
-import { api } from "~/services/api.server";
-import { getSession } from "~/auth/sessions.server";
+import { getSessionAutenticada } from "~/services/auth.server";
 import { getFormattedCurrency } from "~/lib/utils/formatCurrency";
 import type { Cliente } from "~/models/dto/Cliente";
 
@@ -16,23 +15,14 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({request} : Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"))
-  const token = session.get("token")
-  const cpf = session.get("cpf")
+  const { apiClient, cpf } = await getSessionAutenticada(request);
+  const response = await apiClient.get(`/clientes/${cpf}`);
 
-  //Talvez mudar o retorno depois
-  if (typeof token !== "string") {
-    throw new Response("Unauthorized", { status: 401 })
+  if (!response.ok) {
+    throw new Response("Erro ao carregar dashboard", { status: response.status })
   }
 
-  const apiClient = api(request);
-  const res = await apiClient.get(`/clientes/${cpf}`);
-
-  if (!res.ok) {
-    throw new Response("Erro ao carregar dashboard", { status: res.status })
-  }
-
-  const cliente = await res.json() as Cliente;
+  const cliente = await response.json() as Cliente;
 
   return { cliente }
 }

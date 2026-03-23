@@ -9,7 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Table,
@@ -25,15 +25,21 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   pageSize?: number;
+  columnFilters?: ColumnFiltersState;
+  onFilteredRowsChange?: (rows: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   pageSize = 10,
+  columnFilters: externalFilters,
+  onFilteredRowsChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const activeFilters = externalFilters ?? columnFilters;
 
   const table = useReactTable({
     data,
@@ -49,9 +55,16 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
-      columnFilters,
+      columnFilters: activeFilters,
     },
   });
+
+  useEffect(() => {
+    if (onFilteredRowsChange) {
+      const rows = table.getFilteredRowModel().rows.map((r) => r.original);
+      onFilteredRowsChange(rows);
+    }
+  }, [activeFilters, data, onFilteredRowsChange, table]);
 
   return (
     <div>
@@ -72,7 +85,7 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody className="font-mono text-sm">
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow key={row.id}>
