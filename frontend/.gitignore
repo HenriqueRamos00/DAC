@@ -2,6 +2,7 @@
 .env
 /node_modules/
 *.tsbuildinfo
+.vscode/
 
 # React Router
 /.react-router/
