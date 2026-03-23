@@ -6,7 +6,8 @@ export default [
   route("/cadastro", "routes/cadastro.tsx"),
   route("/logout", "routes/logout.tsx"),
   layout("./layout/app-layout.tsx", [
-    route("cliente", "routes/cliente/dashboard.tsx"),
+    route("/cliente", "routes/cliente/dashboard.tsx"),
+    route("/cliente/perfil", "routes/cliente/perfil.tsx"),
     route("/cliente/deposito", "routes/cliente/depositar.tsx"),
     route("/cliente/saque", "routes/cliente/sacar.tsx"),
     route("/cliente/transferencia", "routes/cliente/transferir.tsx"),
