@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   Trophy,
+  User,
   UserCheck,
   UserPlus,
   Users
@@ -34,6 +35,7 @@ const sidebarItems = {
     color: "text-[var(--customer)]",
     items: [
       { label: "Dashboard", path: "/cliente", icon: LayoutDashboard },
+      { label: "Meu Perfil", path: "/cliente/perfil", icon: User },
       { label: "Depositar", path: "/cliente/deposito", icon: ArrowDownToLine },
       { label: "Sacar", path: "/cliente/saque", icon: ArrowUpFromLine },
       { label: "Transferir", path: "/cliente/transferencia", icon: ArrowLeftRight },

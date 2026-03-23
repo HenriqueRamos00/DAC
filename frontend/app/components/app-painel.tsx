@@ -4,6 +4,9 @@ interface PainelProps {
   icon: LucideIcon;
   title: string;
   content: string;
+  /**
+   * Usar classes do tailwind
+   */
   color: string;
   variant?: 'note';
 }
