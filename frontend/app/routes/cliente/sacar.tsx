@@ -5,7 +5,7 @@ import { useCurrencyMask } from "~/lib/pipe/currency-mask";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
-import { ArrowUpFromLine } from "lucide-react"
+import { ArrowUpFromLine, Play } from "lucide-react"
 
 export function meta({}: Route.MetaArgs) {
     return [{ title: "Saque" }, { name: "description", content: "Tela de saque do cliente" }];
@@ -29,7 +29,7 @@ export default function Saque() {
     }
 
     return (
-        <div className="flex flex-col gap-6 uppercase font-mono font-bold text-xs">
+        <div className="flex flex-col gap-6">
             <AppBreadcrumb
                 items={[
                     { label: "Retro-Bank", href: "/" },
@@ -38,22 +38,22 @@ export default function Saque() {
                 ]}
             />
 
-            <h1 className="text-xl text-primary font-pixel uppercase">SAQUE</h1>
+            <h1 className="text-sm text-primary uppercase">SAQUE</h1>
 
             <div className="flex flex-col bg-card border-3 border-border p-4 gap-4 max-w-3xl">
                 <div className="border-b border-border pb-4">
-                    <span className="text-primary font-pixel uppercase flex items-center gap-2"><ArrowUpFromLine size={14} /> REALIZAR SAQUE</span>
+                    <span className="text-primary text-xs uppercase flex items-center gap-2"><ArrowUpFromLine size={14} /> REALIZAR SAQUE</span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 bg-muted/30 border border-border p-4 flex flex-col gap-1">
-                        <span className="text-sm text-muted-foreground">Saldo</span>
-                        <div className="text-lg font-pixel text-primary">{dados.saldo}</div>
+                        <span className="text-xs text-muted-foreground">Saldo</span>
+                        <div className="text-lg text-primary">{dados.saldo}</div>
                     </div>
 
                     <div className="flex-1 bg-muted/30 border border-border p-4 flex flex-col gap-1">
-                        <span className="text-sm text-muted-foreground">Limite</span>
-                        <div className="text-lg font-pixel text-cyan-400">{dados.limite}</div>
+                        <span className="text-xs text-muted-foreground">Limite</span>
+                        <div className="text-lg text-cyan-400">{dados.limite}</div>
                     </div>
                 </div>
 
@@ -62,7 +62,7 @@ export default function Saque() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <Label className="text-muted-foreground uppercase">
+                    <Label className="text-muted-foreground uppercase font-mono text-xs">
                         VALOR DO SAQUE (R$)
                     </Label>
                     <Input
@@ -77,8 +77,8 @@ export default function Saque() {
                 </div>
 
                 <div className="flex flex-col gap-4 mt-2">
-                    <Button type="button" variant="confirm">
-                        ► Sacar
+                    <Button type="button" variant="confirm" className="font-mono text-sm">
+                        <Play className="size-2 fill-current" /> SACAR
                     </Button>
                 </div>
             </div>

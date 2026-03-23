@@ -3,7 +3,7 @@ import type { Route } from "./+types/dashboard";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { useCurrencyMask } from "~/lib/pipe/currency-mask";
 import { useState } from "react";
-import { ArrowLeftRight } from "lucide-react"
+import { ArrowLeftRight, Play } from "lucide-react"
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 
@@ -34,7 +34,7 @@ export default function Transferencia() {
     }
 
     return (
-        <div className="flex flex-col gap-6 uppercase font-mono font-bold text-xs">
+        <div className="flex flex-col gap-6">
             <AppBreadcrumb
                 items={[
                     { label: "Retro-Bank", href: "/" },
@@ -43,20 +43,20 @@ export default function Transferencia() {
                 ]}
             />
 
-            <h1 className="text-xl text-primary uppercase">TRANSFERÊNCIA</h1>
+            <h1 className="text-sm text-primary uppercase">TRANSFERÊNCIA</h1>
 
             <div className="flex flex-col bg-card border-3 border-border p-4 gap-4 max-w-3xl">
                 <div className="border-b border-border pb-4">
-                    <span className="text-primary uppercase font-pixel flex items-center gap-2"><ArrowLeftRight size={14} /> NOVA TRANSFERÊNCIA</span>
+                    <span className="text-primary text-xs uppercase flex items-center gap-2"><ArrowLeftRight size={14} /> NOVA TRANSFERÊNCIA</span>
                 </div>
 
                 <div className="bg-muted/30 border border-border p-4 flex flex-col gap-1">
-                    <span className="text-sm text-muted-foreground">Saldo disponível</span>
-                    <div className="text-lg font-pixel text-primary">{dados.saldo}</div>
+                    <span className="text-xs text-muted-foreground">Saldo disponível</span>
+                    <div className="text-lg text-primary">{dados.saldo}</div>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <Label className="text-muted-foreground uppercase">
+                    <Label className="text-muted-foreground uppercase font-mono text-xs">
                         CONTA DESTINO
                     </Label>
                     <Input
@@ -69,7 +69,7 @@ export default function Transferencia() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <Label className="text-muted-foreground uppercase">
+                    <Label className="text-muted-foreground uppercase font-mono text-xs">
                         VALOR (R$)
                     </Label>
                     <Input
@@ -84,8 +84,8 @@ export default function Transferencia() {
                 </div>
 
                 <div className="flex flex-col gap-4 mt-2">
-                    <Button type="button" variant="confirm">
-                        ► CONFIRMAR
+                    <Button type="button" variant="confirm" className="font-mono text-sm">
+                        <Play className="size-2 fill-current" /> CONFIRMAR
                     </Button>
                 </div>
             </div>
