@@ -159,7 +159,7 @@ export default function Extrato({ loaderData }: Route.ComponentProps) {
         <TabelaMovimentacao
           movimentacoes={extrato.movimentacoes}
           conta={conta}
-          pageSize={10}
+          pageSize={6}
           columnFilters={columnFilters}
           onSaldoChange={setSaldoPeriodo}
         />
