@@ -1,12 +1,14 @@
 import Painel from "~/components/app-painel";
 import type { Route } from "./+types/dashboard";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
-import { CombineIcon, Upload, User, Wallet } from "lucide-react";
+import { ArrowLeftRight, Download, FileText, Upload, User, Wallet } from "lucide-react";
 import { useAuth } from "~/components/auth-provider";
-import { api } from "~/services/api.server";
-import { getSession } from "~/auth/sessions.server";
+import { getSessionAutenticada } from "~/services/auth.server";
 import { getFormattedCurrency } from "~/lib/utils/formatCurrency";
 import type { Cliente } from "~/models/dto/Cliente";
+import LinkRetro from "~/components/app-link-retro";
+import UltimasMovimentacoes from "~/components/app-ultimas-movimentacoes";
+import type { Extrato } from "~/models/dto/Extrato";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -16,30 +18,36 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({request} : Route.LoaderArgs) {
-  const session = await getSession(request.headers.get("Cookie"))
-  const token = session.get("token")
-  const cpf = session.get("cpf")
+  const { apiClient, cpf } = await getSessionAutenticada(request);
+  const response = await apiClient.get(`/clientes/${cpf}`);
 
-  //Talvez mudar o retorno depois
-  if (typeof token !== "string") {
-    throw new Response("Unauthorized", { status: 401 })
+  if (!response.ok) {
+    throw new Response("Erro ao carregar dashboard", { status: response.status })
   }
 
-  const apiClient = api(request);
-  const res = await apiClient.get(`/clientes/${cpf}`);
+  const cliente = await response.json() as Cliente;
 
-  if (!res.ok) {
-    throw new Response("Erro ao carregar dashboard", { status: res.status })
+  let extrato: Extrato = {
+    conta: "",
+    saldo: 0,
+    movimentacoes: []
   }
 
-  const cliente = await res.json() as Cliente;
+  if (cliente.conta) {
+    const extratosResponse = await  apiClient.get(`/contas/${cliente.conta}/extrato`)
+    if (!extratosResponse.ok) {
+      throw new Response("Erro ao carregar movimentações", { status: extratosResponse.status });
+    }
+    const extratoResponse = await extratosResponse.json() as Extrato
+    extrato = extratoResponse
+  }
 
-  return { cliente }
+  return { cliente, extrato }
 }
 
 export default function Dashboard( { loaderData } : Route.ComponentProps ) {
   const { auth } = useAuth()
-  const { cliente } = loaderData
+  const { cliente, extrato } = loaderData
   return (
     <div>
       <AppBreadcrumb
@@ -54,12 +62,20 @@ export default function Dashboard( { loaderData } : Route.ComponentProps ) {
         </div>
         <span className="text-xs">Bem-vindo ao seu painel bancário.</span>
       </div>
-      <div className="flex justify-around py-5">
-        <Painel icon={Wallet} title="Saldo atual" content={getFormattedCurrency(parseFloat(cliente.saldo))} color=""/>
-        <Painel icon={Upload} title="Limite disponível" content={getFormattedCurrency(cliente.limite)} color=""/>
-        <Painel icon={Wallet} title="Conta" content={`Nº ${cliente.conta}`} color=""/>
-        <Painel icon={User} title="Gerente" content={cliente.gerente_nome} color=""/>{/*adicionar as cores dps*/}
+      <div className="py-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <Painel icon={Wallet} title="Saldo atual" content={getFormattedCurrency(parseFloat(cliente.saldo))} className="text-primary"/>
+        <Painel icon={Upload} title="Limite disponível" content={getFormattedCurrency(cliente.limite)} className="text-(--manager)"/>
+        <Painel icon={Wallet} title="Conta" content={`Nº ${cliente.conta}`} className="text-chart-1"/>
+        <Painel icon={User} title="Gerente" content={cliente.gerente_nome} className="text-chart-4"/>
       </div>
+      <div className="py-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+        <LinkRetro link="/cliente/perfil" icon={User} title="Perfil" className="text-chart-4"/>
+        <LinkRetro link="/cliente/deposito" icon={Download} title="Depositar" className="text-primary"/>
+        <LinkRetro link="/cliente/saque" icon={Upload} title="Sacar" className="text-chart-3"/>
+        <LinkRetro link="/cliente/transferencia" icon={ArrowLeftRight} title="Transferir" className="text-(--manager)"/>
+        <LinkRetro link="/cliente/extrato" icon={FileText} title="Extrato" className="text-chart-1"/>
+      </div>
+      <UltimasMovimentacoes extrato={extrato} />
     </div>
   )
 }

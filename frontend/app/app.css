@@ -152,6 +152,14 @@
       var(--color-primary) 0px 0px 10px,
       var(--color-primary) 0px 0px 20px;
   }
+
+}
+
+@utility pixel-border-glow {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 10px color-mix(in oklch, var(--color-primary), transparent 70%),
+    4px 4px 0 0 hsl(220 20% 5%);
 }
 
 /* CRT Monitor */
