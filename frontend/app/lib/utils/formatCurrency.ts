@@ -11,4 +11,10 @@ function getFormattedCurrency(value: number):string {
   );
 }
 
-export { getFormattedCurrency }
+function parseCurrency(masked: string): number {
+  const digits = masked.replace(/[R$,.]/g,"").trim();
+  if (!digits) return NaN;
+  return Number(digits) / 100;
+}
+
+export { getFormattedCurrency, parseCurrency }
