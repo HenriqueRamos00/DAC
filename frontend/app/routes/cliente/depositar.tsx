@@ -7,7 +7,11 @@ import { useState } from "react";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { getFormattedCurrency } from "~/lib/utils/formatCurrency";
+import { getFormattedCurrency, parseCurrency } from "~/lib/utils/formatCurrency";
+import { ArrowDownFromLine, Play } from "lucide-react";
+import { Label } from "~/components/ui/label";
+import { Form, redirect } from "react-router";
+import { getSessionAutenticada } from "~/services/auth.server";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -36,6 +40,23 @@ export async function loader({ request } : Route.LoaderArgs) {
   return { saldo }
 }
 
+export async function action({ request } : Route.ActionArgs) {
+    const formData = await request.formData();
+    const valor = formData.get("valor");
+    const valorStr = typeof valor === "string" ? valor : "";
+    if (valorStr === "") throw new Response("Valor Inválido", {status: 400})
+    const valorFloat = parseCurrency(valorStr)
+
+    const { apiClient, conta } = await getSessionAutenticada(request);
+    const res = await apiClient.post(`/contas/${conta}/depositar`,
+        {valor: valorFloat}
+    )
+
+    if (!res.ok) throw new Response("Operação Falhou", { status: res.status })
+
+    return redirect("/cliente")
+}
+
 type FormData = {
     valor: string;
 };
@@ -53,48 +74,51 @@ export default function Depositar( {loaderData} : Route.ComponentProps ) {
   const { saldo } = loaderData;
 
   return (
-    <div className="flex flex-col gap-6 uppercase font-mono font-bold text-xs">
-      <AppBreadcrumb
-          items={[
-              { label: "Retro-Bank", href: "/" },
-              { label: "Cliente", href: "/cliente" },
-              { label: "Depositooo" },
-          ]}
-      />
-      <h1 className="text-xl text-primary font-pixel uppercase">Depósito</h1>
+        <div className="flex flex-col gap-6">
+            <AppBreadcrumb
+                items={[
+                    { label: "Home", href: "/" },
+                    { label: "Dashboard", href: "/cliente" },
+                    { label: "Depósito" },
+                ]}
+            />
+
+            <h1 className="text-sm text-primary uppercase">DEPOSITAR</h1>
+
             <div className="flex flex-col bg-card border-3 border-border p-4 gap-4 max-w-3xl">
                 <div className="border-b border-border pb-4">
-                    <span className="text-primary font-pixel uppercase">↓ REALIZAR DEPÓSITO</span>
+                    <span className="text-primary text-xs uppercase flex items-center gap-2"><ArrowDownFromLine size={14} /> REALIZAR DEPOSITO</span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 bg-muted/30 border border-border p-4 flex flex-col gap-1">
-                        <span className="text-sm text-muted-foreground">Saldo</span>
-                        <div className="text-lg font-pixel text-primary">{getFormattedCurrency(saldo.saldo)}</div>
+                        <span className="text-xs text-muted-foreground">Saldo</span>
+                        <div className="text-lg text-primary">{getFormattedCurrency(saldo.saldo)}</div>
                     </div>
                 </div>
+                <Form method="post">
+                    <div className="flex flex-col gap-2">
+                        <Label className="text-muted-foreground uppercase font-mono text-xs">
+                            VALOR DO DEPÓSITO (R$)
+                        </Label>
+                        <Input
+                            ref={currencyRef}
+                            id="valor"
+                            name="valor"
+                            inputMode="numeric"
+                            placeholder="R$ 0,00"
+                            value={form.valor}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm text-muted-foreground uppercase">
-                        VALOR DO DEPÓSITO (R$)
-                    </label>
-                    <Input
-                        ref={currencyRef}
-                        id="valor"
-                        name="valor"
-                        inputMode="numeric"
-                        placeholder="R$ 0,00"
-                        value={form.valor}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 mt-2">
-                    <Button type="button" variant="confirm" className="flex-1">
-                        Depositar
-                    </Button>
-                </div>
+                    <div className="flex flex-col gap-4 mt-2">
+                        <Button type="submit" variant="confirm" className="font-mono text-sm">
+                            <Play className="size-2 fill-current" /> DEPOSITAR
+                        </Button>
+                    </div>
+                </Form>
             </div>
-    </div>
+        </div>
   )
 }
