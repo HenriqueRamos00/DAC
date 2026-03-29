@@ -38,7 +38,7 @@ export function TabelaClientes({
             variant="deny"
             className="h-10 min-w-24 px-3 sm:w-auto" 
             onClick={() => onRejeitar?.(row.original)}>
-            Rejeitar
+            Recusar
           </Button>
         </div>
       ),

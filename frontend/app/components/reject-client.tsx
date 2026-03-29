@@ -75,7 +75,7 @@ export function DialogRejeitarCliente({
                 onClick={confirmar}
                 disabled={!motivo.trim() || isLoading}
             >
-                Rejeitar
+                Recusar
             </Button>
             </div>
         </DialogContent>
