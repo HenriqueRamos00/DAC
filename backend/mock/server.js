@@ -59,6 +59,10 @@ function getContaByNumero(numero) {
   return getDb().get("contas").find({ numero }).value();
 }
 
+function getContaByClienteCpf(clienteCpf) {
+  return getDb().get("contas").find({ clienteCpf }).value();
+}
+
 function getClienteByCpf(cpf) {
   return getDb().get("clientes").find({ cpf }).value();
 }
@@ -74,8 +78,23 @@ function buildUsuario(user) {
   return getGerenteByCpf(user.cpf);
 }
 
+function calcularLimiteBase(salario) {
+  return salario >= 2000 ? salario / 2 : 0;
+}
+
+function calcularNovoLimite(salario, saldoAtual) {
+  const limiteBase = calcularLimiteBase(salario);
+
+  if (saldoAtual < 0) {
+    const saldoDevedor = Math.abs(saldoAtual);
+    return Math.max(limiteBase, saldoDevedor);
+  }
+
+  return limiteBase;
+}
+
 function buildClienteCompleto(cliente) {
-  const conta = getDb().get("contas").find({ clienteCpf: cliente.cpf }).value();
+  const conta = getContaByClienteCpf(cliente.cpf);
   const gerente = conta ? getGerenteByCpf(conta.gerenteCpf) : null;
 
   return {
@@ -84,6 +103,7 @@ function buildClienteCompleto(cliente) {
     telefone: cliente.telefone,
     email: cliente.email,
     endereco: cliente.endereco,
+    CEP: cliente.CEP,
     cidade: cliente.cidade,
     estado: cliente.estado,
     salario: cliente.salario,
@@ -170,6 +190,54 @@ server.get("/clientes/:cpf", (req, res) => {
   }
 
   res.json(buildClienteCompleto(cliente));
+});
+
+// atualizar cliente por cpf
+server.put("/clientes/:cpf", (req, res) => {
+  const cliente = getClienteByCpf(req.params.cpf);
+  const conta = getContaByClienteCpf(req.params.cpf);
+
+  if (!cliente) {
+    return res.status(404).json({ message: "Usuário não encontrado" });
+  }
+
+  const novoSalario = Number(req.body.salario ?? cliente.salario);
+
+  const updates = {
+    nome: req.body.nome ?? cliente.nome,
+    email: req.body.email ?? cliente.email,
+    telefone: req.body.telefone ?? cliente.telefone,
+    endereco: req.body.endereco ?? cliente.endereco,
+    CEP: req.body.CEP ?? cliente.CEP,
+    cidade: req.body.cidade ?? cliente.cidade,
+    estado: req.body.estado ?? cliente.estado,
+    salario: novoSalario,
+  };
+
+  getDb().get("clientes").find({ cpf: cliente.cpf }).assign(updates).write();
+
+  if (conta) {
+    getDb()
+      .get("contas")
+      .find({ clienteCpf: cliente.cpf })
+      .assign({
+        limite: calcularNovoLimite(novoSalario, conta.saldo),
+      })
+      .write();
+  }
+
+  getDb()
+    .get("auth")
+    .find({ cpf: cliente.cpf })
+    .assign({
+      nome: updates.nome,
+      email: updates.email,
+    })
+    .write();
+
+  const clienteAtualizado = getClienteByCpf(cliente.cpf);
+
+  res.json(buildClienteCompleto(clienteAtualizado));
 });
 
 // aprovar cliente
