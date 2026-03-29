@@ -121,6 +121,63 @@
       "estado": "PR"
     }
   ],
+  "clientes_para_aprov": [
+    {
+      "cpf": "25346789123",
+      "nome": "Marcos Vinícius",
+      "email": "cli6@bantads.com.br",
+      "telefone": "(41) 99999-6666",
+      "salario": 2200,
+      "endereco": "Rua F, 600",
+      "CEP": "80000005",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    },
+    {
+      "cpf": "36457891234",
+      "nome": "Fernanda Alves",
+      "email": "cli7@bantads.com.br",
+      "telefone": "(41) 99999-7777",
+      "salario": 3100,
+      "endereco": "Rua G, 700",
+      "CEP": "80000006",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    },
+    {
+      "cpf": "47568912345",
+      "nome": "Lucas Pereira",
+      "email": "cli8@bantads.com.br",
+      "telefone": "(41) 99999-8888",
+      "salario": 2800,
+      "endereco": "Rua H, 800",
+      "CEP": "80000007",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    },
+    {
+      "cpf": "58679123456",
+      "nome": "Juliana Rocha",
+      "email": "cli9@bantads.com.br",
+      "telefone": "(41) 99999-9999",
+      "salario": 1950,
+      "endereco": "Rua I, 900",
+      "CEP": "80000008",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    },
+    {
+      "cpf": "69781234567",
+      "nome": "Rafael Mendes",
+      "email": "cli10@bantads.com.br",
+      "telefone": "(41) 98888-1010",
+      "salario": 2600,
+      "endereco": "Rua J, 1000",
+      "CEP": "80000009",
+      "cidade": "Curitiba",
+      "estado": "PR"
+    }
+  ],
   "gerentes": [
     {
       "cpf": "98574307084",

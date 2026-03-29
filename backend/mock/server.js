@@ -165,7 +165,7 @@ server.use(authMiddleware);
 // listar clientes
 server.get("/clientes", (req, res) => {
   const filtro = req.query.filtro;
-  const clientes = getDb().get("clientes").value();
+  let clientes = getDb().get("clientes").value();
 
   if (filtro === "melhores_clientes") {
     const melhores = clientes
@@ -174,6 +174,8 @@ server.get("/clientes", (req, res) => {
       .slice(0, 3);
 
     return res.json(melhores);
+  } else if (filtro == "para_aprovar") {
+    clientes = getDb().get("clientes_para_aprov").value();
   }
 
   return res.json(clientes.map(buildClienteCompleto));
@@ -236,6 +238,40 @@ server.put("/clientes/:cpf", (req, res) => {
   const clienteAtualizado = getClienteByCpf(cliente.cpf);
 
   res.json(buildClienteCompleto(clienteAtualizado));
+});
+
+// aprovar cliente
+server.post("/clientes/:cpf/aprovar", (req, res) => {
+  const pendentes = getDb().get("clientes_para_aprov");
+  const cliente = pendentes.find({ cpf: req.params.cpf }).value();
+
+  if (!cliente) {
+    return res.status(404).json({ message: "Usuário não encontrado" });
+  }
+
+  pendentes.remove({ cpf: req.params.cpf }).write();
+
+  return res.status(200).json({
+    message: "Cliente aprovado e removido da fila de aprovação",
+    cliente,
+  });
+});
+
+// rejeitar cliente
+server.post("/clientes/:cpf/rejeitar", (req, res) => {
+  const pendentes = getDb().get("clientes_para_aprov");
+  const cliente = pendentes.find({ cpf: req.params.cpf }).value();
+
+  if (!cliente) {
+    return res.status(404).json({ message: "Usuário não encontrado" });
+  }
+
+  pendentes.remove({ cpf: req.params.cpf }).write();
+
+  return res.status(200).json({
+    message: "Cliente rejeitado e removido da fila de aprovação",
+    cliente,
+  });
 });
 
 // saldo
