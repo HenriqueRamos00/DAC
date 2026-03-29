@@ -12,6 +12,8 @@ export default [
     route("/cliente/saque", "routes/cliente/sacar.tsx"),
     route("/cliente/transferencia", "routes/cliente/transferir.tsx"),
     route("/cliente/extrato", "routes/cliente/extrato.tsx"),
+    route("/gerente", "routes/gerente/dashboard.tsx"),
+    route("/admin", "routes/admin/dashboard.tsx"),
   ])
 ] satisfies RouteConfig;
 

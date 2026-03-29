@@ -3,23 +3,22 @@ import { SidebarProvider } from "~/components/ui/sidebar";
 import { Outlet } from "react-router";
 import type { Route } from "./+types/app-layout";
 import AppNav from "~/components/app-nav";
+import { useAuth } from "~/components/auth-provider";
+import { roleMapping } from "~/auth/permissions";
+import { enforcePermissions } from "~/auth/guard-server";
 
-/* export async function loader({ request, context }: Route.LoaderArgs) {
-  initSessionStorage(context.cloudflare.env.SESSION_SECRET);
-  const auth = await enforcePermissions(request);
-  return { role: auth?.role ?? null };
-} */
-
-export async function loader({ request, context }: Route.LoaderArgs) {
-  await new Promise<void>((resolve) => setTimeout(resolve, 500));
-  // TODO: remover quando login estiver pronto
-  return { role: "cliente" as const }; // troca pra "cliente" ou "gerente" ou "admin" pra testar
+export async function loader({ request }: Route.LoaderArgs) {
+  await enforcePermissions(request);
+  return null;
 }
 
-export default function Layout({ loaderData }: Route.ComponentProps) {
+export default function Layout() {
+  const { auth } = useAuth();
+  const role = roleMapping[auth.tipo ?? ""] ?? null;
+
   return (
     <SidebarProvider>
-      <AppSidebar role={loaderData.role} />
+      <AppSidebar role={role} />
       <div className="flex flex-col flex-1">
         <AppNav />
         <main className="flex-1 p-10 md:px-8 md:py-6">

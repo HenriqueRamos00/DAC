@@ -3,6 +3,7 @@ import { createCookieSessionStorage } from "react-router";
 
 export interface SessionBase {
   token: string;
+  tipo: "CLIENTE" | "GERENTE" | "ADMINISTRADOR";
   nome: string;
   email: string;
   cpf: string;

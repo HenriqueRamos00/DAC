@@ -2,7 +2,7 @@ import type { Session } from "react-router"
 
 export type AuthUser = {
     token: string | null
-    tipo: "CLIENTE" | "GERENTE" | "ADMIN" | null
+    tipo: "CLIENTE" | "GERENTE" | "ADMINISTRADOR" | null
     nome: string | null
     email: string | null
     cpf: string | null

@@ -52,7 +52,7 @@ const sidebarItems = {
       { label: "Top 3 Clientes", path: "/gerente/top3", icon: Trophy },
     ],
   },
-  admin: {
+  administrador: {
     label: "Administrador",
     color: "text-[var(--admin)]",
     items: [

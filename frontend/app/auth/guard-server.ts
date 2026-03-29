@@ -1,43 +1,31 @@
 import { redirect } from "react-router";
-import { getRole, getToken } from "./session-server";
-import { getAllowedRoles, type AppRole } from "./permissions";
-
-interface AuthContext {
-  role: AppRole;
-  token: string;
-}
+import { getSession } from "./sessions.server";
+import { getAllowedRoles, roleMapping } from "./permissions";
+import { sanitizeAuth } from "~/models/auth/AuthUser";
 
 /**
- * Verifica permissões e retorna o contexto de auth pra rotas protegidas.
+ * Verifica se o usuário tem permissão para acessar a rota atual.
  *
- * - Rota pública -> retorna undefined (sem exigência de login)
- * - Rota protegida sem sessão -> redireciona pro /login
- * - Rota protegida com role errada -> redireciona pro dashboard da role do usuário
- * - Rota protegida com role correta -> retorna { role, token }
- *
- * O token retornado pode ser usado nos loaders pra chamar o Spring:
- * fetch(url, { headers: { Authorization: `Bearer ${auth.token}` } })
+ * - Sem sessão -> redireciona pro /login
+ * - Role errada -> redireciona pro dashboard da role do usuário
+ * - Role correta -> passa
  */
-export async function enforcePermissions(request: Request): Promise<AuthContext | undefined> {
+export async function enforcePermissions(request: Request) {
   const url = new URL(request.url);
   const allowed = getAllowedRoles(url.pathname);
 
-  // rota pública - não exige auth
-  if (!allowed) return undefined;
+  if (!allowed) return;
 
-  const [role, token] = await Promise.all([
-    getRole(request),
-    getToken(request),
-  ]);
+  const session = await getSession(request.headers.get("Cookie"));
+  const auth = sanitizeAuth(session);
 
-  // TODO: substituir por `throw redirect("/login")` quando a rota estiver implementada
-  if (!role || !token) {
-    return undefined;
+  if (!auth.token || !auth.tipo) {
+    throw redirect("/login");
   }
 
-  if (!allowed.includes(role)) {
-    throw redirect(`/${role}`);
-  }
+  const role = roleMapping[auth.tipo];
 
-  return { role, token };
+  if (!role || !allowed.includes(role)) {
+    throw redirect(`/${role ?? "/"}`);
+  }
 }
