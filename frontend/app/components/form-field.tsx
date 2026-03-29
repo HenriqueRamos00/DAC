@@ -13,7 +13,9 @@ type FormFieldProps = {
   className?: string;
   description?: React.ReactNode;
   error?: string;
+  htmlFor?: string;
   label: React.ReactNode;
+  required?: boolean;
 };
 
 function FormField({
@@ -21,11 +23,16 @@ function FormField({
   className,
   description,
   error,
+  htmlFor,
   label,
+  required = false,
 }: FormFieldProps) {
   return (
     <Field data-invalid={Boolean(error) || undefined} className={className}>
-      <FieldLabel >{label}</FieldLabel>
+      <FieldLabel htmlFor={htmlFor}>
+        {label}
+        {required ? " *" : ""}
+      </FieldLabel>
 
       <FieldContent>
         {children}
