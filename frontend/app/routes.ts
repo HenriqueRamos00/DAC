@@ -13,6 +13,7 @@ export default [
     route("/cliente/transferencia", "routes/cliente/transferir.tsx"),
     route("/cliente/extrato", "routes/cliente/extrato.tsx"),
     route("/gerente", "routes/gerente/dashboard.tsx"),
+    route("/gerente/consultar", "routes/gerente/consultar-cliente.tsx"),
     route("/admin", "routes/admin/dashboard.tsx"),
   ])
 ] satisfies RouteConfig;
