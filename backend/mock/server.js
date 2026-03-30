@@ -162,6 +162,17 @@ server.post("/logout", authMiddleware, (req, res) => {
 
 server.use(authMiddleware);
 
+// listar clientes de um gerente
+server.get("/gerentes/:cpf/clientes", (req, res) => {
+  const gerenteCpf = req.params.cpf;
+  const contas = getDb().get("contas").filter({ gerenteCpf }).value();
+  const clientes = contas
+    .map((conta) => getClienteByCpf(conta.clienteCpf))
+    .filter(Boolean)
+    .map(buildClienteCompleto);
+  res.json(clientes);
+});
+
 // listar clientes
 server.get("/clientes", (req, res) => {
   const filtro = req.query.filtro;

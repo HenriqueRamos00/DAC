@@ -2,10 +2,11 @@ import Painel from "~/components/app-painel";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { Search, Upload, User, Wallet } from "lucide-react";
 import type { Route } from "./+types/consultar-cliente";
-import { data, Form, useNavigation } from "react-router";
+import { data, Form, useNavigation, useSearchParams, useSubmit } from "react-router";
 import { FormField } from "~/components/form-field";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import { useEffect, useRef } from "react";
 import { getFormattedCurrency } from "~/lib/utils/formatCurrency";
 import UltimasMovimentacoes from "~/components/app-ultimas-movimentacoes";
 import { useCpfMask } from "~/lib/pipe/cpf-mask";
@@ -104,12 +105,26 @@ export default function Consultar({ actionData }: Route.ComponentProps) {
   const cpfRef = useCpfMask();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const [searchParams] = useSearchParams();
+  const submit = useSubmit();
+  const formRef = useRef<HTMLFormElement>(null);
+  const autoSubmitted = useRef(false);
+
+  const cpfParam = searchParams.get("cpf");
+
+  useEffect(() => {
+    if (cpfParam && formRef.current && !autoSubmitted.current) {
+      autoSubmitted.current = true;
+      submit(formRef.current);
+    }
+  }, [cpfParam, submit]);
 
   return (
     <div>
       <AppBreadcrumb
         items={[
           { label: "Home", href: "/" },
+          { label: "Gerente", href: "/gerente" },
           { label: "Consultar cliente" },
         ]}
       />
@@ -118,7 +133,7 @@ export default function Consultar({ actionData }: Route.ComponentProps) {
       <div className="mt-2 flex gap-2">
         <div className="min-w-0 flex-1 bg-sidebar border-6 p-2">
           <h3 className="border-b py-2 text-primary">Buscar cliente por CPF</h3>
-          <Form method="post" className="py-5">
+          <Form method="post" ref={formRef} className="py-5">
             <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-2">
               <FormField label="CPF do cliente">
                 <Input
@@ -127,6 +142,7 @@ export default function Consultar({ actionData }: Route.ComponentProps) {
                   name="cpf"
                   inputMode="numeric"
                   placeholder="Digite o CPF"
+                  defaultValue={cpfParam ?? ""}
                 />
               </FormField>
               <Button
