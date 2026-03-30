@@ -110,6 +110,7 @@ export default function Consultar({ actionData }: Route.ComponentProps) {
       <AppBreadcrumb
         items={[
           { label: "Home", href: "/" },
+          { label: "Gerente", href: "/gerente" },
           { label: "Consultar cliente" },
         ]}
       />

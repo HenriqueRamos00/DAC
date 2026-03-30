@@ -2,7 +2,7 @@ import { getSessionAutenticada } from "~/services/auth.server";
 import type { Route } from "./+types/dashboard";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import type { Cliente } from "~/models/dto/Cliente";
-import { TabelaClientes } from "~/features/tabela-clientes/tabela-clientes";
+import { TabelaAprovacao } from "~/features/tabela-aprovacao/tabela-aprovacao";
 import { useEffect, useState } from "react";
 import { DialogAprovarCliente } from "~/components/approv-client";
 import { DialogRejeitarCliente } from "~/components/reject-client";
@@ -128,7 +128,7 @@ export default function GerenteDashboard({ loaderData } : Route.ComponentProps) 
         <div className="border-b border-border pb-4"> 
           <span className="text-primary text-xs uppercase flex items-center gap-2"> Solicitações de Cadastro </span> 
         </div> 
-            <TabelaClientes 
+            <TabelaAprovacao 
               clientes={clientes} 
               onAprovar={abrirAprovar} 
               onRejeitar={abrirRejeitar}
