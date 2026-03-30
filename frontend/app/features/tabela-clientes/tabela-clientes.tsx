@@ -52,7 +52,7 @@ const columns: ColumnDef<Cliente>[] = [
     id: "acoes",
     header: "Ações",
     cell: ({ row }) => (
-      <NavLink to={`/gerente/clientes/${row.original.cpf}`}>
+      <NavLink to={`/gerente/consultar?cpf=${row.original.cpf}`}>
         <Button variant="outline" size="sm">
           Detalhes
         </Button>

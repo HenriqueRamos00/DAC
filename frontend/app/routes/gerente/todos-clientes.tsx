@@ -54,7 +54,7 @@ export default function TodosClientes({ loaderData }: Route.ComponentProps) {
 
       <div className="flex flex-col bg-card border-3 border-border p-4 gap-4">
         <div className="border-b border-border pb-4">
-          <span className="text-primary uppercase font-pixel flex items-center gap-2">
+          <span className="text-primary text-xs uppercase flex items-center gap-2">
             <Users size={14} /> LISTA DE CLIENTES
           </span>
         </div>
@@ -69,7 +69,7 @@ export default function TodosClientes({ loaderData }: Route.ComponentProps) {
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         </div>
 
-        <TabelaClientes clientes={clientesFiltrados} pageSize={8} />
+        <TabelaClientes clientes={clientesFiltrados} pageSize={10} />
       </div>
     </div>
   );
