@@ -478,9 +478,26 @@ server.post("/contas/:numero/transferir", (req, res) => {
   });
 });
 
+// listar gerentes ordenados por nome
+server.get("/gerentes", (req, res) => {
+  const gerentes = getDb()
+    .get("gerentes")
+    .filter({ tipo: "GERENTE" })
+    .value()
+    .map((g) => ({
+      nome: g.nome,
+      cpf: g.cpf,
+      email: g.email,
+      telefone: g.telefone || null,
+    }))
+    .sort((a, b) => a.nome.localeCompare(b.nome));
+
+  res.json(gerentes);
+});
+
 // criar gerente
 server.post("/gerentes", (req, res) => {
-  const { cpf, nome, email, senha } = req.body;
+  const { cpf, nome, email, senha, telefone } = req.body;
 
   if (!cpf || !nome || !email || !senha) {
     return res.status(400).json({ message: "Campos obrigatórios: cpf, nome, email, senha" });
@@ -491,14 +508,68 @@ server.post("/gerentes", (req, res) => {
     return res.status(409).json({ message: "CPF já cadastrado" });
   }
 
-  const novoGerente = { cpf, nome, email, tipo: "GERENTE" };
+  const novoGerente = { cpf, nome, email, telefone: telefone || null, tipo: "GERENTE" };
   getDb().get("gerentes").push(novoGerente).write();
   getDb().get("auth").push({ cpf, email, senha, tipo: "GERENTE", nome }).write();
+
+  //atribuição automática de conta
+  const outrosGerentes = getDb()
+    .get("gerentes")
+    .filter({ tipo: "GERENTE" })
+    .value()
+    .filter((g) => g.cpf !== cpf);
+
+  if (outrosGerentes.length === 0) {
+    //primeiro gerente cadastrado — fica sem conta
+    return res.status(201).json(novoGerente);
+  }
+
+  //contar contas de cada gerente
+  const gerentesComContas = outrosGerentes.map((g) => {
+    const contas = getDb().get("contas").filter({ gerenteCpf: g.cpf }).value();
+    const totalSaldoPositivo = contas
+      .filter((c) => c.saldo > 0)
+      .reduce((sum, c) => sum + c.saldo, 0);
+    return { cpf: g.cpf, contas, quantidade: contas.length, totalSaldoPositivo };
+  });
+
+  const maxContas = Math.max(...gerentesComContas.map((g) => g.quantidade));
+
+  // se só tem mais um gerente e ele tem apenas 1 conta, novo gerente fica sem conta
+  if (outrosGerentes.length === 1 && maxContas <= 1) {
+    return res.status(201).json(novoGerente);
+  }
+
+  //filtrar gerentes que possuem mais contas (máximo)
+  const gerentesComMaisContas = gerentesComContas.filter((g) => g.quantidade === maxContas);
+
+  // entre os que tem mais contas, pega o que tem menor saldo positivo
+  gerentesComMaisContas.sort((a, b) => a.totalSaldoPositivo - b.totalSaldoPositivo);
+  const gerenteDoador = gerentesComMaisContas[0];
+
+  if (gerenteDoador.quantidade === 0) {
+    //nenhum gerente tem contas — novo gerente fica sem conta
+    return res.status(201).json(novoGerente);
+  }
+
+  // pegar uma conta do gerente que vai doar (menor saldo positivo)
+  const contasPositivas = gerenteDoador.contas
+    .filter((c) => c.saldo >= 0)
+    .sort((a, b) => a.saldo - b.saldo);
+  const contaParaTransferir = contasPositivas.length > 0
+    ? contasPositivas[0]
+    : gerenteDoador.contas[0];
+
+  getDb()
+    .get("contas")
+    .find({ numero: contaParaTransferir.numero })
+    .assign({ gerenteCpf: cpf })
+    .write();
 
   res.status(201).json(novoGerente);
 });
 
-// atualizar gerente
+// atualizar gerente (somente nome, email e senha)
 server.put("/gerentes/:cpf", (req, res) => {
   const gerente = getGerenteByCpf(req.params.cpf);
 
@@ -526,6 +597,46 @@ server.delete("/gerentes/:cpf", (req, res) => {
 
   if (!gerente || gerente.tipo !== "GERENTE") {
     return res.status(404).json({ message: "Gerente não encontrado" });
+  }
+
+  // não permitido remoção do último gerente
+  const todosGerentes = getDb()
+    .get("gerentes")
+    .filter({ tipo: "GERENTE" })
+    .value();
+
+  if (todosGerentes.length <= 1) {
+    return res.status(400).json({ message: "Não é possível remover o último gerente do banco" });
+  }
+
+  //contas do gerente que será removido
+  const contasDoGerente = getDb().get("contas").filter({ gerenteCpf: req.params.cpf }).value();
+
+  if (contasDoGerente.length > 0) {
+    //econtrar o gerente com menos contas (excluindo o que será removido)
+    const outrosGerentes = todosGerentes.filter((g) => g.cpf !== req.params.cpf);
+
+    const gerentesComQuantidade = outrosGerentes.map((g) => {
+      const quantidade = getDb().get("contas").filter({ gerenteCpf: g.cpf }).value().length;
+      return { cpf: g.cpf, quantidade };
+    });
+
+    gerentesComQuantidade.sort((a, b) => a.quantidade - b.quantidade);
+
+    // redistribuir contas para o gerente com menos contas
+    for (const conta of contasDoGerente) {
+      const quantidades = outrosGerentes.map((g) => ({
+        cpf: g.cpf,
+        quantidade: getDb().get("contas").filter({ gerenteCpf: g.cpf }).value().length,
+      }));
+      quantidades.sort((a, b) => a.quantidade - b.quantidade);
+
+      getDb()
+        .get("contas")
+        .find({ numero: conta.numero })
+        .assign({ gerenteCpf: quantidades[0].cpf })
+        .write();
+    }
   }
 
   getDb().get("gerentes").remove({ cpf: req.params.cpf }).write();
