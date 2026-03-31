@@ -17,6 +17,7 @@ export default [
     route("/gerente/consultar", "routes/gerente/consultar-cliente.tsx"),
     route("/gerente/top3", "routes/gerente/top3.tsx"),
     route("/admin", "routes/admin/dashboard.tsx"),
+    route("/admin/gerentes/novo", "routes/admin/adicionar-gerente.tsx"),
   ])
 ] satisfies RouteConfig;
 
