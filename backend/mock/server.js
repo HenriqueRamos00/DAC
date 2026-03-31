@@ -151,7 +151,7 @@ server.post("/login", (req, res) => {
 });
 
 // logout
-server.post("/logout", authMiddleware, (req, res) => {
+server.post("/logout", authMiddleware,(req, res) => {
   res.json({
     cpf: req.user.sub,
     nome: "Logout efetuado",
@@ -163,7 +163,7 @@ server.post("/logout", authMiddleware, (req, res) => {
 server.use(authMiddleware);
 
 // listar gerentes com resumo de clientes e saldos
-server.get("/gerentes", (req, res) => {
+server.get("/admin/dashboard", (req, res) => {
   const gerentes = getDb()
     .get("gerentes")
     .filter({ tipo: "GERENTE" })
@@ -476,40 +476,6 @@ server.post("/contas/:numero/transferir", (req, res) => {
     saldo: novoSaldoOrigem,
     valor
   });
-});
-
-// admin dashboard - stats por gerente
-server.get("/admin/dashboard", (req, res) => {
-  const gerentes = getDb().get("gerentes").filter({ tipo: "GERENTE" }).value();
-
-  const stats = gerentes.map((gerente) => {
-    const contas = getDb().get("contas").filter({ gerenteCpf: gerente.cpf }).value();
-
-    const totalSaldoPositivo = contas
-      .filter((c) => c.saldo > 0)
-      .reduce((sum, c) => sum + c.saldo, 0);
-    const totalSaldoNegativo = contas
-      .filter((c) => c.saldo < 0)
-      .reduce((sum, c) => sum + c.saldo, 0);
-
-    return {
-      cpf: gerente.cpf,
-      nome: gerente.nome,
-      email: gerente.email,
-      quantidadeClientes: contas.length,
-      totalSaldoPositivo,
-      totalSaldoNegativo,
-    };
-  });
-
-  stats.sort((a, b) => b.totalSaldoPositivo - a.totalSaldoPositivo);
-  res.json(stats);
-});
-
-// listar gerentes (somente tipo GERENTE)
-server.get("/gerentes", (req, res) => {
-  const gerentes = getDb().get("gerentes").filter({ tipo: "GERENTE" }).value();
-  res.json(gerentes);
 });
 
 // criar gerente
