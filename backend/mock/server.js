@@ -151,7 +151,7 @@ server.post("/login", (req, res) => {
 });
 
 // logout
-server.post("/logout", authMiddleware, (req, res) => {
+server.post("/logout", authMiddleware,(req, res) => {
   res.json({
     cpf: req.user.sub,
     nome: "Logout efetuado",
@@ -161,6 +161,42 @@ server.post("/logout", authMiddleware, (req, res) => {
 });
 
 server.use(authMiddleware);
+
+// listar gerentes com resumo de clientes e saldos
+server.get("/admin/dashboard", (req, res) => {
+  const gerentes = getDb()
+    .get("gerentes")
+    .filter({ tipo: "GERENTE" })
+    .value();
+
+  const resumo = gerentes.map((gerente) => {
+    const contas = getDb().get("contas").filter({ gerenteCpf: gerente.cpf }).value();
+
+    let totalSaldoPositivo = 0;
+    let totalSaldoNegativo = 0;
+
+    for (const conta of contas) {
+      if (conta.saldo >= 0) {
+        totalSaldoPositivo += conta.saldo;
+      } else {
+        totalSaldoNegativo += conta.saldo;
+      }
+    }
+
+    return {
+      cpf: gerente.cpf,
+      nome: gerente.nome,
+      email: gerente.email,
+      quantidadeClientes: contas.length,
+      totalSaldoPositivo,
+      totalSaldoNegativo,
+    };
+  });
+
+  resumo.sort((a, b) => b.totalSaldoPositivo - a.totalSaldoPositivo);
+
+  res.json(resumo);
+});
 
 // listar clientes de um gerente
 server.get("/gerentes/:cpf/clientes", (req, res) => {
@@ -440,6 +476,62 @@ server.post("/contas/:numero/transferir", (req, res) => {
     saldo: novoSaldoOrigem,
     valor
   });
+});
+
+// criar gerente
+server.post("/gerentes", (req, res) => {
+  const { cpf, nome, email, senha } = req.body;
+
+  if (!cpf || !nome || !email || !senha) {
+    return res.status(400).json({ message: "Campos obrigatórios: cpf, nome, email, senha" });
+  }
+
+  const existe = getDb().get("gerentes").find({ cpf }).value();
+  if (existe) {
+    return res.status(409).json({ message: "CPF já cadastrado" });
+  }
+
+  const novoGerente = { cpf, nome, email, tipo: "GERENTE" };
+  getDb().get("gerentes").push(novoGerente).write();
+  getDb().get("auth").push({ cpf, email, senha, tipo: "GERENTE", nome }).write();
+
+  res.status(201).json(novoGerente);
+});
+
+// atualizar gerente
+server.put("/gerentes/:cpf", (req, res) => {
+  const gerente = getGerenteByCpf(req.params.cpf);
+
+  if (!gerente || gerente.tipo !== "GERENTE") {
+    return res.status(404).json({ message: "Gerente não encontrado" });
+  }
+
+  const updates = {
+    nome: req.body.nome ?? gerente.nome,
+    email: req.body.email ?? gerente.email,
+  };
+
+  getDb().get("gerentes").find({ cpf: req.params.cpf }).assign(updates).write();
+
+  const authUpdates = { nome: updates.nome, email: updates.email };
+  if (req.body.senha) authUpdates.senha = req.body.senha;
+  getDb().get("auth").find({ cpf: req.params.cpf }).assign(authUpdates).write();
+
+  res.json({ ...gerente, ...updates });
+});
+
+// excluir gerente
+server.delete("/gerentes/:cpf", (req, res) => {
+  const gerente = getGerenteByCpf(req.params.cpf);
+
+  if (!gerente || gerente.tipo !== "GERENTE") {
+    return res.status(404).json({ message: "Gerente não encontrado" });
+  }
+
+  getDb().get("gerentes").remove({ cpf: req.params.cpf }).write();
+  getDb().get("auth").remove({ cpf: req.params.cpf }).write();
+
+  res.json({ message: "Gerente excluído com sucesso" });
 });
 
 server.listen(4010, () => {
