@@ -198,6 +198,17 @@ server.get("/admin/dashboard", (req, res) => {
   res.json(resumo);
 });
 
+// listar gerentes
+server.get("/gerentes", (req, res) => {
+  const gerentes = getDb()
+    .get("gerentes")
+    .filter({ tipo: "GERENTE" })
+    .sortBy((gerente) => gerente.nome.toLowerCase())
+    .value();
+
+  res.json(gerentes);
+});
+
 // listar clientes de um gerente
 server.get("/gerentes/:cpf/clientes", (req, res) => {
   const gerenteCpf = req.params.cpf;
