@@ -57,7 +57,7 @@ const sidebarItems = {
     color: "text-[var(--admin)]",
     items: [
       { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
-      { label: "Relatório Clientes", path: "/admin/relatorio", icon: ClipboardList },
+      { label: "Relatório Clientes", path: "/admin/relatorio-clientes", icon: ClipboardList },
       { label: "Gerentes", path: "/admin/gerentes", icon: Users },
       { label: "Novo Gerente", path: "/admin/gerentes/novo", icon: UserPlus },
     ],
