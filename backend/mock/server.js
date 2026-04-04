@@ -209,6 +209,17 @@ server.get("/gerentes", (req, res) => {
   res.json(gerentes);
 });
 
+// gerente por cpf
+server.get("/gerentes/:cpf", (req, res) => {
+  const gerente = getGerenteByCpf(req.params.cpf);
+
+  if (!gerente || gerente.tipo !== "GERENTE") {
+    return res.status(404).json({ message: "Gerente não encontrado" });
+  }
+
+  res.json(gerente);
+});
+
 // listar clientes de um gerente
 server.get("/gerentes/:cpf/clientes", (req, res) => {
   const gerenteCpf = req.params.cpf;
@@ -491,10 +502,10 @@ server.post("/contas/:numero/transferir", (req, res) => {
 
 // criar gerente
 server.post("/gerentes", (req, res) => {
-  const { cpf, nome, email, senha } = req.body;
+  const { cpf, nome, email, telefone, senha } = req.body;
 
-  if (!cpf || !nome || !email || !senha) {
-    return res.status(400).json({ message: "Campos obrigatórios: cpf, nome, email, senha" });
+  if (!cpf || !nome || !email || !telefone || !senha) {
+    return res.status(400).json({ message: "Campos obrigatórios: cpf, nome, email, telefone, senha" });
   }
 
   const existe = getDb().get("gerentes").find({ cpf }).value();
@@ -502,7 +513,7 @@ server.post("/gerentes", (req, res) => {
     return res.status(409).json({ message: "CPF já cadastrado" });
   }
 
-  const novoGerente = { cpf, nome, email, tipo: "GERENTE" };
+  const novoGerente = { cpf, nome, email, telefone, tipo: "GERENTE" };
   getDb().get("gerentes").push(novoGerente).write();
   getDb().get("auth").push({ cpf, email, senha, tipo: "GERENTE", nome }).write();
 
@@ -520,6 +531,7 @@ server.put("/gerentes/:cpf", (req, res) => {
   const updates = {
     nome: req.body.nome ?? gerente.nome,
     email: req.body.email ?? gerente.email,
+    telefone: req.body.telefone ?? gerente.telefone,
   };
 
   getDb().get("gerentes").find({ cpf: req.params.cpf }).assign(updates).write();
@@ -528,7 +540,13 @@ server.put("/gerentes/:cpf", (req, res) => {
   if (req.body.senha) authUpdates.senha = req.body.senha;
   getDb().get("auth").find({ cpf: req.params.cpf }).assign(authUpdates).write();
 
-  res.json({ ...gerente, ...updates });
+  res.json({
+    cpf: gerente.cpf,
+    nome: updates.nome,
+    email: updates.email,
+    telefone: updates.telefone,
+    tipo: gerente.tipo,
+  });
 });
 
 // excluir gerente

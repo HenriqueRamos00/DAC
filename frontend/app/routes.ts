@@ -20,6 +20,6 @@ export default [
     route("/admin/relatorio-clientes", "routes/admin/relatorio-clientes.tsx"),
     route("/admin/gerentes", "routes/admin/listar-gerentes.tsx"),
     route("/admin/gerentes/novo", "routes/admin/adicionar-gerente.tsx"),
+    route("/admin/gerentes/:cpf", "routes/admin/editar-gerente.tsx"),
   ])
 ] satisfies RouteConfig;
-

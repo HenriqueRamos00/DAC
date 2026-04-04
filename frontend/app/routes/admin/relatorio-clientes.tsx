@@ -22,7 +22,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
 
     const clientes = (await response.json()) as Cliente[];
-    const clientesOrdenados = [...clientes].sort((a, b) =>
+    const clientesOrdenados = clientes.slice().sort((a, b) =>
         a.nome.localeCompare(b.nome, "pt-BR")
     );
 

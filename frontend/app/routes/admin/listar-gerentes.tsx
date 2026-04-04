@@ -22,7 +22,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         throw new Response("Erro ao carregar tela de gerentes", { status: response.status });
     }
     const gerentes = (await response.json()) as Gerente[];
-    const gerentesOrdenados = [...gerentes].sort((a,b) =>
+    const gerentesOrdenados = gerentes.slice().sort((a,b) =>
         a.nome.localeCompare(b.nome, "pt-BR")
     );
     return { gerentes: gerentesOrdenados };
