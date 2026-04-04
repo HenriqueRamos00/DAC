@@ -3,7 +3,7 @@ import { CrtMonitor } from "~/components/crt-monitor";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import type { Route } from "../+types/root";
+import type { Route } from "./+types/login";
 import { api } from "~/services/api.server";
 import { commitSession, getSession } from "~/auth/sessions.server";
 import type { Cliente } from "~/models/dto/Cliente";
@@ -101,6 +101,13 @@ export default function Login({actionData} : Route.ComponentProps) {
                 <label htmlFor="senha" className="text-sm font-medium">Senha</label>
                 <Input id="senha" name="senha" type="password" placeholder="••••••••" />
               </div>
+
+              {actionData?.error ? (
+                        <p id="saque-error" className="text-sm text-destructive">
+                            {actionData.error}
+                        </p>
+                    ) : null}
+                    
               <Button type="submit" className="w-full hover:bg-primary/80">Entrar</Button>
             </CardContent>
           </Form>

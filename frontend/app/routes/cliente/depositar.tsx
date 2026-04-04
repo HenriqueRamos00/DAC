@@ -10,8 +10,9 @@ import { Button } from "~/components/ui/button";
 import { getFormattedCurrency, parseCurrency } from "~/lib/utils/formatCurrency";
 import { ArrowDownFromLine, Play } from "lucide-react";
 import { Label } from "~/components/ui/label";
-import { Form, redirect } from "react-router";
+import { data, Form, redirect } from "react-router";
 import { getSessionAutenticada } from "~/services/auth.server";
+import { preventNegativeKey, preventNegativePaste } from "~/lib/utils/preventNegative";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -44,7 +45,9 @@ export async function action({ request } : Route.ActionArgs) {
     const formData = await request.formData();
     const valor = formData.get("valor");
     const valorStr = typeof valor === "string" ? valor : "";
-    if (valorStr === "") throw new Response("Valor Inválido", {status: 400})
+    if (valorStr === "") {
+        return data({error: "Valor inválido"}, {status: 400});
+    }
     const valorFloat = parseCurrency(valorStr)
 
     const { apiClient, conta } = await getSessionAutenticada(request);
@@ -52,7 +55,9 @@ export async function action({ request } : Route.ActionArgs) {
         {valor: valorFloat}
     )
 
-    if (!res.ok) throw new Response("Operação Falhou", { status: res.status })
+    if (!res.ok) {
+        return data({error: "Operação falhou"}, {status: res.status});
+    }
 
     return redirect("/cliente")
 }
@@ -65,7 +70,7 @@ const EMPTY_FORM: FormData = {
     valor: "",
 };
 
-export default function Depositar( {loaderData} : Route.ComponentProps ) {
+export default function Depositar( {loaderData, actionData} : Route.ComponentProps ) {
   const currencyRef = useCurrencyMask();
   const [form, setForm] = useState<FormData>({ valor: "" });
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -109,11 +114,23 @@ export default function Depositar( {loaderData} : Route.ComponentProps ) {
                             placeholder="R$ 0,00"
                             value={form.valor}
                             onChange={handleChange}
+                            onKeyDown={preventNegativeKey}
+                            onPaste={preventNegativePaste}
                         />
                     </div>
 
+                    {actionData?.error ? (
+                        <p id="saque-error" className="text-sm text-destructive">
+                            {actionData.error}
+                        </p>
+                    ) : null}
+
                     <div className="flex flex-col gap-4 mt-2">
-                        <Button type="submit" variant="confirm" className="font-mono text-sm">
+                        <Button 
+                            disabled={!form.valor.trim()}
+                            type="submit" 
+                            variant="confirm" 
+                            className="font-mono text-sm">
                             <Play className="size-2 fill-current" /> DEPOSITAR
                         </Button>
                     </div>

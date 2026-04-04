@@ -1,6 +1,6 @@
 import { defineStepper } from "@stepperize/react";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useCpfMask } from "~/lib/pipe/cpf-mask";
 import { useCepMask } from "~/lib/pipe/cep-mask";
 import { usePhoneMask } from "~/lib/pipe/phone-mask";
@@ -162,6 +162,7 @@ function RegisterStepperContent({ initialForm }: { initialForm: FormData }) {
   const cepRef = useCepMask();
   const phoneRef = usePhoneMask();
   const currencyRef = useCurrencyMask();
+  const navigate = useNavigate();
 
 
   const [form, setForm] = useState<FormData>(initialForm);
@@ -550,23 +551,27 @@ function RegisterStepperContent({ initialForm }: { initialForm: FormData }) {
               </Button>
             )}
           />
-          <Stepper.Next
-            render={(props) => (
-              <Button
-                {...props}
-                type="button"
-                className="flex-1 hover:bg-primary/80"
-                {...(stepper.state.isLast && {
-                onClick: () => {
-                  toast.success("Conta criada com sucesso!");
-                  clearSavedState();
-                },
-              })}
-              >
-                {stepper.state.isLast ? "Criar conta" : "Próximo"}
-              </Button>
-            )}
-          />
+          {stepper.state.isLast ? (
+            <Button
+              type="button"
+              className="flex-1 hover:bg-primary/80"
+              onClick={() => {
+                toast.success("Conta criada com sucesso!");
+                clearSavedState();
+                navigate("/login", { viewTransition: true });
+              }}
+            >
+              Criar conta
+            </Button>
+          ) : (
+            <Stepper.Next
+              render={(props) => (
+                <Button {...props} type="button" className="flex-1 hover:bg-primary/80">
+                  Próximo
+                </Button>
+              )}
+            />
+          )}
         </Stepper.Actions>
       </CardContent>
 
