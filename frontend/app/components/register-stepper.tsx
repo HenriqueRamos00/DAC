@@ -89,7 +89,11 @@ const { Stepper, useStepper } = defineStepper(
 
 //Root: handles restore dialog + initial step
 
-export function RegisterStepper() {
+interface RegisterStepperProps {
+  onComplete?: () => void;
+}
+
+export function RegisterStepper({ onComplete }: RegisterStepperProps) {
   const [savedState, setSavedState] = useState<SavedState | null>(null);
   const [initialForm, setInitialForm] = useState<FormData>(EMPTY_FORM);
   const [initialStep, setInitialStep] = useState<StepId>("dados");
@@ -147,7 +151,7 @@ export function RegisterStepper() {
         </Card>
         ) : ready ? (
         <Stepper.Root initialStep={initialStep}>
-            <RegisterStepperContent initialForm={initialForm} />
+            <RegisterStepperContent initialForm={initialForm} onComplete={onComplete} />
         </Stepper.Root>
     ) : null}
     </>
@@ -156,7 +160,7 @@ export function RegisterStepper() {
 
 //Inner content: lifecycle, validation, CEP reveal
 
-function RegisterStepperContent({ initialForm }: { initialForm: FormData }) {
+function RegisterStepperContent({ initialForm, onComplete }: { initialForm: FormData; onComplete?: () => void }) {
   const stepper = useStepper();
   const cpfRef = useCpfMask();
   const cepRef = useCepMask();
@@ -550,23 +554,31 @@ function RegisterStepperContent({ initialForm }: { initialForm: FormData }) {
               </Button>
             )}
           />
-          <Stepper.Next
-            render={(props) => (
-              <Button
-                {...props}
-                type="button"
-                className="flex-1 hover:bg-primary/80"
-                {...(stepper.state.isLast && {
-                onClick: () => {
-                  toast.success("Conta criada com sucesso!");
-                  clearSavedState();
-                },
-              })}
-              >
-                {stepper.state.isLast ? "Criar conta" : "Próximo"}
-              </Button>
-            )}
-          />
+          {stepper.state.isLast ? (
+            <Button
+              type="button"
+              className="flex-1 hover:bg-primary/80"
+              onClick={() => {
+                toast.success("Conta criada com sucesso!");
+                clearSavedState();
+                onComplete?.();
+              }}
+            >
+              Criar conta
+            </Button>
+          ) : (
+            <Stepper.Next
+              render={(props) => (
+                <Button
+                  {...props}
+                  type="button"
+                  className="flex-1 hover:bg-primary/80"
+                >
+                  Próximo
+                </Button>
+              )}
+            />
+          )}
         </Stepper.Actions>
       </CardContent>
 
