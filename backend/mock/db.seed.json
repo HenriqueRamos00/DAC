@@ -183,24 +183,28 @@
       "cpf": "98574307084",
       "nome": "Geniéve",
       "email": "ger1@bantads.com.br",
+      "telefone": "(41) 98888-1111",
       "tipo": "GERENTE"
     },
     {
       "cpf": "64065268052",
       "nome": "Godophredo",
       "email": "ger2@bantads.com.br",
+      "telefone": "(41) 98888-2222",
       "tipo": "GERENTE"
     },
     {
       "cpf": "23862179060",
       "nome": "Gyândula",
       "email": "ger3@bantads.com.br",
+      "telefone": "(41) 98888-3333",
       "tipo": "GERENTE"
     },
     {
       "cpf": "40501740066",
       "nome": "Adamântio",
       "email": "adm1@bantads.com.br",
+      "telefone": "(41) 98888-4444",
       "tipo": "ADMINISTRADOR"
     }
   ],
