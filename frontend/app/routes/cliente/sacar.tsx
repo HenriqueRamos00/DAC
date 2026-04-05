@@ -1,11 +1,16 @@
 import { Input } from "~/components/ui/input";
-import type { Route } from "./+types/dashboard";
+import type { Route } from "./+types/sacar";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { useCurrencyMask } from "~/lib/pipe/currency-mask";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { ArrowUpFromLine, Play } from "lucide-react"
+import { getSessionAutenticada } from "~/services/auth.server";
+import type { Cliente } from "~/models/dto/Cliente";
+import { getFormattedCurrency, parseCurrency } from "~/lib/utils/formatCurrency";
+import { data, Form, redirect } from "react-router";
+import { preventNegativeKey, preventNegativePaste } from "~/lib/utils/preventNegative";
 
 export function meta({}: Route.MetaArgs) {
     return [{ title: "Saque" }, { name: "description", content: "Tela de saque do cliente" }];
@@ -15,13 +20,48 @@ type FormData = {
     valor: string;
 };
 
-const dados = {
-    saldo: "R$ 8.742,50",
-    limite: "R$ 3.000,00",
-    disponivel: "R$ 11.742,50",
-};
+export async function loader({ request } : Route.LoaderArgs) {
+    const { apiClient, cpf } = await getSessionAutenticada(request);
+    const response = await apiClient.get(`/clientes/${cpf}`);
 
-export default function Saque() {
+    if (!response.ok) {
+        throw new Response("Erro ao carregar dados", { status: response.status });
+    }
+
+    const cliente = await response.json() as Cliente;
+
+    const saldoLimite = {
+        saldo: Number(cliente.saldo),
+        limite: cliente.limite,
+        disponivel: Number(cliente.saldo) + cliente.limite
+    }
+
+    return { saldoLimite };
+}
+
+export async function action({ request } : Route.ActionArgs) {
+    const formData = await request.formData();
+    const valor = formData.get("valor");
+    const valorStr = typeof valor === "string" ? valor : "";
+    if (valorStr === "") {
+        return data({error: "Valor inválido"}, {status: 400});
+    }
+    const valorFloat = parseCurrency(valorStr)
+
+    const { apiClient, conta } = await getSessionAutenticada(request);
+    const res = await apiClient.post(`/contas/${conta}/sacar`,
+        {valor: valorFloat}
+    );
+
+    if (!res.ok) {
+        return data({error: "Operação falhou"}, {status: res.status});
+    }
+
+    return redirect("/cliente");
+}
+
+export default function Saque( {loaderData, actionData} : Route.ComponentProps ) {
+    const { saldoLimite } = loaderData;
     const currencyRef = useCurrencyMask();
     const [form, setForm] = useState<FormData>({ valor: "" });
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -48,39 +88,52 @@ export default function Saque() {
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1 bg-muted/30 border border-border p-4 flex flex-col gap-1">
                         <span className="text-xs text-muted-foreground">Saldo</span>
-                        <div className="text-lg text-primary">{dados.saldo}</div>
+                        <div className="text-lg text-primary">{getFormattedCurrency(saldoLimite.saldo)}</div>
                     </div>
 
                     <div className="flex-1 bg-muted/30 border border-border p-4 flex flex-col gap-1">
                         <span className="text-xs text-muted-foreground">Limite</span>
-                        <div className="text-lg text-cyan-400">{dados.limite}</div>
+                        <div className="text-lg text-cyan-400">{getFormattedCurrency(saldoLimite.limite)}</div>
                     </div>
                 </div>
 
                 <div className="bg-blue-950/40 border border-blue-900/50 p-3 flex items-center">
-                    <span className="text-blue-400">Disponível para saque: {dados.disponivel}</span>
+                    <span className="text-blue-400">Disponível para saque: {getFormattedCurrency(saldoLimite.disponivel)}</span>
                 </div>
+                <Form method="post">
+                    <div className="flex flex-col gap-2">
+                        <Label className="text-muted-foreground uppercase font-mono text-xs">
+                            VALOR DO SAQUE (R$)
+                        </Label>
+                        <Input
+                            ref={currencyRef}
+                            id="valor"
+                            name="valor"
+                            inputMode="numeric"
+                            placeholder="R$ 0,00"
+                            value={form.valor}
+                            onChange={handleChange}
+                            onPaste={preventNegativePaste}
+                            onKeyDown={preventNegativeKey}
+                        />
+                    </div>
 
-                <div className="flex flex-col gap-2">
-                    <Label className="text-muted-foreground uppercase font-mono text-xs">
-                        VALOR DO SAQUE (R$)
-                    </Label>
-                    <Input
-                        ref={currencyRef}
-                        id="valor"
-                        name="valor"
-                        inputMode="numeric"
-                        placeholder="R$ 0,00"
-                        value={form.valor}
-                        onChange={handleChange}
-                    />
-                </div>
+                    {actionData?.error ? (
+                        <p id="saque-error" className="text-sm text-destructive">
+                            {actionData.error}
+                        </p>
+                    ) : null}
 
-                <div className="flex flex-col gap-4 mt-2">
-                    <Button type="button" variant="confirm" className="font-mono text-sm">
-                        <Play className="size-2 fill-current" /> SACAR
-                    </Button>
-                </div>
+                    <div className="flex flex-col gap-4 mt-2">
+                        <Button 
+                            type="submit" 
+                            disabled={!form.valor.trim()}
+                            variant="confirm" 
+                            className="font-mono text-sm">
+                            <Play className="size-2 fill-current" /> SACAR
+                        </Button>
+                    </div>
+                </Form>
             </div>
         </div>
     );

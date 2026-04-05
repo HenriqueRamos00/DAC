@@ -1,6 +1,6 @@
 import { defineStepper } from "@stepperize/react";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useCpfMask } from "~/lib/pipe/cpf-mask";
 import { useCepMask } from "~/lib/pipe/cep-mask";
 import { usePhoneMask } from "~/lib/pipe/phone-mask";
@@ -166,6 +166,7 @@ function RegisterStepperContent({ initialForm, onComplete }: { initialForm: Form
   const cepRef = useCepMask();
   const phoneRef = usePhoneMask();
   const currencyRef = useCurrencyMask();
+  const navigate = useNavigate();
 
 
   const [form, setForm] = useState<FormData>(initialForm);

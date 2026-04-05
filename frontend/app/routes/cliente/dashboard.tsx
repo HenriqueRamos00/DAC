@@ -48,6 +48,7 @@ export async function loader({request} : Route.LoaderArgs) {
 export default function Dashboard( { loaderData } : Route.ComponentProps ) {
   const { auth } = useAuth()
   const { cliente, extrato } = loaderData
+  const saldo = parseFloat(cliente.saldo);
   return (
     <div>
       <AppBreadcrumb
@@ -63,7 +64,7 @@ export default function Dashboard( { loaderData } : Route.ComponentProps ) {
         <span className="text-xs">Bem-vindo ao seu painel bancário.</span>
       </div>
       <div className="py-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <Painel icon={Wallet} title="Saldo atual" content={getFormattedCurrency(parseFloat(cliente.saldo))} className="text-primary"/>
+        <Painel icon={Wallet} title="Saldo atual" content={getFormattedCurrency(saldo)} className={saldo < 0 ? "text-red-500" : "text-primary"}/>
         <Painel icon={Upload} title="Limite disponível" content={getFormattedCurrency(cliente.limite)} className="text-(--manager)"/>
         <Painel icon={Wallet} title="Conta" content={`Nº ${cliente.conta}`} className="text-chart-1"/>
         <Painel icon={User} title="Gerente" content={cliente.gerente_nome} className="text-chart-4"/>
