@@ -69,7 +69,7 @@ function criarColunas(conta: string): ColumnDef<Movimentacao>[] {
         return (
           <div
             className={`text-right font-mono font-bold ${
-              entrada ? "text-info" : "text-destructive"
+              entrada ? "text-chart-1" : "text-destructive"
             }`}
           >
             {entrada ? "+" : "-"}
