@@ -33,3 +33,28 @@ chmod +x ./start.sh
 ```sh
 ./start.sh
 ```
+## Backend (database)
+
+Subir infraestrutura
+```sh
+docker compose up -d postgres-db mongo-db rabbitmq
+```
+
+Resetar bancos (re-seed)
+```sh
+docker compose down -v
+docker compose up -d postgres-db mongo-db rabbitmq
+```
+
+Verificar PostgreSQL
+```sh
+docker compose exec postgres-db psql -U postgres_user -d bantads
+```
+
+Verificar MongoDB
+```sh
+docker compose exec mongo-db mongosh bantads_auth
+```
+
+RabbitMQ UI
+http://localhost:15672 (bantads/bantads)
