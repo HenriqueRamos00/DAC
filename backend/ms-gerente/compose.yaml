@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=db_gerente'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=postgres_user'
+    ports:
+      - '5432'
+    volumes:
+      - ../databases/postgres/init:/docker-entrypoint-initdb.d:ro
+  rabbitmq:
+    image: 'rabbitmq:latest'
+    environment:
+      - 'RABBITMQ_DEFAULT_PASS=secret'
+      - 'RABBITMQ_DEFAULT_USER=myuser'
+    ports:
+      - '5672'

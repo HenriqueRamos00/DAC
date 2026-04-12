@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MsGerenteApplication<ms-gerente>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ufpr.bantads.ms_gerente.MsGerenteApplication",
+            "projectName": "ms-gerente",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
