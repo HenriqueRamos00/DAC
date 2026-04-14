@@ -1,0 +1,17 @@
+server:
+  port: 8082
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bantads?currentSchema=conta
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update 
+    show-sql: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
