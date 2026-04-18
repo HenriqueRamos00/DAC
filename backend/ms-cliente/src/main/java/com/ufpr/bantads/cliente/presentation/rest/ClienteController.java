@@ -14,6 +14,8 @@ import com.ufpr.bantads.cliente.application.usecase.GetClienteByCpfUseCase;
 import com.ufpr.bantads.cliente.application.usecase.ListAllClientesUseCase;
 import com.ufpr.bantads.cliente.application.usecase.ListClientesParaAprovarUseCase;
 
+import org.springframework.web.bind.annotation.RestController;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
