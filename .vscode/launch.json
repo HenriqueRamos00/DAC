@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ContaApplication<conta>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ufpr.bantads.conta.ContaApplication",
+            "projectName": "conta",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
