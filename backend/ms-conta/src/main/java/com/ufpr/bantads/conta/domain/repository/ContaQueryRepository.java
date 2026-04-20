@@ -9,10 +9,10 @@ import com.ufpr.bantads.conta.domain.model.entity.ContaQuery;
 
 public interface ContaQueryRepository extends JpaRepository<ContaQuery, Long> {
 
-    Optional<ContaQuery> findByNumero_conta(String numero_conta);
+    Optional<ContaQuery> findByNumeroConta(String numeroConta);
 
-    List<ContaQuery> findByCliente_cpf(String cliente_cpf);
+    List<ContaQuery> findByClienteCpf(String clienteCpf);
 
-    List<ContaQuery> findByGerente_cpf(String gerente_cpf);
+    List<ContaQuery> findByGerenteCpf(String gerenteCpf);
 
 }

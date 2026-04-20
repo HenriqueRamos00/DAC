@@ -27,10 +27,10 @@ public class ContaQuery {
     private Long id;
 
     @Column(name = "numero_conta", nullable = false, length = 20)
-    private String numero_conta;
+    private String numeroConta;
 
     @Column(name = "data_criacao", nullable = false)
-    private LocalDateTime data_criacao;
+    private LocalDateTime dataCriacao;
 
     @Column(name = "saldo", nullable = false, precision = 15, scale = 2)
     private BigDecimal saldo;
@@ -39,15 +39,15 @@ public class ContaQuery {
     private BigDecimal limite;
 
     @Column(name = "cliente_nome", nullable = false, length = 150)
-    private String cliente_nome;
+    private String clienteNome;
 
     @Column(name = "cliente_cpf", nullable = false, length = 11)
-    private String cliente_cpf;
+    private String clienteCpf;
 
     @Column(name = "gerente_cpf", nullable = false, length = 11)
-    private String gerente_cpf;
+    private String gerenteCpf;
 
     @Column(name = "gerente_nome", nullable = false, length = 150)
-    private String gerente_nome;
+    private String gerenteNome;
 
 }

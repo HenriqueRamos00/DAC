@@ -31,14 +31,14 @@ public class ContaCommand {
     private Long id;
 
     @Column(name = "cliente_cpf", nullable = false, length = 11)
-    private String cliente_cpf;
+    private String clienteCpf;
 
     @Column(name = "numero_conta", nullable = false, length = 20, unique = true)
-    private String numero_conta;
+    private String numeroConta;
 
     @CreationTimestamp
     @Column(name = "data_criacao", nullable = false, updatable = false)
-    private LocalDateTime data_criacao;
+    private LocalDateTime dataCriacao;
 
     @Column(name = "saldo", nullable = false, precision = 15, scale = 2)
     private BigDecimal saldo;
@@ -47,6 +47,6 @@ public class ContaCommand {
     private BigDecimal limite;
 
     @Column(name = "gerente_cpf", nullable = false, length = 11)
-    private String gerente_cpf;
+    private String gerenteCpf;
 
 }

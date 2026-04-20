@@ -8,8 +8,8 @@ import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
 
 public interface ContaCommandRepository extends JpaRepository<ContaCommand, Long> {
 
-    Optional<ContaCommand> findByNumero_conta(String numero_conta);
+    Optional<ContaCommand> findByNumeroConta(String numeroConta);
 
-    Optional<ContaCommand> findByCliente_cpf(String cliente_cpf);
+    Optional<ContaCommand> findByClienteCpf(String clienteCpf);
 
 }

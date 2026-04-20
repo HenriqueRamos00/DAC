@@ -37,7 +37,8 @@ CREATE TABLE conta_read.conta_view (
 );
 
 CREATE TABLE conta_read.movimentacao_view (
-    id                    BIGINT        PRIMARY KEY,
+    id                    BIGSERIAL     PRIMARY KEY,
+    event_id              VARCHAR(36)   NOT NULL UNIQUE,
     data_hora             TIMESTAMP     NOT NULL,
     tipo                  VARCHAR(15)   NOT NULL,
     valor                 DECIMAL(15,2) NOT NULL,

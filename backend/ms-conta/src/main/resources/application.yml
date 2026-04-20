@@ -20,3 +20,9 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_DEFAULT_USER:guest}
     password: ${RABBITMQ_DEFAULT_PASS:guest}
+
+cqrs:
+  rabbitmq:
+    exchange: conta.events
+    queue: conta.sync.queue
+    routing-key: conta.operacao.*
