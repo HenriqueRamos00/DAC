@@ -2,11 +2,11 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Spring Boot-MsGerenteApplication<ms-gerente>",
+            "name": "Spring Boot-ContaApplication<conta>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "mainClass": "com.ufpr.bantads.ms_gerente.MsGerenteApplication",
-            "projectName": "ms-gerente",
+            "mainClass": "com.ufpr.bantads.conta.ContaApplication",
+            "projectName": "conta",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }

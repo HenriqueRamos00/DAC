@@ -1,17 +1,28 @@
 server:
-  port: 8082
+  port: ${SERVER_PORT:8082}
 
 spring:
+  docker:
+    compose:
+      enabled: true
+      file: ../../docker-compose.yml
+      lifecycle-management: start-only
   datasource:
-    url: jdbc:postgresql://localhost:5432/bantads?currentSchema=conta
-    username: postgres
-    password: password
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:bantads}?currentSchema=${POSTGRES_SCHEMA:schema_conta}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:password}
   jpa:
     hibernate:
-      ddl-auto: update 
+      ddl-auto: update
     show-sql: true
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_DEFAULT_USER:guest}
+    password: ${RABBITMQ_DEFAULT_PASS:guest}
+
+cqrs:
+  rabbitmq:
+    exchange: conta.events
+    queue: conta.sync.queue
+    routing-key: conta.operacao.*
