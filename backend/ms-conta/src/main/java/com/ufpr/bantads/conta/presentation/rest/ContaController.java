@@ -2,14 +2,17 @@ package com.ufpr.bantads.conta.presentation.rest;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ufpr.bantads.conta.application.dto.request.TransferenciaRequest;
 import com.ufpr.bantads.conta.application.dto.request.ValorRequest;
 import com.ufpr.bantads.conta.application.dto.response.DepositoSaqueResponse;
 import com.ufpr.bantads.conta.application.dto.response.ExtratoResponse;
 import com.ufpr.bantads.conta.application.dto.response.SaldoResponse;
+import com.ufpr.bantads.conta.application.dto.response.TransferenciaResponse;
 import com.ufpr.bantads.conta.application.usecase.DepositarUseCase;
 import com.ufpr.bantads.conta.application.usecase.GetExtratoUseCase;
 import com.ufpr.bantads.conta.application.usecase.GetSaldoUseCase;
 import com.ufpr.bantads.conta.application.usecase.SacarUseCase;
+import com.ufpr.bantads.conta.application.usecase.TransferenciaUseCase;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +31,7 @@ public class ContaController {
     private final GetExtratoUseCase getExtratoUseCase;
     private final DepositarUseCase depositarUseCase;
     private final SacarUseCase sacarUseCase;
+    private final TransferenciaUseCase transferenciaUseCase;
 
     @GetMapping("/contas/{conta}/saldo")
     public ResponseEntity<SaldoResponse> getSaldo(@PathVariable String conta) {
@@ -67,5 +71,19 @@ public class ContaController {
         return ResponseEntity.ok(depositoResponse);
     }
     
-    
+    @PostMapping("/contas/{conta}/transferir")
+    public ResponseEntity<TransferenciaResponse> transferir(
+        @PathVariable String contaDestino,
+        @PathVariable String contaAtual,
+        @RequestBody ValorRequest request
+    ) {
+        if (request == null || request.valor() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        TransferenciaRequest req = new TransferenciaRequest(contaAtual, contaDestino, request.valor());
+
+        TransferenciaResponse transferenciaResponse = transferenciaUseCase.execute(req);
+        return ResponseEntity.ok(transferenciaResponse);
+    }
 }
