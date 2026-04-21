@@ -9,7 +9,8 @@ public record ClienteParaAprovarResponse(
     double salario,
     String endereco,
     String cidade,
-    String estado
+    String estado,
+    String status
 ) {
     public static ClienteParaAprovarResponse fromEntity(Cliente cliente) {
         var end = cliente.getEndereco();
@@ -24,7 +25,8 @@ public record ClienteParaAprovarResponse(
             cliente.getSalario().doubleValue(),
             enderecoStr,
             end != null ? end.getCidade() : "",
-            end != null ? end.getEstado() : ""
+            end != null ? end.getEstado() : "",
+            cliente.getStatus().toString()
         );
     }
 }
