@@ -9,6 +9,7 @@ import com.ufpr.bantads.conta.application.dto.response.SaldoResponse;
 import com.ufpr.bantads.conta.application.usecase.DepositarUseCase;
 import com.ufpr.bantads.conta.application.usecase.GetExtratoUseCase;
 import com.ufpr.bantads.conta.application.usecase.GetSaldoUseCase;
+import com.ufpr.bantads.conta.application.usecase.SacarUseCase;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +27,7 @@ public class ContaController {
     private final GetSaldoUseCase getSaldoUseCase;
     private final GetExtratoUseCase getExtratoUseCase;
     private final DepositarUseCase depositarUseCase;
+    private final SacarUseCase sacarUseCase;
 
     @GetMapping("/contas/{conta}/saldo")
     public ResponseEntity<SaldoResponse> getSaldo(@PathVariable String conta) {
@@ -51,5 +53,19 @@ public class ContaController {
         DepositoSaqueResponse depositoResponse = depositarUseCase.execute(conta, request.valor());
         return ResponseEntity.ok(depositoResponse);
     }
+
+    @PostMapping("/contas/{conta}/sacar")
+    public ResponseEntity<DepositoSaqueResponse> sacar(
+        @PathVariable String conta,
+        @RequestBody ValorRequest request
+    ) {
+        if (request == null || request.valor() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        DepositoSaqueResponse depositoResponse = sacarUseCase.execute(conta, request.valor());
+        return ResponseEntity.ok(depositoResponse);
+    }
+    
     
 }
