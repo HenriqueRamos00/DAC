@@ -8,6 +8,8 @@ Hoje ele cobre:
 - listagem de clientes pendentes para aprovação
 - aprovação local via HTTP
 - aprovação via RabbitMQ para uso pela saga
+- rejeição local via HTTP com motivo
+- rejeição via RabbitMQ para uso pela saga
 
 ## Requisitos
 
@@ -36,6 +38,10 @@ Principais variáveis usadas:
 - `SAGA_RABBITMQ_ROUTING_KEY_CLIENTE_APROVAR_COMMAND`
 - `SAGA_RABBITMQ_ROUTING_KEY_CLIENTE_APROVAR_SUCESSO`
 - `SAGA_RABBITMQ_ROUTING_KEY_CLIENTE_APROVAR_FALHA`
+- `SAGA_RABBITMQ_QUEUE_CLIENTE_REJEITAR_COMMAND`
+- `SAGA_RABBITMQ_ROUTING_KEY_CLIENTE_REJEITAR_COMMAND`
+- `SAGA_RABBITMQ_ROUTING_KEY_CLIENTE_REJEITAR_SUCESSO`
+- `SAGA_RABBITMQ_ROUTING_KEY_CLIENTE_REJEITAR_FALHA`
 
 ## Rodando localmente
 
@@ -131,6 +137,16 @@ Aprova um cliente pendente via HTTP.
 curl -X PATCH http://localhost:8082/clientes/12345678901/aprovar
 ```
 
+### `PATCH /clientes/{cpf}/rejeitar`
+
+Rejeita um cliente pendente via HTTP, exigindo um motivo.
+
+```bash
+curl -X PATCH http://localhost:8082/clientes/12345678901/rejeitar \
+  -H "Content-Type: application/json" \
+  -d '{"motivo":"Renda incompatível com a política do banco"}'
+```
+
 ## Aprovação via RabbitMQ
 
 O `ms-cliente` consome comandos da fila:
@@ -168,6 +184,55 @@ Payload de sucesso:
 
 Em caso de falha de negócio, publica:
 - routing key: `cliente.aprovacao.falhou`
+
+Payload de falha:
+
+```json
+{
+  "cpf": "12345678901",
+  "motivo": "Cliente nao encontrado para o CPF 12345678901"
+}
+```
+
+## Rejeição via RabbitMQ
+
+O `ms-cliente` também consome comandos da fila:
+
+```text
+cliente.rejeitar.command
+```
+
+Binding esperado:
+- exchange: `bantads.saga`
+- routing key: `cliente.rejeitar`
+
+Payload de entrada:
+
+```json
+{
+  "cpf": "12345678901",
+  "motivo": "Renda incompatível com a política do banco"
+}
+```
+
+Em caso de sucesso, o serviço publica:
+- routing key: `cliente.rejeitado`
+
+Payload de sucesso:
+
+```json
+{
+  "codigo": 1,
+  "cpf": "12345678901",
+  "email": "teste@bantads.com",
+  "status": "REJEITADO",
+  "motivoRejeicao": "Renda incompatível com a política do banco",
+  "dataReprovacao": "2026-04-25T20:10:00"
+}
+```
+
+Em caso de falha de negócio, publica:
+- routing key: `cliente.rejeicao.falhou`
 
 Payload de falha:
 
