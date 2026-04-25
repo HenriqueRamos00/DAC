@@ -21,7 +21,7 @@ public class AprovarClienteUseCase {
         return ClienteResponse.fromEntity(cliente);
     }
 
-    private Cliente executeAndReturnEntity(String cpf) {
+    public Cliente executeAndReturnEntity(String cpf) {
         var cliente = clienteRepository.findByCpf(cpf)
             .orElseThrow(() -> new ClienteNaoEncontradoException(cpf));
 
