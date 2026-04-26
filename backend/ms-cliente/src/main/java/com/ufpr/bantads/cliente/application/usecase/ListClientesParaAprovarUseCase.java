@@ -17,7 +17,7 @@ public class ListClientesParaAprovarUseCase {
     private final ClienteRepository clienteRepository;
 
     public List<ClienteParaAprovarResponse> execute() {
-        return clienteRepository.findByStatus(StatusCliente.PENDENTE)
+        return clienteRepository.findByStatusOrderByCreatedAtAsc(StatusCliente.PENDENTE)
             .stream()
             .map(ClienteParaAprovarResponse::fromEntity)
             .toList();
