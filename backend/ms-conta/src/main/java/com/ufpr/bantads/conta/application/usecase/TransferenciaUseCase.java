@@ -10,10 +10,10 @@ import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 import com.ufpr.bantads.conta.application.dto.request.TransferenciaRequest;
 import com.ufpr.bantads.conta.application.dto.response.TransferenciaResponse;
 import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
-import com.ufpr.bantads.conta.domain.model.entity.MovimentacaoCommand;
+import com.ufpr.bantads.conta.domain.model.entity.TransferenciaCommand;
 import com.ufpr.bantads.conta.domain.model.enums.TipoMovimentacao;
 import com.ufpr.bantads.conta.domain.repository.ContaCommandRepository;
-import com.ufpr.bantads.conta.domain.repository.MovimentacaoCommandRepository;
+import com.ufpr.bantads.conta.domain.repository.TransferenciaCommandRepository;
 import com.ufpr.bantads.conta.infrastructure.messaging.publisher.MovimentacaoEventPublisher;
 
 import lombok.RequiredArgsConstructor;
@@ -24,63 +24,55 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TransferenciaUseCase {
 
-    public final ContaCommandRepository contaCommandRepository;
+    private final ContaCommandRepository contaCommandRepository;
 
-    public final MovimentacaoCommandRepository movimentacaoCommandRepository;
+    private final TransferenciaCommandRepository transferenciaCommandRepository;
 
-    public final MovimentacaoEventPublisher movimentacaoEventPublisher;
+    private final MovimentacaoEventPublisher movimentacaoEventPublisher;
 
     @Transactional
-    public TransferenciaResponse execute(TransferenciaRequest req) {
+    public TransferenciaResponse execute(String numeroContaOrigem, String numeroContaDestino, Double valor) {
 
-        if (req.numeroContaOrigem().equals(req.numeroContaDestino())) {
-            throw new IllegalArgumentException("Não é possível transferir para a mesma conta");
+        if (numeroContaOrigem.equals(numeroContaDestino)) {
+             throw new IllegalArgumentException("Não é possível transferir para a mesma conta");
         }
 
-        ContaCommand contaOrigem = contaCommandRepository.findByNumeroConta(req.numeroContaOrigem())
+        ContaCommand contaOrigem = contaCommandRepository.findByNumeroConta(numeroContaOrigem)
                 .orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada"));
 
-        ContaCommand contaDestino = contaCommandRepository.findByNumeroConta(req.numeroContaDestino())
+        ContaCommand contaDestino = contaCommandRepository.findByNumeroConta(numeroContaDestino)
                 .orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada"));
 
         Double saldoOrigem = contaOrigem.getSaldo().doubleValue();
         Double limiteOrigem = contaOrigem.getLimite().doubleValue();
 
-        if ((saldoOrigem + limiteOrigem) < req.valor()) {
+        if ((saldoOrigem + limiteOrigem) < valor) {
             throw new IllegalArgumentException("Saldo insuficiente para transferência");
         }
 
-        Double novoSaldoOrigem = saldoOrigem - req.valor();
+        Double novoSaldoOrigem = saldoOrigem - valor;
         contaOrigem.setSaldo(BigDecimal.valueOf(novoSaldoOrigem));
         contaCommandRepository.save(contaOrigem);
 
         Double saldoDestino = contaDestino.getSaldo().doubleValue();
-        Double novoSaldoDestino = saldoDestino + req.valor();
+        Double novoSaldoDestino = saldoDestino + valor;
         contaDestino.setSaldo(BigDecimal.valueOf(novoSaldoDestino));
         contaCommandRepository.save(contaDestino);
 
-        MovimentacaoCommand movOrigem = MovimentacaoCommand.builder()
-                .contaId(contaOrigem.getId())
-                .tipo(TipoMovimentacao.TRANSFERENCIA)
-                .valor(BigDecimal.valueOf(req.valor()))
+        TransferenciaCommand transferencia = TransferenciaCommand.builder()
+                .contaOrigemId(contaOrigem.getId())
+                .contaDestinoId(contaDestino.getId())
+                .valor(BigDecimal.valueOf(valor))
                 .build();
 
-        movimentacaoCommandRepository.save(movOrigem);
-
-        MovimentacaoCommand movDestino = MovimentacaoCommand.builder()
-                .contaId(contaDestino.getId())
-                .tipo(TipoMovimentacao.TRANSFERENCIA)
-                .valor(BigDecimal.valueOf(req.valor()))
-                .build();
-
-        movimentacaoCommandRepository.save(movDestino);
+        transferenciaCommandRepository.save(transferencia);
 
         movimentacaoEventPublisher.publish(MovimentacaoEvent.builder()
                 .eventId(UUID.randomUUID().toString())
-                .movimentacaoId(movOrigem.getId())
+                .movimentacaoId(transferencia.getId())
                 .tipo(TipoMovimentacao.TRANSFERENCIA)
-                .valor(BigDecimal.valueOf(req.valor()))
-                .dataHora(movOrigem.getDataHora())
+                .valor(BigDecimal.valueOf(valor))
+                .dataHora(transferencia.getDataHora())
                 .numeroContaOrigem(contaOrigem.getNumeroConta())
                 .numeroContaDestino(contaDestino.getNumeroConta())
                 .novoSaldoContaOrigem(contaOrigem.getSaldo())
@@ -90,6 +82,6 @@ public class TransferenciaUseCase {
         return new TransferenciaResponse(
             contaOrigem.getNumeroConta(), 
             contaOrigem.getSaldo().doubleValue(), 
-            movOrigem.getDataHora().toString());
+            transferencia.getDataHora().toString());
     }
 }

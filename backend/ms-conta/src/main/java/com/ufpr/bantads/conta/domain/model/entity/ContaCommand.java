@@ -30,7 +30,7 @@ public class ContaCommand {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "cliente_cpf", nullable = false, length = 11)
+    @Column(name = "cliente_cpf", nullable = false, length = 11, unique = true)
     private String clienteCpf;
 
     @Column(name = "numero_conta", nullable = false, length = 20, unique = true)

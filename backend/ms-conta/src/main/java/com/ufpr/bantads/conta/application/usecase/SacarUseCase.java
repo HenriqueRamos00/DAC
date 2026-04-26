@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 import com.ufpr.bantads.conta.application.dto.response.DepositoSaqueResponse;
 import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
-import com.ufpr.bantads.conta.domain.model.entity.MovimentacaoCommand;
+import com.ufpr.bantads.conta.domain.model.entity.SaqueCommand;
 import com.ufpr.bantads.conta.domain.model.enums.TipoMovimentacao;
 import com.ufpr.bantads.conta.domain.repository.ContaCommandRepository;
-import com.ufpr.bantads.conta.domain.repository.MovimentacaoCommandRepository;
+import com.ufpr.bantads.conta.domain.repository.SaqueCommandRepository;
 import com.ufpr.bantads.conta.infrastructure.messaging.publisher.MovimentacaoEventPublisher;
 
 import lombok.RequiredArgsConstructor;
@@ -23,11 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SacarUseCase {
 
-    public final ContaCommandRepository contaCommandRepository;
+    private final ContaCommandRepository contaCommandRepository;
 
-    public final MovimentacaoCommandRepository movimentacaoCommandRepository;
+    private final SaqueCommandRepository saqueCommandRepository;
 
-    public final MovimentacaoEventPublisher movimentacaoEventPublisher;
+    private final MovimentacaoEventPublisher movimentacaoEventPublisher;
 
     @Transactional
     public DepositoSaqueResponse execute(String numeroConta, Double valor) {
@@ -46,27 +46,26 @@ public class SacarUseCase {
         conta.setSaldo(BigDecimal.valueOf(novoSaldo));
         contaCommandRepository.save(conta);
 
-        MovimentacaoCommand movimentacao = MovimentacaoCommand.builder()
+        SaqueCommand saque = SaqueCommand.builder()
                 .contaId(conta.getId())
-                .tipo(TipoMovimentacao.SAQUE)
                 .valor(BigDecimal.valueOf(valor))
                 .build();
 
-        movimentacaoCommandRepository.save(movimentacao);
+        saqueCommandRepository.save(saque);
 
         movimentacaoEventPublisher.publish(MovimentacaoEvent.builder()
                 .eventId(UUID.randomUUID().toString())
-                .movimentacaoId(movimentacao.getId())
-                .tipo(movimentacao.getTipo())
-                .valor(movimentacao.getValor())
-                .dataHora(movimentacao.getDataHora())
-                .numeroContaDestino(conta.getNumeroConta())
-                .novoSaldoContaDestino(conta.getSaldo())
+                .movimentacaoId(saque.getId())
+                .tipo(TipoMovimentacao.SAQUE)
+                .valor(saque.getValor())
+                .dataHora(saque.getDataHora())
+                .numeroContaOrigem(conta.getNumeroConta())
+                .novoSaldoContaOrigem(conta.getSaldo())
                 .build());
 
         return new DepositoSaqueResponse(
                 conta.getNumeroConta(),
                 conta.getSaldo().doubleValue(),
-                movimentacao.getDataHora().toString());
+                saque.getDataHora().toString());
     }
 }

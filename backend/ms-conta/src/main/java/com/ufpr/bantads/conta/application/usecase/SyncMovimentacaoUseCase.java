@@ -34,17 +34,65 @@ public class SyncMovimentacaoUseCase {
             case DEPOSITO:
                 sincronizarDeposito(event);
                 break;
-        
+            case SAQUE:
+                sincronizarSaque(event);
+                break;
+            case TRANSFERENCIA:
+                sincronoizarTransferencia(event);
+                break;
             default:
                 break;
         }
         
     }
 
-    private void sincronizarDeposito(MovimentacaoEvent event) {
-        ContaQuery conta = contaQueryRepository.findByNumeroConta(event.getNumeroContaDestino())
+    private void sincronoizarTransferencia(MovimentacaoEvent event) {
+        ContaQuery contaOrigem = contaQueryRepository.findByNumeroConta(event.getNumeroContaOrigem())
+            .orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada"));
+        contaOrigem.setSaldo(event.getNovoSaldoContaOrigem());
+        contaQueryRepository.save(contaOrigem);
+
+        ContaQuery contaDestino = contaQueryRepository.findByNumeroConta(event.getNumeroContaDestino())
+            .orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada"));
+        contaDestino.setSaldo(event.getNovoSaldoContaDestino());
+        contaQueryRepository.save(contaDestino);
+
+        MovimentacaoQuery movimentacao = MovimentacaoQuery.builder()
+            .eventId(event.getEventId())
+            .contaOrigemNumero(contaOrigem.getNumeroConta())
+            .clienteOrigemNome(contaOrigem.getClienteNome())
+            .contaDestinoNumero(contaDestino.getNumeroConta())
+            .clienteDestinoNome(contaDestino.getClienteNome())
+            .tipo(event.getTipo())
+            .valor(event.getValor())
+            .dataHora(event.getDataHora())
+            .build();
+        movimentacaoQueryRepository.save(movimentacao);
+    }
+
+    private void sincronizarSaque(MovimentacaoEvent event) {
+        ContaQuery conta = contaQueryRepository.findByNumeroConta(event.getNumeroContaOrigem())
             .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
-        conta.setSaldo(event.getNovoSaldoContaDestino());
+        conta.setSaldo(event.getNovoSaldoContaOrigem());
+        contaQueryRepository.save(conta);
+
+        MovimentacaoQuery movimentacao = MovimentacaoQuery.builder()
+            .eventId(event.getEventId())
+            .contaOrigemNumero(conta.getNumeroConta())
+            .clienteOrigemNome(conta.getClienteNome())
+            .contaDestinoNumero(null)
+            .clienteDestinoNome(null)
+            .tipo(event.getTipo())
+            .valor(event.getValor())
+            .dataHora(event.getDataHora())
+            .build();
+        movimentacaoQueryRepository.save(movimentacao);
+    }
+
+    private void sincronizarDeposito(MovimentacaoEvent event) {
+        ContaQuery conta = contaQueryRepository.findByNumeroConta(event.getNumeroContaOrigem())
+            .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+        conta.setSaldo(event.getNovoSaldoContaOrigem());
         contaQueryRepository.save(conta);
 
         MovimentacaoQuery movimentacao = MovimentacaoQuery.builder()

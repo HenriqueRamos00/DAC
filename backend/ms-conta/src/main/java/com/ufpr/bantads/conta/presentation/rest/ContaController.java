@@ -73,17 +73,14 @@ public class ContaController {
     
     @PostMapping("/contas/{conta}/transferir")
     public ResponseEntity<TransferenciaResponse> transferir(
-        @PathVariable String contaDestino,
-        @PathVariable String contaAtual,
-        @RequestBody ValorRequest request
+        @PathVariable String conta,
+        @RequestBody TransferenciaRequest request
     ) {
         if (request == null || request.valor() == null) {
             return ResponseEntity.badRequest().build();
         }
 
-        TransferenciaRequest req = new TransferenciaRequest(contaAtual, contaDestino, request.valor());
-
-        TransferenciaResponse transferenciaResponse = transferenciaUseCase.execute(req);
+        TransferenciaResponse transferenciaResponse = transferenciaUseCase.execute(conta, request.destino(), request.valor());
         return ResponseEntity.ok(transferenciaResponse);
     }
 }
