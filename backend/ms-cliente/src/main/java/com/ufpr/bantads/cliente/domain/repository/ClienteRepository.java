@@ -16,6 +16,10 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     List<Cliente> findByStatus(StatusCliente status);
 
+    List<Cliente> findByStatusOrderByNomeAsc(StatusCliente status);
+
+    List<Cliente> findByStatusOrderByCreatedAtAsc(StatusCliente status);
+
     boolean existsByCpf(String cpf);
 
     boolean existsByEmail(String email);

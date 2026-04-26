@@ -17,7 +17,7 @@ public class ListAllClientesUseCase {
     private final ClienteRepository clienteRepository;
 
     public List<ClienteResponse> execute() {
-        return clienteRepository.findByStatus(StatusCliente.APROVADO)
+        return clienteRepository.findByStatusOrderByNomeAsc(StatusCliente.APROVADO)
             .stream()
             .map(ClienteResponse::fromEntity)
             .toList();
