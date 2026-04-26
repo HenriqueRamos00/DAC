@@ -21,6 +21,7 @@ CREATE TABLE cliente (
     status          VARCHAR(20)     NOT NULL DEFAULT 'PENDENTE',   --PENDENTE, APROVADO, REJEITADO
     motivo_rejeicao TEXT,
     data_aprovacao  TIMESTAMP,
+    data_reprovacao TIMESTAMP,
     created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

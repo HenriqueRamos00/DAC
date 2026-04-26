@@ -2,17 +2,23 @@ package com.ufpr.bantads.cliente.presentation.rest;
 
 import java.util.List;
 
-import com.ufpr.bantads.cliente.application.dto.request.AutocadastroRequest;
+import com.ufpr.bantads.cliente.application.dto.request.CriarClientePendenteRequest;
+import com.ufpr.bantads.cliente.application.dto.request.RejeitarClienteRequest;
 import com.ufpr.bantads.cliente.application.dto.response.ClienteParaAprovarResponse;
 import com.ufpr.bantads.cliente.application.dto.response.ClienteResponse;
+import com.ufpr.bantads.cliente.application.dto.response.CriarClientePendenteResponse;
+import com.ufpr.bantads.cliente.application.usecase.AprovarClienteUseCase;
 import com.ufpr.bantads.cliente.application.usecase.CriarClientePendenteUseCase;
 import com.ufpr.bantads.cliente.application.usecase.GetClienteByCpfUseCase;
 import com.ufpr.bantads.cliente.application.usecase.ListAllClientesUseCase;
 import com.ufpr.bantads.cliente.application.usecase.ListClientesParaAprovarUseCase;
+import com.ufpr.bantads.cliente.application.usecase.RejeitarClienteUseCase;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,13 +33,9 @@ public class ClienteController {
     private final ListAllClientesUseCase listAllClientesUseCase;
     private final ListClientesParaAprovarUseCase listClientesParaAprovarUseCase;
     private final GetClienteByCpfUseCase getClienteByCpfUseCase;
+    private final AprovarClienteUseCase aprovarClienteUseCase;
+    private final RejeitarClienteUseCase rejeitarClienteUseCase;
 
-    //só para testes remover dps e deixar só via mensageria rabbitmq
-    @PostMapping("/clientes")
-    public ResponseEntity<?> autocadastro(@Valid @RequestBody AutocadastroRequest request) {
-        criarClientePendenteUseCase.execute(request);
-        return ResponseEntity.accepted().build();
-    }
 
     @GetMapping("/clientes")
     public ResponseEntity<?> getClientes(@RequestParam(required = false) String filtro) {
@@ -49,6 +51,31 @@ public class ClienteController {
     @GetMapping("/clientes/{cpf}")
     public ResponseEntity<ClienteResponse> getClienteByCpf(@PathVariable String cpf) {
         ClienteResponse cliente = getClienteByCpfUseCase.execute(cpf);
+        return ResponseEntity.ok(cliente);
+    }
+
+    @PostMapping("/clientes")
+    public ResponseEntity<CriarClientePendenteResponse> autocadastro(
+        @Valid @RequestBody CriarClientePendenteRequest request
+    ) {
+        var cliente = criarClientePendenteUseCase.execute(request);
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(CriarClientePendenteResponse.fromEntity(cliente));
+    }
+
+    @PatchMapping("/clientes/{cpf}/aprovar")
+    public ResponseEntity<ClienteResponse> aprovarCliente(@PathVariable String cpf) {
+        ClienteResponse cliente = aprovarClienteUseCase.execute(cpf);
+        return ResponseEntity.ok(cliente);
+    }
+
+    @PatchMapping("/clientes/{cpf}/rejeitar")
+    public ResponseEntity<ClienteResponse> rejeitarCliente(
+        @PathVariable String cpf,
+        @Valid @RequestBody RejeitarClienteRequest request
+    ) {
+        ClienteResponse cliente = rejeitarClienteUseCase.execute(cpf, request.motivo());
         return ResponseEntity.ok(cliente);
     }
 }

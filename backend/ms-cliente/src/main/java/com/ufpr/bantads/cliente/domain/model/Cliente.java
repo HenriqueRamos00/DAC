@@ -61,6 +61,9 @@ public class Cliente {
     @Column(name = "data_aprovacao")
     private LocalDateTime dataAprovacao;
 
+    @Column(name = "data_reprovacao")
+    private LocalDateTime dataReprovacao;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

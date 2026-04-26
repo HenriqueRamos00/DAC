@@ -1,6 +1,8 @@
 package com.ufpr.bantads.cliente.application.usecase;
 
-import com.ufpr.bantads.cliente.application.dto.request.AutocadastroRequest;
+import com.ufpr.bantads.cliente.application.dto.request.CriarClientePendenteRequest;
+import com.ufpr.bantads.cliente.domain.exception.EmailJaCadastradoException;
+import com.ufpr.bantads.cliente.domain.exception.TelefoneJaCadastradoException;
 import com.ufpr.bantads.cliente.domain.exception.CpfJaCadastradoException;
 import com.ufpr.bantads.cliente.domain.model.Cliente;
 import com.ufpr.bantads.cliente.domain.model.Endereco;
@@ -15,9 +17,15 @@ public class CriarClientePendenteUseCase {
 
     private final ClienteRepository repository;
 
-    public void execute(AutocadastroRequest request) {
+    public Cliente execute(CriarClientePendenteRequest request) {
         if (repository.existsByCpf(request.cpf())) {
             throw new CpfJaCadastradoException(request.cpf());
+        }
+        if (repository.existsByEmail(request.email())) {
+            throw new EmailJaCadastradoException(request.email());
+        }
+        if (repository.existsByTelefone(request.telefone())) {
+            throw new TelefoneJaCadastradoException(request.telefone());
         }
 
         Cliente cliente = new Cliente();
@@ -29,12 +37,10 @@ public class CriarClientePendenteUseCase {
         cliente.setEndereco(buildEndereco(request));
         cliente.setStatus(StatusCliente.PENDENTE);
 
-        repository.save(cliente);
-
-
+        return repository.save(cliente);
     }
 
-    private Endereco buildEndereco(AutocadastroRequest request) {
+    private Endereco buildEndereco(CriarClientePendenteRequest request) {
         Endereco endereco = new Endereco();
         endereco.setCep(request.cep());
         endereco.setLogradouro(request.logradouro());

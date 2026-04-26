@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.Locale;
 
-public record AutocadastroRequest(
+public record CriarClientePendenteRequest(
     Long id,
 
     @NotBlank(message = "CPF é obrigatório")
@@ -47,12 +47,12 @@ public record AutocadastroRequest(
     @NotBlank(message = "Número é obrigatório")
     String numero
 ) {
-    public AutocadastroRequest {
+    public CriarClientePendenteRequest {
         estado = estado == null ? null : estado.trim().toUpperCase(Locale.ROOT);
     }
 
-    public static AutocadastroRequest fromEntity(Cliente cliente) {
-        return new AutocadastroRequest(
+    public static CriarClientePendenteRequest fromEntity(Cliente cliente) {
+        return new CriarClientePendenteRequest(
             cliente.getId(),
             cliente.getCpf(),
             cliente.getNome(),
