@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.ufpr.bantads.auth.domain.model.enums.TipoUsuario;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +21,8 @@ public class Usuario {
     @Id
     private String id;
 
+    private String nome;
+
     @Indexed(unique = true)
     private String cpf;
 
@@ -27,5 +31,5 @@ public class Usuario {
 
     private String senha;
 
-    private String tipo;
+    private TipoUsuario tipoUsuario;
 }
