@@ -11,11 +11,6 @@ type ProxyRoute = {
 const proxyRoutes: ProxyRoute[] = [
   {
     upstream: process.env.AUTH_URL || 'http://localhost:8081',
-    prefix: '/api/auth',
-    rewritePrefix: '/',
-  },
-  {
-    upstream: process.env.AUTH_URL || 'http://localhost:8081',
     prefix: '/login',
     rewritePrefix: '/login',
   },
@@ -26,17 +21,17 @@ const proxyRoutes: ProxyRoute[] = [
   },
   {
     upstream: process.env.CONTA_URL || 'http://localhost:8083',
-    prefix: '/api/contas',
+    prefix: '/contas',
     rewritePrefix: '/contas',
   },
   {
     upstream: process.env.GERENTE_URL || 'http://localhost:8084',
-    prefix: '/api/gerentes',
+    prefix: '/gerentes',
     rewritePrefix: '/gerentes',
   },
   {
     upstream: process.env.ADMIN_URL || 'http://localhost:8085',
-    prefix: '/api/admin',
+    prefix: '/admin',
     rewritePrefix: '/admin',
   },
 ];
