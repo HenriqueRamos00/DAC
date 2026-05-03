@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import { registerCors } from './plugins/cors.ts';
 import { registerProxies } from './routes/proxy.ts';
 import { registerHealthCheck } from './routes/health.ts';
+import { registerRebootRoute } from './routes/reboot.ts';
 import { registerErrorHandler } from './hooks/error-handler.ts';
 
 const gateway = Fastify({
@@ -10,6 +11,7 @@ const gateway = Fastify({
 
 await registerCors(gateway);
 await registerProxies(gateway);
+registerRebootRoute(gateway);
 registerHealthCheck(gateway);
 registerErrorHandler(gateway);
 

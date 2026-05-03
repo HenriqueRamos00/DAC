@@ -102,6 +102,29 @@ services:
     networks:
       - bantads-network
 
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+    container_name: bantads-api-gateway
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      GATEWAY_PORT: 3000
+      CLIENTE_URL: http://ms-cliente:8082
+      AUTH_URL: http://ms-auth:8081
+      CONTA_URL: http://ms-conta:8083
+      GERENTE_URL: http://ms-gerente:8084
+      ADMIN_URL: http://ms-admin:8085
+    ports:
+      - "3000:3000"
+    depends_on:
+      ms-cliente:
+        condition: service_started
+      ms-auth:
+        condition: service_started
+    networks:
+      - bantads-network
+
 networks:
   bantads-network:
     driver: bridge
