@@ -1,6 +1,6 @@
 import { defineStepper } from "@stepperize/react";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useFetcher } from "react-router";
 import { useCpfMask } from "~/lib/pipe/cpf-mask";
 import { useCepMask } from "~/lib/pipe/cep-mask";
 import { usePhoneMask } from "~/lib/pipe/phone-mask";
@@ -93,6 +93,11 @@ interface RegisterStepperProps {
   onComplete?: () => void;
 }
 
+type CadastroActionData = {
+  ok: boolean;
+  error?: string;
+};
+
 export function RegisterStepper({ onComplete }: RegisterStepperProps) {
   const [savedState, setSavedState] = useState<SavedState | null>(null);
   const [initialForm, setInitialForm] = useState<FormData>(EMPTY_FORM);
@@ -166,10 +171,10 @@ function RegisterStepperContent({ initialForm, onComplete }: { initialForm: Form
   const cepRef = useCepMask();
   const phoneRef = usePhoneMask();
   const currencyRef = useCurrencyMask();
-  const navigate = useNavigate();
-
+  const fetcher = useFetcher<CadastroActionData>();
 
   const [form, setForm] = useState<FormData>(initialForm);
+  const isSubmitting = fetcher.state !== "idle";
 
   //CEP validity → reveal address fields
   const cepLimpo = form.cep.replace(/\D/g, "");
@@ -236,10 +241,31 @@ function RegisterStepperContent({ initialForm, onComplete }: { initialForm: Form
     return () => unsub();
   }, [stepper, form]);
 
+  useEffect(() => {
+    if (fetcher.state !== "idle" || !fetcher.data) {
+      return;
+    }
+
+    if (fetcher.data.ok) {
+      toast.success("Solicitação enviada com sucesso! Aguarde a análise do gerente.");
+      clearSavedState();
+      onComplete?.();
+      return;
+    }
+
+    if (fetcher.data.error) {
+      toast.error(fetcher.data.error);
+    }
+  }, [fetcher.state, fetcher.data, onComplete]);
+
   //Handlers
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  function handleSubmit() {
+    fetcher.submit(form, { method: "post" });
   }
 
     // Auto-fetch quando CEP fica válido
@@ -559,13 +585,10 @@ function RegisterStepperContent({ initialForm, onComplete }: { initialForm: Form
             <Button
               type="button"
               className="flex-1 hover:bg-primary/80"
-              onClick={() => {
-                toast.success("Conta criada com sucesso!");
-                clearSavedState();
-                onComplete?.();
-              }}
+              disabled={isSubmitting}
+              onClick={handleSubmit}
             >
-              Criar conta
+              {isSubmitting ? "Enviando..." : "Criar conta"}
             </Button>
           ) : (
             <Stepper.Next
