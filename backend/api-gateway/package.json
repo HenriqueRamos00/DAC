@@ -17,6 +17,8 @@
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/http-proxy": "^11.4.3",
-    "fastify": "^5.8.4"
+    "@fastify/jwt": "^10.0.0",
+    "fastify": "^5.8.4",
+    "fastify-plugin": "^5.1.0"
   }
 }
