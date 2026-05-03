@@ -19,7 +19,7 @@ const proxyRoutes: ProxyRoute[] = [
   },
   {
     upstream: process.env.CLIENTE_URL || 'http://localhost:8082',
-    prefix: '/api/clientes',
+    prefix: '/clientes',
     rewritePrefix: '/clientes',
     protected: true,
   },
