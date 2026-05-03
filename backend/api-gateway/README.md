@@ -6,11 +6,12 @@ Ele é o ponto único de entrada da aplicação e encaminha as chamadas HTTP par
 
 ## Rotas já encaminhadas
 
-- `/clientes` e `/api/clientes` -> `ms-cliente`
-- `/login` e `/api/auth` -> `ms-auth`
-- `/api/contas` -> `ms-conta`
-- `/api/gerentes` -> `ms-gerente`
-- `/api/admin` -> `ms-admin`
+- `/login` -> `ms-auth`
+- `/clientes` -> `ms-cliente`
+- `/contas` -> `ms-conta`
+- `/gerentes` -> `ms-gerente`
+- `/admin` -> `ms-admin`
+- `/reboot` -> rota do gateway para acionar o reset dos serviços que implementarem `/reboot`
 
 ## Rodando localmente
 

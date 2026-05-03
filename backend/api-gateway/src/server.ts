@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import { registerCors } from './plugins/cors.ts';
 import { registerProxies } from './routes/proxy.ts';
 import { registerHealthCheck } from './routes/health.ts';
+import { registerRebootRoute } from './routes/reboot.ts';
 import { registerErrorHandler } from './hooks/error-handler.ts';
 import jwtPlugin from './plugins/jwt.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
@@ -18,7 +19,8 @@ await gateway.register(jwtPlugin);
 await registerAuthRoutes(gateway);
 
 await registerProxies(gateway);
-//registerHealthCheck(gateway);
+registerRebootRoute(gateway);
+registerHealthCheck(gateway);
 registerErrorHandler(gateway);
 
 const PORT = Number(process.env.GATEWAY_PORT) || 3000;
