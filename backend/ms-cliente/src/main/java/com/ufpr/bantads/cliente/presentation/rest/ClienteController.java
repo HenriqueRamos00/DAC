@@ -15,6 +15,7 @@ import com.ufpr.bantads.cliente.application.usecase.GetClienteByCpfUseCase;
 import com.ufpr.bantads.cliente.application.usecase.ListAllClientesUseCase;
 import com.ufpr.bantads.cliente.application.usecase.ListClientesParaAprovarUseCase;
 import com.ufpr.bantads.cliente.application.usecase.RejeitarClienteUseCase;
+import com.ufpr.bantads.cliente.infrastructure.config.ClienteSeedService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class ClienteController {
     private final AprovarClienteUseCase aprovarClienteUseCase;
     private final RejeitarClienteUseCase rejeitarClienteUseCase;
     private final AlterarPerfilUseCase alterarPerfilUseCase;
+    private final ClienteSeedService clienteSeedService;
 
 
     @GetMapping("/clientes")
@@ -89,5 +91,11 @@ public class ClienteController {
     ) {
         ClienteResponse cliente = alterarPerfilUseCase.execute(cpf, request);
         return ResponseEntity.ok(cliente);
+    }
+
+    @GetMapping("/reboot")
+    public ResponseEntity<Void> reboot() {
+        clienteSeedService.reboot();
+        return ResponseEntity.ok().build();
     }
 }
