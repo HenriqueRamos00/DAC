@@ -1,95 +1,99 @@
-# Welcome to React Router!
+# Frontend
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Frontend da aplicação DAC, construído com React Router, React 19, TypeScript e Tailwind CSS.
 
-## Features
+## Requisitos
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- Node.js
+- npm
 
-## Getting Started
+## Executando localmente
 
-### Installation
-
-Install the dependencies:
+Instale as dependências:
 
 ```bash
 npm install
 ```
 
-### Development
-
-Start the development server with HMR:
+Inicie o servidor de desenvolvimento:
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+A aplicação ficará disponível em `http://localhost:5173`.
 
-For local BANTADS integration with the frontend running in Docker, keep `API_URL` pointing to the API Gateway published on the host:
+Se o frontend precisar se comunicar com o API Gateway rodando localmente, use a variável abaixo:
 
 ```txt
-API_URL=http://host.docker.internal:3000
+API_URL=http://localhost:3000
 ```
 
-### Development with Docker
+## Executando com Docker
 
-Start the application with Docker Compose:
+No diretório `frontend`, suba o ambiente com:
 
 ```bash
 docker compose up
 ```
 
-After the containers are up, access the app at `http://localhost:5173`.
+Nesse modo, o container já usa a configuração abaixo para acessar o backend exposto na máquina host:
 
-## Previewing the Production Build
-
-Preview the production build locally:
-
-```bash
-npm run preview
+```txt
+API_URL=http://host.docker.internal:3000
 ```
 
-## Building for Production
+Após subir os containers, acesse `http://localhost:5173`.
 
-Create a production build:
+### Observações para Ubuntu 20.04
+
+No Ubuntu 20.04, o `wrangler` não é suportado no fluxo adotado por este projeto. Por isso, nesse ambiente, a forma recomendada de executar o frontend é com Docker.
+
+Se estiver usando Ubuntu 20.04, confira se o comando abaixo funciona:
+
+```bash
+docker compose version
+```
+
+Se apenas `docker-compose` existir na sua máquina, instale ou habilite o plugin mais recente do Docker antes de subir o frontend.
+
+Se aparecer erro de permissão ao executar comandos Docker, adicione seu usuário ao grupo `docker`:
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+Depois disso, encerre a sessão e entre novamente no sistema antes de testar outra vez.
+
+Se o frontend em Docker não conseguir acessar o backend da máquina host, confirme se o `docker-compose.yaml` está mantendo:
+
+```txt
+host.docker.internal:host-gateway
+```
+
+Esse mapeamento é importante para o `API_URL=http://host.docker.internal:3000` funcionar corretamente no Linux.
+
+## Scripts úteis
+
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run typecheck
+```
+
+## Build e deploy
+
+O projeto possui configuração de deploy com Cloudflare Workers via Wrangler.
+
+Para gerar a build de produção:
 
 ```bash
 npm run build
 ```
 
-## Deployment
+Para publicar:
 
-Deployment is done using the Wrangler CLI.
-
-To build and deploy directly to production:
-
-```sh
+```bash
 npm run deploy
 ```
-
-To deploy a preview URL:
-
-```sh
-npx wrangler versions upload
-```
-
-You can then promote a version to production after verification or roll it out progressively.
-
-```sh
-npx wrangler versions deploy
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
