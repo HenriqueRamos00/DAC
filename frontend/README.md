@@ -32,6 +32,12 @@ npm run dev
 
 Your application will be available at `http://localhost:5173`.
 
+For local BANTADS integration with the frontend running in Docker, keep `API_URL` pointing to the API Gateway published on the host:
+
+```txt
+API_URL=http://host.docker.internal:3000
+```
+
 ### Development with Docker
 
 Start the application with Docker Compose:

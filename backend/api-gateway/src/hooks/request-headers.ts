@@ -5,9 +5,16 @@ export function injectRequestId(
   request: FastifyRequest<RequestGenericInterface, RawServerBase>,
   headers: IncomingHttpHeaders,
 ): IncomingHttpHeaders {
-  return {
+  const out: IncomingHttpHeaders = {
     ...headers,
     'x-request-id': request.id,
     'x-forwarded-host': request.hostname,
   };
+
+  if (request.user) {
+    out['x-user-id']    = request.user.sub;
+    out['x-user-role']  = request.user.role;
+    out['x-user-email'] = request.user.email;
+  }
+  return out;
 }
