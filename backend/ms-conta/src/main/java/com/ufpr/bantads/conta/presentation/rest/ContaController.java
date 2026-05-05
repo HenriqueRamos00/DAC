@@ -4,11 +4,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ufpr.bantads.conta.application.dto.request.TransferenciaRequest;
 import com.ufpr.bantads.conta.application.dto.request.ValorRequest;
+import com.ufpr.bantads.conta.application.dto.response.ContaResponse;
 import com.ufpr.bantads.conta.application.dto.response.DepositoSaqueResponse;
 import com.ufpr.bantads.conta.application.dto.response.ExtratoResponse;
 import com.ufpr.bantads.conta.application.dto.response.SaldoResponse;
 import com.ufpr.bantads.conta.application.dto.response.TransferenciaResponse;
 import com.ufpr.bantads.conta.application.usecase.DepositarUseCase;
+import com.ufpr.bantads.conta.application.usecase.GetContaByCpfUseCase;
 import com.ufpr.bantads.conta.application.usecase.GetExtratoUseCase;
 import com.ufpr.bantads.conta.application.usecase.GetSaldoUseCase;
 import com.ufpr.bantads.conta.application.usecase.SacarUseCase;
@@ -32,6 +34,13 @@ public class ContaController {
     private final DepositarUseCase depositarUseCase;
     private final SacarUseCase sacarUseCase;
     private final TransferenciaUseCase transferenciaUseCase;
+    private final GetContaByCpfUseCase contaByCpfUseCase;
+
+    @GetMapping("/contas/cpf/{cpf}")
+    public ResponseEntity<ContaResponse> getClienteByCpf(@PathVariable String cpf) {
+        ContaResponse contaResponse = contaByCpfUseCase.execute(cpf);
+        return ResponseEntity.ok(contaResponse);
+    }
 
     @GetMapping("/contas/{conta}/saldo")
     public ResponseEntity<SaldoResponse> getSaldo(@PathVariable String conta) {

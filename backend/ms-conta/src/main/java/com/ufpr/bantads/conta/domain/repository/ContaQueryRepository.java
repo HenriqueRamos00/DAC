@@ -11,7 +11,7 @@ public interface ContaQueryRepository extends JpaRepository<ContaQuery, Long> {
 
     Optional<ContaQuery> findByNumeroConta(String numeroConta);
 
-    List<ContaQuery> findByClienteCpf(String clienteCpf);
+    Optional<ContaQuery> findByClienteCpf(String clienteCpf);
 
     List<ContaQuery> findByGerenteCpf(String gerenteCpf);
 
