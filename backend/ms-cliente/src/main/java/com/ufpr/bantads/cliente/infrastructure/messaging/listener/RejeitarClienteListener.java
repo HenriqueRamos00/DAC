@@ -3,6 +3,7 @@ package com.ufpr.bantads.cliente.infrastructure.messaging.listener;
 import com.ufpr.bantads.cliente.application.dto.command.RejeitarClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.event.ClienteRejeitadoEvent;
 import com.ufpr.bantads.cliente.application.dto.event.RejeicaoClienteFalhouEvent;
+import com.ufpr.bantads.cliente.application.usecase.NotificarClienteEmailUseCase;
 import com.ufpr.bantads.cliente.application.usecase.RejeitarClienteUseCase;
 import com.ufpr.bantads.cliente.domain.exception.ClienteNaoEncontradoException;
 import com.ufpr.bantads.cliente.domain.exception.ClienteNaoPendenteException;
@@ -19,6 +20,7 @@ public class RejeitarClienteListener {
 
     private final RejeitarClienteUseCase rejeitarClienteUseCase;
     private final RejeitarClienteEventPublisher rejeitarClienteEventPublisher;
+    private final NotificarClienteEmailUseCase notificarClienteEmailUseCase;
 
     @RabbitListener(queues = "${saga.rabbitmq.queue.cliente.rejeitar.command}")
     public void handle(RejeitarClienteCommand command) {
@@ -26,9 +28,17 @@ public class RejeitarClienteListener {
 
         try {
             var cliente = rejeitarClienteUseCase.executeAndReturnEntity(command.cpf(), command.motivo());
+
+            try {
+                notificarClienteEmailUseCase.notificarRejeicao(cliente);
+            } catch (Exception emailEx) {
+                log.error("Falha ao enviar email de rejeição para {}: {}",
+                    cliente.getEmail(), emailEx.getMessage());
+            }
+
             rejeitarClienteEventPublisher.publishSucesso(ClienteRejeitadoEvent.fromEntity(cliente));
         } catch (ClienteNaoEncontradoException | ClienteNaoPendenteException ex) {
-            log.warn("Nao foi possivel rejeitar cliente {}: {}", command.cpf(), ex.getMessage());
+            log.warn("Não foi possível rejeitar cliente {}: {}", command.cpf(), ex.getMessage());
             rejeitarClienteEventPublisher.publishFalha(
                 new RejeicaoClienteFalhouEvent(command.cpf(), ex.getMessage())
             );

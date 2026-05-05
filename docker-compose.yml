@@ -92,6 +92,11 @@ services:
       SERVER_PORT: 8082
       DB_HOST: postgres-db
       RABBITMQ_HOST: rabbitmq
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-gepetesilva@gmail.com}
     ports:
       - "8082:8082"
     depends_on:
