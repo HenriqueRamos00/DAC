@@ -6,8 +6,9 @@ COPY package.json package-lock.json ./
 
 RUN npm ci
 
-COPY src ./src
+COPY tsconfig.json ./
+COPY src/ src/
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["node", "--experimental-strip-types", "src/server.ts"]

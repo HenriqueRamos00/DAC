@@ -102,6 +102,47 @@ services:
     networks:
       - bantads-network
 
+  ms-conta:
+    build:
+      context: ./backend/ms-conta
+    container_name: bantads-ms-conta
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SERVER_PORT: 8083
+      POSTGRES_HOST: postgres-db
+      DB_HOST: postgres-db
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - bantads-network
+
+  ms-gerente:
+    build:
+      context: ./backend/ms-gerente
+    container_name: bantads-ms-gerente
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SERVER_PORT: 8084
+      DB_HOST: postgres-db
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - bantads-network
+
   api-gateway:
     build:
       context: ./backend/api-gateway
@@ -110,17 +151,22 @@ services:
     env_file: .env
     environment:
       GATEWAY_PORT: 3000
-      CLIENTE_URL: http://ms-cliente:8082
+      GATEWAY_HOST: 0.0.0.0
       AUTH_URL: http://ms-auth:8081
+      CLIENTE_URL: http://ms-cliente:8082
       CONTA_URL: http://ms-conta:8083
       GERENTE_URL: http://ms-gerente:8084
       ADMIN_URL: http://ms-admin:8085
     ports:
       - "3000:3000"
     depends_on:
+      ms-auth:
+        condition: service_started
       ms-cliente:
         condition: service_started
-      ms-auth:
+      ms-conta:
+        condition: service_started
+      ms-gerente:
         condition: service_started
     networks:
       - bantads-network
