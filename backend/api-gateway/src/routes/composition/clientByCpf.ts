@@ -5,7 +5,7 @@ import { env } from "../../config/env.ts";
 import type { ContaMsResponse } from "../../types/dto/conta.ts";
 import type { GerenteMsResponse } from "../../types/dto/gerente.ts";
 import { authenticate } from "../../middlewares/authenticate.ts";
-import { UnauthorizedError } from "../../hooks/errors.ts";
+import { ForbiddenError, UnauthorizedError } from "../../hooks/errors.ts";
 
 type ClientCpf  = {
     cpf: string
@@ -28,7 +28,7 @@ export async function registerClientByCpf(gateway: FastifyInstance) {
         };
 
         if (claims.role == "CLIENTE" && claims.sub != cpf) {
-            throw new UnauthorizedError('O usuário não tem permissão para efetuar esta operação')
+            throw new ForbiddenError('O usuário não tem permissão para efetuar esta operação')
         }
 
         let cliente: ClienteMsResponse
