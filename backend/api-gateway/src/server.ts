@@ -7,6 +7,7 @@ import { registerErrorHandler } from './hooks/error-handler.ts';
 import jwtPlugin from './plugins/jwt.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
 import { env } from './config/env.ts';
+import { registerClientByCpf } from './routes/composition/clientByCpf.ts';
 
 const gateway = Fastify({
   logger: true,
@@ -17,6 +18,7 @@ await gateway.register(jwtPlugin);
 
 // Aqui vão as rotas antes do proxy, como auth e composition
 await registerAuthRoutes(gateway);
+await registerClientByCpf(gateway);
 
 await registerProxies(gateway);
 registerRebootRoute(gateway);
