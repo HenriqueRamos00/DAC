@@ -1,0 +1,198 @@
+name: Publish Docker Images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/api-gateway/**"
+      - "backend/ms-auth/**"
+      - "backend/ms-cliente/**"
+      - "backend/ms-conta/**"
+      - "backend/ms-gerente/**"
+      - ".github/workflows/publish-docker-images.yml"
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "Service to publish manually"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - api-gateway
+          - ms-auth
+          - ms-cliente
+          - ms-conta
+          - ms-gerente
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ${{ secrets.DOCKER_REGISTRY || 'docker.io' }}
+  IMAGE_NAMESPACE: ${{ secrets.DOCKER_NAMESPACE }}
+
+jobs:
+  changes:
+    name: Detect changed services
+    runs-on: ubuntu-latest
+    outputs:
+      api-gateway: ${{ steps.filter.outputs.api-gateway }}
+      ms-auth: ${{ steps.filter.outputs.ms-auth }}
+      ms-cliente: ${{ steps.filter.outputs.ms-cliente }}
+      ms-conta: ${{ steps.filter.outputs.ms-conta }}
+      ms-gerente: ${{ steps.filter.outputs.ms-gerente }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect changed service paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            api-gateway:
+              - 'backend/api-gateway/**'
+            ms-auth:
+              - 'backend/ms-auth/**'
+            ms-cliente:
+              - 'backend/ms-cliente/**'
+            ms-conta:
+              - 'backend/ms-conta/**'
+            ms-gerente:
+              - 'backend/ms-gerente/**'
+
+  publish:
+    name: Build and push changed images
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker registry secrets
+        run: |
+          test -n "${{ secrets.DOCKER_USERNAME }}"
+          test -n "${{ secrets.DOCKER_TOKEN }}"
+          test -n "${{ secrets.DOCKER_NAMESPACE }}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Extract api-gateway metadata
+        id: meta-api-gateway
+        if: needs.changes.outputs.api-gateway == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'api-gateway'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/api-gateway
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push api-gateway
+        if: needs.changes.outputs.api-gateway == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'api-gateway'
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/api-gateway
+          push: true
+          tags: ${{ steps.meta-api-gateway.outputs.tags }}
+          labels: ${{ steps.meta-api-gateway.outputs.labels }}
+          cache-from: type=gha,scope=api-gateway
+          cache-to: type=gha,mode=max,scope=api-gateway
+
+      - name: Extract ms-auth metadata
+        id: meta-ms-auth
+        if: needs.changes.outputs.ms-auth == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-auth'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/ms-auth
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push ms-auth
+        if: needs.changes.outputs.ms-auth == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-auth'
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/ms-auth
+          push: true
+          tags: ${{ steps.meta-ms-auth.outputs.tags }}
+          labels: ${{ steps.meta-ms-auth.outputs.labels }}
+          cache-from: type=gha,scope=ms-auth
+          cache-to: type=gha,mode=max,scope=ms-auth
+
+      - name: Extract ms-cliente metadata
+        id: meta-ms-cliente
+        if: needs.changes.outputs.ms-cliente == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-cliente'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/ms-cliente
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push ms-cliente
+        if: needs.changes.outputs.ms-cliente == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-cliente'
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/ms-cliente
+          push: true
+          tags: ${{ steps.meta-ms-cliente.outputs.tags }}
+          labels: ${{ steps.meta-ms-cliente.outputs.labels }}
+          cache-from: type=gha,scope=ms-cliente
+          cache-to: type=gha,mode=max,scope=ms-cliente
+
+      - name: Extract ms-conta metadata
+        id: meta-ms-conta
+        if: needs.changes.outputs.ms-conta == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-conta'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/ms-conta
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push ms-conta
+        if: needs.changes.outputs.ms-conta == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-conta'
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/ms-conta
+          push: true
+          tags: ${{ steps.meta-ms-conta.outputs.tags }}
+          labels: ${{ steps.meta-ms-conta.outputs.labels }}
+          cache-from: type=gha,scope=ms-conta
+          cache-to: type=gha,mode=max,scope=ms-conta
+
+      - name: Extract ms-gerente metadata
+        id: meta-ms-gerente
+        if: needs.changes.outputs.ms-gerente == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-gerente'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/ms-gerente
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push ms-gerente
+        if: needs.changes.outputs.ms-gerente == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-gerente'
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/ms-gerente
+          push: true
+          tags: ${{ steps.meta-ms-gerente.outputs.tags }}
+          labels: ${{ steps.meta-ms-gerente.outputs.labels }}
+          cache-from: type=gha,scope=ms-gerente
+          cache-to: type=gha,mode=max,scope=ms-gerente
