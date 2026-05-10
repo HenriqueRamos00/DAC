@@ -129,23 +129,33 @@ Consulta um cliente por CPF.
 curl http://localhost:8082/clientes/12345678901
 ```
 
-### `PATCH /clientes/{cpf}/aprovar`
+### `POST /clientes/{cpf}/aprovar`
 
 Aprova um cliente pendente via HTTP.
 
 ```bash
-curl -X PATCH http://localhost:8082/clientes/12345678901/aprovar
+curl -X POST http://localhost:3000/clientes/12345678901/aprovar \
+  -H "Authorization: Bearer SEU_TOKEN_DE_GERENTE"
 ```
 
-### `PATCH /clientes/{cpf}/rejeitar`
+Quando acessado pelo fluxo oficial via API Gateway:
+- `401 Unauthorized` se o usuário não estiver autenticado
+- `403 Forbidden` se o usuário autenticado não tiver role `GERENTE`
+
+### `POST /clientes/{cpf}/rejeitar`
 
 Rejeita um cliente pendente via HTTP, exigindo um motivo.
 
 ```bash
-curl -X PATCH http://localhost:8082/clientes/12345678901/rejeitar \
+curl -X POST http://localhost:3000/clientes/12345678901/rejeitar \
+  -H "Authorization: Bearer SEU_TOKEN_DE_GERENTE" \
   -H "Content-Type: application/json" \
   -d '{"motivo":"Renda incompatível com a política do banco"}'
 ```
+
+Quando acessado pelo fluxo oficial via API Gateway:
+- `401 Unauthorized` se o usuário não estiver autenticado
+- `403 Forbidden` se o usuário autenticado não tiver role `GERENTE`
 
 ## Aprovação via RabbitMQ
 

@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { registerCors } from './plugins/cors.ts';
+import { registerClienteRoutes } from './routes/clientes.ts';
 import { registerProxies } from './routes/proxy.ts';
 import { registerHealthCheck } from './routes/health.ts';
 import { registerRebootRoute } from './routes/reboot.ts';
@@ -19,6 +20,7 @@ await gateway.register(jwtPlugin);
 // Aqui vão as rotas antes do proxy, como auth e composition
 await registerAuthRoutes(gateway);
 await registerClientByCpf(gateway);
+await registerClienteRoutes(gateway);
 
 await registerProxies(gateway);
 registerRebootRoute(gateway);

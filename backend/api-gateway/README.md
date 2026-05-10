@@ -13,6 +13,16 @@ Ele é o ponto único de entrada da aplicação e encaminha as chamadas HTTP par
 - `/admin` -> `ms-admin`
 - `/reboot` -> rota do gateway para acionar o reset dos serviços que implementarem `/reboot`
 
+## Regras de acesso relevantes
+
+- `POST /clientes` permanece público para autocadastro
+- `POST /clientes/{cpf}/aprovar` exige usuário autenticado com role `GERENTE`
+- `POST /clientes/{cpf}/rejeitar` exige usuário autenticado com role `GERENTE`
+
+Respostas esperadas nesses dois endpoints:
+- `401 Unauthorized` quando o usuário não está logado
+- `403 Forbidden` quando o usuário está logado, mas não possui a role `GERENTE`
+
 ## Rodando localmente
 
 ```bash
