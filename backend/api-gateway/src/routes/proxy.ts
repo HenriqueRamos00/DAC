@@ -12,12 +12,6 @@ type ProxyRoute = {
 
 const proxyRoutes: ProxyRoute[] = [
   {
-    upstream: process.env.CLIENTE_URL || 'http://localhost:8082',
-    prefix: '/clientes',
-    rewritePrefix: '/clientes',
-    protected: true,
-  },
-  {
     upstream: process.env.CONTA_URL || 'http://localhost:8083',
     prefix: '/contas',
     rewritePrefix: '/contas',

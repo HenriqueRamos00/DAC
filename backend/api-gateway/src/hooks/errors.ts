@@ -16,14 +16,14 @@ export class ServiceUnavailableError extends GatewayError {
 }
 
 export class UnauthorizedError extends GatewayError {
-  constructor(message = 'Token inválido ou ausente.') {
+  constructor(message = 'O usuário não está logado') {
     super(401, message);
     this.name = 'UnauthorizedError';
   }
 }
 
 export class ForbiddenError extends GatewayError {
-  constructor(message = 'Acesso negado.') {
+  constructor(message = 'O usuário não tem permissão para efetuar esta operação') {
     super(403, message);
     this.name = 'ForbiddenError';
   }

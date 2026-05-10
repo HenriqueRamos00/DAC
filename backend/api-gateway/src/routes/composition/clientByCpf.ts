@@ -4,8 +4,9 @@ import { httpClient } from "../../services/http-client.ts";
 import { env } from "../../config/env.ts";
 import type { ContaMsResponse } from "../../types/dto/conta.ts";
 import type { GerenteMsResponse } from "../../types/dto/gerente.ts";
+import { buildUpstreamHeaders } from "../../hooks/upstream-headers.ts";
 import { authenticate } from "../../middlewares/authenticate.ts";
-import { ForbiddenError, UnauthorizedError } from "../../hooks/errors.ts";
+import { ForbiddenError } from "../../hooks/errors.ts";
 
 type ClientCpf  = {
     cpf: string
@@ -20,12 +21,7 @@ export async function registerClientByCpf(gateway: FastifyInstance) {
 
         const { cpf } = request.params;
         const claims = request.user;
-        const upstreamHeaders = {
-            'x-request-id': request.id,
-            'x-user-id': claims.sub,
-            'x-user-role': claims.role,
-            'x-user-email': claims.email,
-        };
+        const upstreamHeaders = buildUpstreamHeaders(request);
 
         if (claims.role == "CLIENTE" && claims.sub != cpf) {
             throw new ForbiddenError('O usuário não tem permissão para efetuar esta operação')
