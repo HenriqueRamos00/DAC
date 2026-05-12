@@ -48,6 +48,7 @@ public class ClienteSeedService {
                 "Catharyna",
                 "cli1@bantads.com.br",
                 "12912861012",
+                "41999990001",
                 "10000.00",
                 LocalDateTime.of(2000, 1, 1, 0, 0),
                 enderecoSeed("Rua XV de Novembro", "100", "Apto 101", "80020310")
@@ -56,6 +57,7 @@ public class ClienteSeedService {
                 "Cleudônio",
                 "cli2@bantads.com.br",
                 "09506382000",
+                "41999990002",
                 "20000.00",
                 LocalDateTime.of(1990, 10, 10, 0, 0),
                 enderecoSeed("Av. Sete de Setembro", "200", null, "80040120")
@@ -64,6 +66,7 @@ public class ClienteSeedService {
                 "Catianna",
                 "cli3@bantads.com.br",
                 "85733854057",
+                "41999990003",
                 "3000.00",
                 LocalDateTime.of(2012, 12, 12, 0, 0),
                 enderecoSeed("Rua Marechal Deodoro", "300", "Sala 5", "80010010")
@@ -72,6 +75,7 @@ public class ClienteSeedService {
                 "Cutardo",
                 "cli4@bantads.com.br",
                 "58872160006",
+                "41999990004",
                 "500.00",
                 LocalDateTime.of(2022, 2, 22, 0, 0),
                 enderecoSeed("Rua Barão do Rio Branco", "400", null, "80010180")
@@ -80,6 +84,7 @@ public class ClienteSeedService {
                 "Coândrya",
                 "cli5@bantads.com.br",
                 "76179646090",
+                "41999990005",
                 "1500.00",
                 LocalDateTime.of(2025, 1, 1, 0, 0),
                 enderecoSeed("Rua Comendador Araújo", "500", "Bloco B", "80420000")
@@ -109,6 +114,7 @@ public class ClienteSeedService {
         String nome,
         String email,
         String cpf,
+        String telefone,
         String salario,
         LocalDateTime dataAprovacao,
         Endereco endereco
@@ -117,7 +123,7 @@ public class ClienteSeedService {
         cliente.setNome(nome);
         cliente.setEmail(email);
         cliente.setCpf(cpf);
-        cliente.setTelefone(null);
+        cliente.setTelefone(telefone);
         cliente.setSalario(new BigDecimal(salario));
         cliente.setEndereco(endereco);
         cliente.setStatus(StatusCliente.APROVADO);
