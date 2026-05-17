@@ -1,5 +1,8 @@
 package com.ufpr.bantads.cliente.infrastructure.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -7,11 +10,15 @@ import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.DefaultClassMapper;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.ufpr.bantads.cliente.application.dto.command.AlterarPerfilClienteCommand;
+import com.ufpr.bantads.cliente.application.dto.event.ClientePerfilAlteradoEvent;
 
 @Configuration
 public class RabbitMQConfig {
@@ -31,6 +38,12 @@ public class RabbitMQConfig {
     @Value("${saga.rabbitmq.routing-key.cliente.rejeitar.command}")
     private String rejeitarClienteCommandRoutingKey;
 
+    @Value("${saga.rabbitmq.queue.cliente.alterar-perfil.command}")
+    private String alterarPerfilClienteCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.alterar-perfil.command}")
+    private String alterarPerfilClienteCommandRoutingKey;
+
     @Bean
     public TopicExchange sagaExchange() {
         return new TopicExchange(exchange);
@@ -44,6 +57,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue rejeitarClienteCommandQueue() {
         return QueueBuilder.durable(rejeitarClienteCommandQueue).build();
+    }
+
+    @Bean
+    public Queue alterarPerfilClienteCommandQueue() {
+        return QueueBuilder.durable(alterarPerfilClienteCommandQueue).build();
     }
 
     @Bean
@@ -69,8 +87,34 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding alterarPerfilClienteCommandBinding(
+        Queue alterarPerfilClienteCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(alterarPerfilClienteCommandQueue)
+            .to(sagaExchange)
+            .with(alterarPerfilClienteCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
-        return new JacksonJsonMessageConverter();
+        JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
+        jsonConverter.setClassMapper(clienteClassMapper());
+        return jsonConverter;
+    }
+
+    @Bean
+    public DefaultClassMapper clienteClassMapper() {
+        DefaultClassMapper classMapper = new DefaultClassMapper();
+        classMapper.setTrustedPackages("*");
+
+        Map<String, Class<?>> idClassMapping = new HashMap<>();
+        idClassMapping.put("cliente.alterar-perfil.command", AlterarPerfilClienteCommand.class);
+        idClassMapping.put("cliente.perfil-alterado", ClientePerfilAlteradoEvent.class);
+
+        classMapper.setIdClassMapping(idClassMapping);
+        return classMapper;
     }
 
     @Bean
