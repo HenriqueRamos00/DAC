@@ -8,6 +8,7 @@ import com.ufpr.bantads.ms_gerente.application.usecase.ListAllGerentesUseCase;
 import com.ufpr.bantads.ms_gerente.domain.exception.FiltroInvalidoException;
 import com.ufpr.bantads.ms_gerente.domain.exception.UsuarioNaoAutenticadoException;
 import com.ufpr.bantads.ms_gerente.domain.exception.UsuarioSemPermissaoException;
+import com.ufpr.bantads.ms_gerente.infrastructure.config.GerenteSeedService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +26,7 @@ public class GerenteController {
 
     private final ListAllGerentesUseCase listAllGerentesUseCase;
     private final GetGerenteByCpfUseCase getGerenteByCpfUseCase;
+    private final GerenteSeedService gerenteSeedService;
 
     @GetMapping("/gerentes")
     public ResponseEntity<List<GerenteResponse>> getAllGerentes(
@@ -56,6 +58,12 @@ public class GerenteController {
 
         GerenteResponse gerente = getGerenteByCpfUseCase.execute(cpf);
         return ResponseEntity.ok(gerente);
+    }
+
+    @GetMapping("/reboot")
+    public ResponseEntity<Void> reboot() {
+        gerenteSeedService.reboot();
+        return ResponseEntity.ok().build();
     }
 
     private void autenticar(String userId, String userRole) {
