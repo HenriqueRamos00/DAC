@@ -1,5 +1,8 @@
 package br.ufpr.bantads.saga.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -7,11 +10,18 @@ import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.DefaultClassMapper;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import br.ufpr.bantads.saga.application.dto.command.AlterarLimiteContaCommand;
+import br.ufpr.bantads.saga.application.dto.command.AlterarPerfilClienteCommand;
+import br.ufpr.bantads.saga.application.dto.event.ClienteAlteracaoFalhouEvent;
+import br.ufpr.bantads.saga.application.dto.event.ClientePerfilAlteradoEvent;
+import br.ufpr.bantads.saga.application.dto.event.ContaLimiteAlteradoEvent;
 
 @Configuration
 public class RabbitConfig {
@@ -182,7 +192,26 @@ public class RabbitConfig {
 
     @Bean
     public MessageConverter jsonMessageConverter() {
-        return new JacksonJsonMessageConverter();
+        JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
+        jsonConverter.setClassMapper(sagaClassMapper());
+        return jsonConverter;
+    }
+
+    @Bean
+    public DefaultClassMapper sagaClassMapper() {
+        DefaultClassMapper classMapper = new DefaultClassMapper();
+        classMapper.setTrustedPackages("*");
+
+        Map<String, Class<?>> idClassMapping = new HashMap<>();
+        idClassMapping.put("cliente.alterar-perfil.command", AlterarPerfilClienteCommand.class);
+        idClassMapping.put("conta.alterar-limite.command", AlterarLimiteContaCommand.class);
+        idClassMapping.put("cliente.perfil-alterado", ClientePerfilAlteradoEvent.class);
+        idClassMapping.put("cliente.alteracao-perfil.falhou", ClienteAlteracaoFalhouEvent.class);
+        idClassMapping.put("conta.limite-alterado", ContaLimiteAlteradoEvent.class);
+        idClassMapping.put("conta.alteracao-limite.falhou", ClienteAlteracaoFalhouEvent.class);
+
+        classMapper.setIdClassMapping(idClassMapping);
+        return classMapper;
     }
 
     @Bean

@@ -150,6 +150,29 @@ services:
     networks:
       - bantads-network
 
+  ms-saga:
+    build:
+      context: ./backend/saga
+    container_name: bantads-saga
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SERVER_PORT: 8086
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8086:8086"
+    depends_on:
+      #ms-auth:
+      #  condition: service_started
+      ms-cliente:
+        condition: service_started
+      ms-conta:
+        condition: service_started
+      #ms-gerente:
+      #  condition: service_started
+    networks:
+      - bantads-network
+
   api-gateway:
     build:
       context: ./backend/api-gateway

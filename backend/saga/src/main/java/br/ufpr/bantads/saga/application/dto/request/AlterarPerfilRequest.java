@@ -7,7 +7,7 @@ public record AlterarPerfilRequest(
     String email,
     BigDecimal salario,
     String endereco,
-    String cep,
+    String CEP,
     String cidade,
     String estado
 ) {}
