@@ -2,6 +2,7 @@ package com.ufpr.bantads.ms_gerente.application.usecase;
 
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.ufpr.bantads.ms_gerente.application.dto.response.GerenteResponse;
@@ -16,7 +17,7 @@ public class ListAllGerentesUseCase {
     private final GerenteRepository gerenteRepository;
 
     public List<GerenteResponse> execute() {
-        return gerenteRepository.findAll()
+        return gerenteRepository.findAll(Sort.by(Sort.Direction.ASC, "nome"))
             .stream()
             .map(GerenteResponse::fromEntity)
             .toList();

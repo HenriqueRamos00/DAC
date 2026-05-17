@@ -6,14 +6,16 @@ public record GerenteResponse(
     String nome,
     String email,
     String cpf,
-    String telefone
+    String telefone,
+    String tipo
 ) {
     public static GerenteResponse fromEntity(Gerente gerente) {
         return new GerenteResponse(
             gerente.getNome(),
             gerente.getEmail(),
             gerente.getCpf(),
-            gerente.getTelefone()
+            gerente.getTelefone(),
+            "GERENTE"
         );
     }
 }

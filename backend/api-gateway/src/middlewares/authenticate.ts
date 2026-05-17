@@ -9,7 +9,7 @@ export async function authenticate(request: FastifyRequest, _reply: FastifyReply
   }
 }
 
-export function authorize(...roles: Array<'CLIENTE' | 'GERENTE' | 'ADMIN'>) {
+export function authorize(...roles: Array<'CLIENTE' | 'GERENTE' | 'ADMINISTRADOR'>) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     await authenticate(request, reply);
     if (!roles.includes(request.user.role)) {
