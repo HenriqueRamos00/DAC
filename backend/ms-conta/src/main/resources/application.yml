@@ -26,3 +26,17 @@ cqrs:
     exchange: conta.events
     queue: conta.sync.queue
     routing-key: conta.operacao.*
+
+saga:
+  rabbitmq:
+    exchange: ${SAGA_RABBITMQ_EXCHANGE:bantads.saga}
+    queue:
+      conta:
+        alterar-limite:
+          command: ${SAGA_RABBITMQ_QUEUE_CONTA_ALTERAR_LIMITE_COMMAND:conta.alterar-limite.command}
+    routing-key:
+      conta:
+        alterar-limite:
+          command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ALTERAR_LIMITE_COMMAND:conta.alterar-limite.command}
+          sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ALTERAR_LIMITE_SUCESSO:conta.limite-alterado}
+          falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ALTERAR_LIMITE_FALHA:conta.alteracao-limite.falhou}
