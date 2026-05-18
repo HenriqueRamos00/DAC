@@ -9,6 +9,7 @@ import jwtPlugin from './plugins/jwt.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
 import { env } from './config/env.ts';
 import { registerClientByCpf } from './routes/composition/clientByCpf.ts';
+import { registerCreateGerenteSaga } from './routes/composition/createGerenteSaga.ts';
 
 const gateway = Fastify({
   logger: true,
@@ -20,6 +21,7 @@ await gateway.register(jwtPlugin);
 // Aqui vão as rotas antes do proxy, como auth e composition
 await registerAuthRoutes(gateway);
 await registerClientByCpf(gateway);
+await registerCreateGerenteSaga(gateway);
 await registerClienteRoutes(gateway);
 
 await registerProxies(gateway);
