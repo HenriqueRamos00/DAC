@@ -10,4 +10,7 @@ import com.ufpr.bantads.ms_gerente.domain.model.entity.Gerente;
 @Repository
 public interface GerenteRepository extends JpaRepository<Gerente, Long> {
     public Optional<Gerente> findByCpf(String cpf);
+    boolean existsByCpf(String cpf);
+    boolean existsByEmail(String email);
+    boolean existsByEmailAndCpfNot(String email, String cpf);
 }

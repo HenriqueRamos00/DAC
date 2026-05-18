@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.ufpr.bantads.ms_gerente.domain.exception.FiltroInvalidoException;
+import com.ufpr.bantads.ms_gerente.domain.exception.GerenteJaExisteException;
 import com.ufpr.bantads.ms_gerente.domain.exception.GerenteNaoEncontradoException;
 import com.ufpr.bantads.ms_gerente.domain.exception.UsuarioNaoAutenticadoException;
 import com.ufpr.bantads.ms_gerente.domain.exception.UsuarioSemPermissaoException;
@@ -31,6 +32,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(GerenteNaoEncontradoException.class)
     public ResponseEntity<ApiErrorResponse> handleGerenteNaoEncontrado(GerenteNaoEncontradoException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(GerenteJaExisteException.class)
+    public ResponseEntity<ApiErrorResponse> handleGerenteJaExiste(GerenteJaExisteException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
