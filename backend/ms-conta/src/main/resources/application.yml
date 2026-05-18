@@ -34,9 +34,21 @@ saga:
       conta:
         alterar-limite:
           command: ${SAGA_RABBITMQ_QUEUE_CONTA_ALTERAR_LIMITE_COMMAND:conta.alterar-limite.command}
+        consultar-gerente-mais-contas:
+          command: ${SAGA_RABBITMQ_QUEUE_CONTA_CONSULTAR_GERENTE_MAIS_CONTAS_COMMAND:conta.consultar-gerente-mais-contas.command}
+        atribuir-gerente:
+          command: ${SAGA_RABBITMQ_QUEUE_CONTA_ATRIBUIR_GERENTE_COMMAND:conta.atribuir-gerente.command}
     routing-key:
       conta:
         alterar-limite:
           command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ALTERAR_LIMITE_COMMAND:conta.alterar-limite.command}
           sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ALTERAR_LIMITE_SUCESSO:conta.limite-alterado}
           falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ALTERAR_LIMITE_FALHA:conta.alteracao-limite.falhou}
+        consultar-gerente-mais-contas:
+          command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_CONSULTAR_GERENTE_MAIS_CONTAS_COMMAND:conta.consultar-gerente-mais-contas}
+          sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_CONSULTAR_GERENTE_MAIS_CONTAS_SUCESSO:conta.gerente-mais-contas-consultado}
+          falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_CONSULTAR_GERENTE_MAIS_CONTAS_FALHA:conta.consulta-gerente-mais-contas.falhou}
+        atribuir-gerente:
+          command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ATRIBUIR_GERENTE_COMMAND:conta.atribuir-gerente}
+          sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ATRIBUIR_GERENTE_SUCESSO:conta.gerente-atribuido}
+          falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ATRIBUIR_GERENTE_FALHA:conta.atribuicao-gerente.falhou}
