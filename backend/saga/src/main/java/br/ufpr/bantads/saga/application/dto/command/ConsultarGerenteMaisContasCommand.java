@@ -1,9 +1,13 @@
 package br.ufpr.bantads.saga.application.dto.command;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record ConsultarGerenteMaisContasCommand(
-    String sagaId
-) {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ConsultarGerenteMaisContasCommand {
+
+    private String sagaId;
 }

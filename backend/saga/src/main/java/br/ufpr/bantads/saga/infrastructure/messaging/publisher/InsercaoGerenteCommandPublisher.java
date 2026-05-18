@@ -1,18 +1,19 @@
 package br.ufpr.bantads.saga.infrastructure.messaging.publisher;
 
-import br.ufpr.bantads.saga.application.dto.command.AtribuirGerenteContaCommand;
-import br.ufpr.bantads.saga.application.dto.command.ConsultarGerenteMaisContasCommand;
-import br.ufpr.bantads.saga.application.dto.command.InserirGerenteCommand;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Component
-public class InsercaoGerenteCommandPublisher {
+import br.ufpr.bantads.saga.application.dto.command.AtribuirGerenteContaCommand;
+import br.ufpr.bantads.saga.application.dto.command.ConsultarGerenteMaisContasCommand;
+import br.ufpr.bantads.saga.application.dto.command.InserirGerenteCommand;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger log = LoggerFactory.getLogger(InsercaoGerenteCommandPublisher.class);
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class InsercaoGerenteCommandPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 
@@ -27,10 +28,6 @@ public class InsercaoGerenteCommandPublisher {
 
     @Value("${saga.rabbitmq.routing-key.conta.atribuir-gerente.command}")
     private String atribuirGerenteContaRoutingKey;
-
-    public InsercaoGerenteCommandPublisher(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
-    }
 
     public void publishConsultarGerenteMaisContas(ConsultarGerenteMaisContasCommand command) {
         log.info("Publicando comando consultar-gerente-mais-contas: {}", command);

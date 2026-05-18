@@ -1,0 +1,60 @@
+package br.ufpr.bantads.saga.infrastructure.messaging.listener;
+
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
+
+import br.ufpr.bantads.saga.application.dto.event.AtribuicaoGerenteContaFalhouEvent;
+import br.ufpr.bantads.saga.application.dto.event.ConsultaGerenteMaisContasFalhouEvent;
+import br.ufpr.bantads.saga.application.dto.event.GerenteAtribuidoContaEvent;
+import br.ufpr.bantads.saga.application.dto.event.GerenteInseridoEvent;
+import br.ufpr.bantads.saga.application.dto.event.GerenteMaisContasConsultadoEvent;
+import br.ufpr.bantads.saga.application.dto.event.InsercaoGerenteFalhouEvent;
+import br.ufpr.bantads.saga.services.InsercaoGerenteOrchestrator;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@Slf4j
+@RequiredArgsConstructor
+@RabbitListener(queues = "${saga.rabbitmq.queue.inserir-gerente.response}")
+public class InsercaoGerenteResponseListener {
+
+    private final InsercaoGerenteOrchestrator orchestrator;
+
+    @RabbitHandler
+    public void handleGerenteMaisContasConsultado(GerenteMaisContasConsultadoEvent event) {
+        log.info("Recebido GerenteMaisContasConsultadoEvent saga {}", event.getSagaId());
+        orchestrator.handleGerenteMaisContasConsultado(event);
+    }
+
+    @RabbitHandler
+    public void handleConsultaGerenteMaisContasFalhou(ConsultaGerenteMaisContasFalhouEvent event) {
+        log.info("Recebido ConsultaGerenteMaisContasFalhouEvent saga {}", event.getSagaId());
+        orchestrator.handleConsultaGerenteMaisContasFalhou(event);
+    }
+
+    @RabbitHandler
+    public void handleGerenteInserido(GerenteInseridoEvent event) {
+        log.info("Recebido GerenteInseridoEvent saga {}", event.getSagaId());
+        orchestrator.handleGerenteInserido(event);
+    }
+
+    @RabbitHandler
+    public void handleInsercaoGerenteFalhou(InsercaoGerenteFalhouEvent event) {
+        log.info("Recebido InsercaoGerenteFalhouEvent saga {}", event.getSagaId());
+        orchestrator.handleInsercaoGerenteFalhou(event);
+    }
+
+    @RabbitHandler
+    public void handleGerenteAtribuidoConta(GerenteAtribuidoContaEvent event) {
+        log.info("Recebido GerenteAtribuidoContaEvent saga {}", event.getSagaId());
+        orchestrator.handleGerenteAtribuidoConta(event);
+    }
+
+    @RabbitHandler
+    public void handleAtribuicaoGerenteContaFalhou(AtribuicaoGerenteContaFalhouEvent event) {
+        log.info("Recebido AtribuicaoGerenteContaFalhouEvent saga {}", event.getSagaId());
+        orchestrator.handleAtribuicaoGerenteContaFalhou(event);
+    }
+}

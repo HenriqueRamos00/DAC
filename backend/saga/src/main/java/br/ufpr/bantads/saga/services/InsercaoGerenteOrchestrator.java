@@ -1,13 +1,11 @@
 package br.ufpr.bantads.saga.services;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -25,32 +23,24 @@ import br.ufpr.bantads.saga.application.dto.response.GerenteResponse;
 import br.ufpr.bantads.saga.application.dto.response.SagaErrorResponse;
 import br.ufpr.bantads.saga.infrastructure.messaging.SagaResponseRegistry;
 import br.ufpr.bantads.saga.infrastructure.messaging.publisher.InsercaoGerenteCommandPublisher;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class InsercaoGerenteOrchestrator {
-
-    public static final String MOTIVO_CPF_DUPLICADO = "CPF_DUPLICADO";
-
-    private static final Logger log = LoggerFactory.getLogger(InsercaoGerenteOrchestrator.class);
 
     private final InsercaoGerenteCommandPublisher commandPublisher;
     private final SagaResponseRegistry responseRegistry;
 
-    private final ConcurrentMap<String, InserirGerenteRequest> requestPorSaga = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, GerenteInseridoEvent> gerenteInseridoPorSaga = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, String> gerenteOriginalPorSaga = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, String> statusPorSaga = new ConcurrentHashMap<>();
+    private final Map<String, InserirGerenteRequest> requestPorSaga = new ConcurrentHashMap<>();
+    private final Map<String, GerenteInseridoEvent> gerenteInseridoPorSaga = new ConcurrentHashMap<>();
+    private final Map<String, String> gerenteOriginalPorSaga = new ConcurrentHashMap<>();
+    private final Map<String, String> statusPorSaga = new ConcurrentHashMap<>();
 
     @Value("${saga.step.timeout-ms:10000}")
     private Long timeoutMs;
-
-    public InsercaoGerenteOrchestrator(
-        InsercaoGerenteCommandPublisher commandPublisher,
-        SagaResponseRegistry responseRegistry
-    ) {
-        this.commandPublisher = commandPublisher;
-        this.responseRegistry = responseRegistry;
-    }
 
     public Object iniciar(InserirGerenteRequest request) {
         String sagaId = UUID.randomUUID().toString();
@@ -63,8 +53,7 @@ public class InsercaoGerenteOrchestrator {
         commandPublisher.publishConsultarGerenteMaisContas(new ConsultarGerenteMaisContasCommand(sagaId));
 
         try {
-            Object result = future.get(timeoutMs, TimeUnit.MILLISECONDS);
-            return result;
+            return future.get(timeoutMs, TimeUnit.MILLISECONDS);
         } catch (Exception ex) {
             log.error("SAGA inserir gerente {} falhou no aguardo", sagaId, ex);
             responseRegistry.cancel(sagaId);
@@ -75,9 +64,9 @@ public class InsercaoGerenteOrchestrator {
     }
 
     public void handleGerenteMaisContasConsultado(GerenteMaisContasConsultadoEvent event) {
-        String sagaId = event.sagaId();
-        log.info("SAGA {} recebeu gerente com mais contas: {}", sagaId, event.cpf());
-        gerenteOriginalPorSaga.put(sagaId, event.cpf());
+        String sagaId = event.getSagaId();
+        log.info("SAGA {} recebeu gerente com mais contas: {}", sagaId, event.getCpf());
+        gerenteOriginalPorSaga.put(sagaId, event.getCpf());
         statusPorSaga.put(sagaId, "GERENTE_MAIS_CONTAS_CONSULTADO");
 
         InserirGerenteRequest request = requestPorSaga.get(sagaId);
@@ -86,22 +75,13 @@ public class InsercaoGerenteOrchestrator {
             return;
         }
 
-        InserirGerenteCommand command = new InserirGerenteCommand(
-            sagaId,
-            request.cpf(),
-            request.nome(),
-            request.email(),
-            request.senha(),
-            request.tipo()
-        );
-
         statusPorSaga.put(sagaId, "GERENTE_INSERIR_SOLICITADO");
-        commandPublisher.publishInserirGerente(command);
+        commandPublisher.publishInserirGerente(InserirGerenteCommand.fromRequest(sagaId, request));
     }
 
     public void handleGerenteInserido(GerenteInseridoEvent event) {
-        String sagaId = event.sagaId();
-        log.info("SAGA {} recebeu gerente inserido: {}", sagaId, event.cpf());
+        String sagaId = event.getSagaId();
+        log.info("SAGA {} recebeu gerente inserido: {}", sagaId, event.getCpf());
         gerenteInseridoPorSaga.put(sagaId, event);
         statusPorSaga.put(sagaId, "GERENTE_INSERIDO");
 
@@ -111,19 +91,15 @@ public class InsercaoGerenteOrchestrator {
             return;
         }
 
-        AtribuirGerenteContaCommand command = new AtribuirGerenteContaCommand(
-            sagaId,
-            gerenteOriginalCpf,
-            event.cpf()
-        );
-
         statusPorSaga.put(sagaId, "ATRIBUIR_GERENTE_CONTA_SOLICITADO");
-        commandPublisher.publishAtribuirGerenteConta(command);
+        commandPublisher.publishAtribuirGerenteConta(
+            AtribuirGerenteContaCommand.fromGerenteInserido(gerenteOriginalCpf, event)
+        );
     }
 
     public void handleGerenteAtribuidoConta(GerenteAtribuidoContaEvent event) {
-        String sagaId = event.sagaId();
-        log.info("SAGA {} concluída — contas reatribuídas: {}", sagaId, event.contasReatribuidas());
+        String sagaId = event.getSagaId();
+        log.info("SAGA {} concluída — contas reatribuídas: {}", sagaId, event.getContasReatribuidas());
 
         GerenteInseridoEvent gerenteEvent = gerenteInseridoPorSaga.get(sagaId);
         if (gerenteEvent == null) {
@@ -131,30 +107,23 @@ public class InsercaoGerenteOrchestrator {
             return;
         }
 
-        GerenteResponse response = new GerenteResponse(
-            gerenteEvent.cpf(),
-            gerenteEvent.nome(),
-            gerenteEvent.email(),
-            gerenteEvent.tipo()
-        );
-
         statusPorSaga.put(sagaId, "COMPLETED");
         cleanup(sagaId);
-        responseRegistry.complete(sagaId, response);
+        responseRegistry.complete(sagaId, GerenteResponse.fromEvent(gerenteEvent));
     }
 
     public void handleConsultaGerenteMaisContasFalhou(ConsultaGerenteMaisContasFalhouEvent event) {
-        fail(event.sagaId(), "Falha ao consultar gerente com mais contas: " + event.motivo());
+        fail(event.getSagaId(), "Falha ao consultar gerente com mais contas: " + event.getMotivo());
     }
 
     public void handleInsercaoGerenteFalhou(InsercaoGerenteFalhouEvent event) {
-        fail(event.sagaId(), event.motivo());
+        fail(event.getSagaId(), event.getMotivo());
     }
 
     public void handleAtribuicaoGerenteContaFalhou(AtribuicaoGerenteContaFalhouEvent event) {
-        statusPorSaga.put(event.sagaId(), "COMPENSATION_REQUIRED");
+        statusPorSaga.put(event.getSagaId(), "COMPENSATION_REQUIRED");
         // TODO Aqui entraria o comando de compensação para reverter a inserção do gerente.
-        fail(event.sagaId(), "Falha ao atribuir contas ao novo gerente: " + event.motivo());
+        fail(event.getSagaId(), "Falha ao atribuir contas ao novo gerente: " + event.getMotivo());
     }
 
     private void fail(String sagaId, String motivo) {
