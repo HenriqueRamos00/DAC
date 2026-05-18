@@ -187,6 +187,7 @@ services:
       CONTA_URL: http://ms-conta:8083
       GERENTE_URL: http://ms-gerente:8084
       ADMIN_URL: http://ms-admin:8085
+      SAGAS_URL: http://ms-saga:8086
     ports:
       - "3000:3000"
     depends_on:
@@ -197,6 +198,8 @@ services:
       ms-conta:
         condition: service_started
       ms-gerente:
+        condition: service_started
+      ms-saga:
         condition: service_started
     networks:
       - bantads-network
