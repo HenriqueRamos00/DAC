@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record GerenteInseridoEvent(
     String sagaId,
-    Long gerenteId,
     String cpf,
     String nome,
     String email,

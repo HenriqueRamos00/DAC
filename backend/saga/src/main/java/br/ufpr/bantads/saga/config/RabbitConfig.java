@@ -19,9 +19,18 @@ import org.springframework.context.annotation.Configuration;
 
 import br.ufpr.bantads.saga.application.dto.command.AlterarLimiteContaCommand;
 import br.ufpr.bantads.saga.application.dto.command.AlterarPerfilClienteCommand;
+import br.ufpr.bantads.saga.application.dto.command.AtribuirGerenteContaCommand;
+import br.ufpr.bantads.saga.application.dto.command.ConsultarGerenteMaisContasCommand;
+import br.ufpr.bantads.saga.application.dto.command.InserirGerenteCommand;
+import br.ufpr.bantads.saga.application.dto.event.AtribuicaoGerenteContaFalhouEvent;
 import br.ufpr.bantads.saga.application.dto.event.ClienteAlteracaoFalhouEvent;
 import br.ufpr.bantads.saga.application.dto.event.ClientePerfilAlteradoEvent;
+import br.ufpr.bantads.saga.application.dto.event.ConsultaGerenteMaisContasFalhouEvent;
 import br.ufpr.bantads.saga.application.dto.event.ContaLimiteAlteradoEvent;
+import br.ufpr.bantads.saga.application.dto.event.GerenteAtribuidoContaEvent;
+import br.ufpr.bantads.saga.application.dto.event.GerenteInseridoEvent;
+import br.ufpr.bantads.saga.application.dto.event.GerenteMaisContasConsultadoEvent;
+import br.ufpr.bantads.saga.application.dto.event.InsercaoGerenteFalhouEvent;
 
 @Configuration
 public class RabbitConfig {
@@ -209,6 +218,17 @@ public class RabbitConfig {
         idClassMapping.put("cliente.alteracao-perfil.falhou", ClienteAlteracaoFalhouEvent.class);
         idClassMapping.put("conta.limite-alterado", ContaLimiteAlteradoEvent.class);
         idClassMapping.put("conta.alteracao-limite.falhou", ClienteAlteracaoFalhouEvent.class);
+
+        // Saga Inserir Gerente
+        idClassMapping.put("conta.consultar-gerente-mais-contas", ConsultarGerenteMaisContasCommand.class);
+        idClassMapping.put("conta.gerente-mais-contas-consultado", GerenteMaisContasConsultadoEvent.class);
+        idClassMapping.put("conta.consulta-gerente-mais-contas.falhou", ConsultaGerenteMaisContasFalhouEvent.class);
+        idClassMapping.put("gerente.inserir", InserirGerenteCommand.class);
+        idClassMapping.put("gerente.inserido", GerenteInseridoEvent.class);
+        idClassMapping.put("gerente.insercao.falhou", InsercaoGerenteFalhouEvent.class);
+        idClassMapping.put("conta.atribuir-gerente", AtribuirGerenteContaCommand.class);
+        idClassMapping.put("conta.gerente-atribuido", GerenteAtribuidoContaEvent.class);
+        idClassMapping.put("conta.atribuicao-gerente.falhou", AtribuicaoGerenteContaFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;
