@@ -1,11 +1,15 @@
 package br.ufpr.bantads.saga.application.dto.event;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record GerenteMaisContasConsultadoEvent(
-    String sagaId,
-    Long gerenteId,
-    Long totalContas
-) {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class GerenteMaisContasConsultadoEvent {
+
+    private String sagaId;
+    private String cpf;
+    private Long totalContas;
 }

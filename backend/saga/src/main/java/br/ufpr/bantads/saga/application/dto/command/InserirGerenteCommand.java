@@ -1,14 +1,30 @@
 package br.ufpr.bantads.saga.application.dto.command;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import br.ufpr.bantads.saga.application.dto.request.InserirGerenteRequest;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record InserirGerenteCommand(
-    String sagaId,
-    String cpf,
-    String nome,
-    String email,
-    String senha,
-    String tipo
-) {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class InserirGerenteCommand {
+
+    private String sagaId;
+    private String cpf;
+    private String nome;
+    private String email;
+    private String senha;
+    private String tipo;
+
+    public static InserirGerenteCommand fromRequest(String sagaId, InserirGerenteRequest request) {
+        return new InserirGerenteCommand(
+            sagaId,
+            request.cpf(),
+            request.nome(),
+            request.email(),
+            request.senha(),
+            request.tipo()
+        );
+    }
 }

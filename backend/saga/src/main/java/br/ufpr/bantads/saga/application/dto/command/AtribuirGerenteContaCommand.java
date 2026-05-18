@@ -1,11 +1,27 @@
 package br.ufpr.bantads.saga.application.dto.command;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import br.ufpr.bantads.saga.application.dto.event.GerenteInseridoEvent;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record AtribuirGerenteContaCommand(
-    String sagaId,
-    Long gerenteOriginalId,
-    Long novoGerenteId
-) {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AtribuirGerenteContaCommand {
+
+    private String sagaId;
+    private String gerenteOriginalCpf;
+    private String novoGerenteCpf;
+
+    public static AtribuirGerenteContaCommand fromGerenteInserido(
+        String gerenteOriginalCpf,
+        GerenteInseridoEvent event
+    ) {
+        return new AtribuirGerenteContaCommand(
+            event.getSagaId(),
+            gerenteOriginalCpf,
+            event.getCpf()
+        );
+    }
 }
