@@ -19,7 +19,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.ufpr.bantads.conta.application.dto.command.AlterarLimiteContaCommand;
+import com.ufpr.bantads.conta.application.dto.command.AtribuirGerenteContaCommand;
+import com.ufpr.bantads.conta.application.dto.command.ConsultarGerenteMaisContasCommand;
+import com.ufpr.bantads.conta.application.dto.event.AtribuicaoGerenteContaFalhouEvent;
+import com.ufpr.bantads.conta.application.dto.event.ConsultaGerenteMaisContasFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
+import com.ufpr.bantads.conta.application.dto.event.GerenteAtribuidoContaEvent;
+import com.ufpr.bantads.conta.application.dto.event.GerenteMaisContasConsultadoEvent;
 
 @Configuration
 public class RabbitMQConfig {
@@ -42,6 +48,18 @@ public class RabbitMQConfig {
     @Value("${saga.rabbitmq.routing-key.conta.alterar-limite.command}")
     private String alterarLimiteContaCommandRoutingKey;
 
+    @Value("${saga.rabbitmq.queue.conta.consultar-gerente-mais-contas.command}")
+    private String consultarGerenteMaisContasCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.conta.consultar-gerente-mais-contas.command}")
+    private String consultarGerenteMaisContasCommandRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.conta.atribuir-gerente.command}")
+    private String atribuirGerenteContaCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.conta.atribuir-gerente.command}")
+    private String atribuirGerenteContaCommandRoutingKey;
+
     @Bean
     public TopicExchange productExchange() {
         return new TopicExchange(exchange);
@@ -60,6 +78,16 @@ public class RabbitMQConfig {
     @Bean
     public Queue alterarLimiteContaCommandQueue() {
         return QueueBuilder.durable(alterarLimiteContaCommandQueue).build();
+    }
+
+    @Bean
+    public Queue consultarGerenteMaisContasCommandQueue() {
+        return QueueBuilder.durable(consultarGerenteMaisContasCommandQueue).build();
+    }
+
+    @Bean
+    public Queue atribuirGerenteContaCommandQueue() {
+        return QueueBuilder.durable(atribuirGerenteContaCommandQueue).build();
     }
 
     @Bean
@@ -85,6 +113,28 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding consultarGerenteMaisContasCommandBinding(
+        @Qualifier("consultarGerenteMaisContasCommandQueue") Queue consultarGerenteMaisContasCommandQueue,
+        @Qualifier("sagaExchange") TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(consultarGerenteMaisContasCommandQueue)
+            .to(sagaExchange)
+            .with(consultarGerenteMaisContasCommandRoutingKey);
+    }
+
+    @Bean
+    public Binding atribuirGerenteContaCommandBinding(
+        @Qualifier("atribuirGerenteContaCommandQueue") Queue atribuirGerenteContaCommandQueue,
+        @Qualifier("sagaExchange") TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(atribuirGerenteContaCommandQueue)
+            .to(sagaExchange)
+            .with(atribuirGerenteContaCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
         jsonConverter.setClassMapper(contaClassMapper());
@@ -99,6 +149,14 @@ public class RabbitMQConfig {
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("conta.alterar-limite.command", AlterarLimiteContaCommand.class);
         idClassMapping.put("conta.limite-alterado", ContaLimiteAlteradoEvent.class);
+
+        // Saga Inserir Gerente
+        idClassMapping.put("conta.consultar-gerente-mais-contas", ConsultarGerenteMaisContasCommand.class);
+        idClassMapping.put("conta.gerente-mais-contas-consultado", GerenteMaisContasConsultadoEvent.class);
+        idClassMapping.put("conta.consulta-gerente-mais-contas.falhou", ConsultaGerenteMaisContasFalhouEvent.class);
+        idClassMapping.put("conta.atribuir-gerente", AtribuirGerenteContaCommand.class);
+        idClassMapping.put("conta.gerente-atribuido", GerenteAtribuidoContaEvent.class);
+        idClassMapping.put("conta.atribuicao-gerente.falhou", AtribuicaoGerenteContaFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

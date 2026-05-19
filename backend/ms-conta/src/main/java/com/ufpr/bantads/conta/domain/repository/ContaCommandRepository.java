@@ -12,4 +12,5 @@ public interface ContaCommandRepository extends JpaRepository<ContaCommand, Long
 
     Optional<ContaCommand> findByClienteCpf(String clienteCpf);
 
+    Optional<ContaCommand> findFirstByGerenteCpfOrderByDataCriacaoDesc(String gerenteCpf);
 }

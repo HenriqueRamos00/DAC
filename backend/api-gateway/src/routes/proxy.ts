@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, HTTPMethods } from 'fastify';
 import proxy from '@fastify/http-proxy';
 import { injectRequestId } from '../hooks/request-headers.ts';
 import { authenticate, authorize } from '../middlewares/authenticate.ts';
@@ -9,6 +9,7 @@ type ProxyRoute = {
   rewritePrefix: string;
   protected?: boolean;
   adminOnly?: boolean;
+  httpMethods?: HTTPMethods[];
 };
 
 const proxyRoutes: ProxyRoute[] = [
@@ -23,6 +24,7 @@ const proxyRoutes: ProxyRoute[] = [
     prefix: '/gerentes',
     rewritePrefix: '/gerentes',
     adminOnly: true,
+    httpMethods: ['GET', 'PUT', 'DELETE'],
   },
   {
     upstream: process.env.ADMIN_URL || 'http://localhost:8085',
@@ -46,6 +48,7 @@ export async function registerProxies(gateway: FastifyInstance) {
       upstream: route.upstream,
       prefix: route.prefix,
       rewritePrefix: route.rewritePrefix,
+      httpMethods: route.httpMethods,
       preHandler,
       replyOptions: {
         rewriteRequestHeaders: injectRequestId,
