@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.ufpr.bantads.auth.domain.exception.CpfJaCadastradoException;
+import com.ufpr.bantads.auth.domain.exception.EmailJaCadastradoException;
 import com.ufpr.bantads.auth.domain.exception.UsuarioSenhaIncorretosException;
 
 @RestControllerAdvice
@@ -13,14 +15,27 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UsuarioSenhaIncorretosException.class)
     public ResponseEntity<ApiErrorResponse> handleUsuarioSenhaIncorretos(
         UsuarioSenhaIncorretosException ex) {
-            
+
         HttpStatus status = HttpStatus.UNAUTHORIZED;
 
         ApiErrorResponse response = new ApiErrorResponse(
             status.value(),
             status.getReasonPhrase(),
             ex.getMessage()
-        ); 
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler({CpfJaCadastradoException.class, EmailJaCadastradoException.class})
+    public ResponseEntity<ApiErrorResponse> handleDuplicado(RuntimeException ex) {
+        HttpStatus status = HttpStatus.CONFLICT;
+
+        ApiErrorResponse response = new ApiErrorResponse(
+            status.value(),
+            status.getReasonPhrase(),
+            ex.getMessage()
+        );
 
         return ResponseEntity.status(status).body(response);
     }
