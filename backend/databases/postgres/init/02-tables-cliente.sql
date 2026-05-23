@@ -3,7 +3,7 @@ SET search_path TO schema_cliente;
 CREATE TABLE endereco (
     id              BIGSERIAL       PRIMARY KEY,
     logradouro      VARCHAR(200)    NOT NULL,
-    numero          VARCHAR(10)     NOT NULL,
+    numero          VARCHAR(10),
     complemento     VARCHAR(100),
     cep             VARCHAR(8)      NOT NULL,
     cidade          VARCHAR(100)    NOT NULL,

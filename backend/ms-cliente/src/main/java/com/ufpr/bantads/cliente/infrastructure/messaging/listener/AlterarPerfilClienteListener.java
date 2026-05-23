@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.ufpr.bantads.cliente.application.dto.command.AlterarPerfilClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.event.ClientePerfilAlteradoEvent;
+import com.ufpr.bantads.cliente.application.usecase.AlterarPerfilUseCase;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class AlterarPerfilClienteMockListener {
+public class AlterarPerfilClienteListener {
 
     private final RabbitTemplate rabbitTemplate;
+    private final AlterarPerfilUseCase alterarPerfilUseCase;
 
     @Value("${saga.rabbitmq.exchange}")
     private String exchange;
@@ -26,22 +28,12 @@ public class AlterarPerfilClienteMockListener {
 
     @RabbitListener(queues = "${saga.rabbitmq.queue.cliente.alterar-perfil.command}")
     public void handle(AlterarPerfilClienteCommand command) {
-        log.info("Mock alteração de perfil recebida para CPF {}", command.cpf());
+        log.info("Alteração de perfil recebida para CPF {}", command.cpf());
 
-        var event = new ClientePerfilAlteradoEvent(
-            command.sagaId(),
-            command.cpf(),
-            command.nome(),
-            command.email(),
-            command.telefone(),
-            command.salario(),
-            command.cep(),
-            command.logradouro(),
-            command.cidade(),
-            command.estado(),
-            command.complemento(),
-            command.numero()
-        );
+        ClientePerfilAlteradoEvent event = alterarPerfilUseCase.execute(
+            command.sagaId(), 
+            command.cpf(), 
+            command);
 
         rabbitTemplate.convertAndSend(exchange, sucessoRoutingKey, event);
     }

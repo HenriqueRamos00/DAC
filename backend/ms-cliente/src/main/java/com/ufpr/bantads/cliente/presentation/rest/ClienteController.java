@@ -38,7 +38,6 @@ public class ClienteController {
     private final GetClienteByCpfUseCase getClienteByCpfUseCase;
     private final AprovarClienteUseCase aprovarClienteUseCase;
     private final RejeitarClienteUseCase rejeitarClienteUseCase;
-    private final AlterarPerfilUseCase alterarPerfilUseCase;
     private final ClienteSeedService clienteSeedService;
 
 
@@ -81,15 +80,6 @@ public class ClienteController {
         @Valid @RequestBody RejeitarClienteRequest request
     ) {
         ClienteResponse cliente = rejeitarClienteUseCase.execute(cpf, request.motivo());
-        return ResponseEntity.ok(cliente);
-    }
-
-    @PutMapping("/clientes/{cpf}")
-    public ResponseEntity<ClienteResponse> alterarPerfil(
-        @PathVariable String cpf,
-        @Valid @RequestBody AlterarPerfilRequest request
-    ) {
-        ClienteResponse cliente = alterarPerfilUseCase.execute(cpf, request);
         return ResponseEntity.ok(cliente);
     }
 

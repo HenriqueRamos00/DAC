@@ -1,8 +1,5 @@
 package com.ufpr.bantads.conta.infrastructure.messaging.listener;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.ufpr.bantads.conta.application.dto.command.AlterarLimiteContaCommand;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
+import com.ufpr.bantads.conta.application.usecase.AlterarLimiteUseCase;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class AlterarLimiteContaMockListener {
-
-    private static final BigDecimal LIMITE_PERCENTUAL = new BigDecimal("0.5");
+public class AlterarLimiteContaListener {
 
     private final RabbitTemplate rabbitTemplate;
+    private final AlterarLimiteUseCase useCase;
 
     @Value("${saga.rabbitmq.exchange}")
     private String exchange;
@@ -31,19 +28,9 @@ public class AlterarLimiteContaMockListener {
 
     @RabbitListener(queues = "${saga.rabbitmq.queue.conta.alterar-limite.command}")
     public void handle(AlterarLimiteContaCommand command) {
-        log.info("Mock alteração de limite recebida para CPF {}", command.cpf());
+        log.info("Alteração de limite recebida para CPF {}", command.cpf());
 
-        var salario = command.salario() == null ? BigDecimal.ZERO : command.salario();
-        var limite = salario.multiply(LIMITE_PERCENTUAL).setScale(2, RoundingMode.HALF_UP);
-        var event = new ContaLimiteAlteradoEvent(
-            command.sagaId(),
-            command.cpf(),
-            "0001-0",
-            BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
-            limite,
-            "00000000000",
-            "Gerente Mock"
-        );
+        ContaLimiteAlteradoEvent event = useCase.execute(command);
 
         rabbitTemplate.convertAndSend(exchange, sucessoRoutingKey, event);
     }

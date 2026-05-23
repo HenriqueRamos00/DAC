@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
-import com.ufpr.bantads.conta.application.dto.request.TransferenciaRequest;
 import com.ufpr.bantads.conta.application.dto.response.TransferenciaResponse;
 import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
 import com.ufpr.bantads.conta.domain.model.entity.TransferenciaCommand;
