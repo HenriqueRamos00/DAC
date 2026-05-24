@@ -10,6 +10,7 @@ on:
       - "backend/ms-cliente/**"
       - "backend/ms-conta/**"
       - "backend/ms-gerente/**"
+      - "backend/saga/**"
       - ".github/workflows/publish-docker-images.yml"
   workflow_dispatch:
     inputs:
@@ -25,6 +26,7 @@ on:
           - ms-cliente
           - ms-conta
           - ms-gerente
+          - ms-saga
 
 permissions:
   contents: read
@@ -43,6 +45,7 @@ jobs:
       ms-cliente: ${{ steps.filter.outputs.ms-cliente }}
       ms-conta: ${{ steps.filter.outputs.ms-conta }}
       ms-gerente: ${{ steps.filter.outputs.ms-gerente }}
+      ms-saga: ${{ steps.filter.outputs.ms-saga }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -62,6 +65,8 @@ jobs:
               - 'backend/ms-conta/**'
             ms-gerente:
               - 'backend/ms-gerente/**'
+            ms-saga:
+              - 'backend/saga/**'
 
   publish:
     name: Build and push changed images
@@ -196,3 +201,25 @@ jobs:
           labels: ${{ steps.meta-ms-gerente.outputs.labels }}
           cache-from: type=gha,scope=ms-gerente
           cache-to: type=gha,mode=max,scope=ms-gerente
+
+      - name: Extract ms-saga metadata
+        id: meta-ms-saga
+        if: needs.changes.outputs.ms-saga == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-saga'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/ms-saga
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push ms-saga
+        if: needs.changes.outputs.ms-saga == 'true' || github.event.inputs.service == 'all' || github.event.inputs.service == 'ms-saga'
+        uses: docker/build-push-action@v6
+        with:
+          context: backend/saga
+          push: true
+          tags: ${{ steps.meta-ms-saga.outputs.tags }}
+          labels: ${{ steps.meta-ms-saga.outputs.labels }}
+          cache-from: type=gha,scope=ms-saga
+          cache-to: type=gha,mode=max,scope=ms-saga
