@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -58,9 +59,9 @@ public class ContaController {
         }
     }
 
-    @GetMapping("/contas/cpf/{cpf}")
-    public ResponseEntity<ContaResponse> getClienteByCpf(@PathVariable String cpf) {
-        ContaResponse contaResponse = contaByCpfUseCase.execute(cpf);
+    @GetMapping(value = "/contas", params = "clienteCpf")
+    public ResponseEntity<ContaResponse> getByClienteCpf(@RequestParam String clienteCpf) {
+        ContaResponse contaResponse = contaByCpfUseCase.execute(clienteCpf);
         return ResponseEntity.ok(contaResponse);
     }
 

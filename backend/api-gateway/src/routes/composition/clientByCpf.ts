@@ -37,7 +37,7 @@ export async function registerClientByCpf(gateway: FastifyInstance) {
                     `${env.upstreams.cliente}/clientes/${cpf}`,
                     upstreamHeaders),
                 httpClient.get<ContaMsResponse>(
-                    `${env.upstreams.conta}/contas/cpf/${cpf}`,
+                    `${env.upstreams.conta}/contas?clienteCpf=${encodeURIComponent(cpf)}`,
                     upstreamHeaders)
             ]);
         } catch (error) {
