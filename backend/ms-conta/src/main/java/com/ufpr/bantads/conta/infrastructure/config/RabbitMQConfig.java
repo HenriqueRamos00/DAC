@@ -21,12 +21,16 @@ import org.springframework.context.annotation.Configuration;
 import com.ufpr.bantads.conta.application.dto.command.AlterarLimiteContaCommand;
 import com.ufpr.bantads.conta.application.dto.command.AtribuirGerenteContaCommand;
 import com.ufpr.bantads.conta.application.dto.command.ConsultarGerenteMaisContasCommand;
+import com.ufpr.bantads.conta.application.dto.command.CriarContaCommand;
 import com.ufpr.bantads.conta.application.dto.event.AtribuicaoGerenteContaFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ConsultaGerenteMaisContasFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaAlteracaoLimiteFalhouEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
+import com.ufpr.bantads.conta.application.dto.event.CriacaoContaFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteAtribuidoContaEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteMaisContasConsultadoEvent;
+import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 
 @Configuration
 public class RabbitMQConfig {
@@ -42,6 +46,12 @@ public class RabbitMQConfig {
 
     @Value("${saga.rabbitmq.exchange}")
     private String sagaExchange;
+
+    @Value("${saga.rabbitmq.queue.conta.criar.command}")
+    private String criarContaCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.conta.criar.command}")
+    private String criarContaCommandRoutingKey;
 
     @Value("${saga.rabbitmq.queue.conta.alterar-limite.command}")
     private String alterarLimiteContaCommandQueue;
@@ -77,6 +87,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue criarContaCommandQueue() {
+        return QueueBuilder.durable(criarContaCommandQueue).build();
+    }
+
+    @Bean
     public Queue alterarLimiteContaCommandQueue() {
         return QueueBuilder.durable(alterarLimiteContaCommandQueue).build();
     }
@@ -100,6 +115,17 @@ public class RabbitMQConfig {
             .bind(productQueryQueue)
             .to(productExchange)
             .with(routingKey);
+    }
+
+    @Bean
+    public Binding criarContaCommandBinding(
+        @Qualifier("criarContaCommandQueue") Queue criarContaCommandQueue,
+        @Qualifier("sagaExchange") TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(criarContaCommandQueue)
+            .to(sagaExchange)
+            .with(criarContaCommandRoutingKey);
     }
 
     @Bean
@@ -148,6 +174,12 @@ public class RabbitMQConfig {
         classMapper.setTrustedPackages("*");
 
         Map<String, Class<?>> idClassMapping = new HashMap<>();
+        idClassMapping.put("conta.criar.command", CriarContaCommand.class);
+        idClassMapping.put("conta.criada", ContaCriadaEvent.class);
+        idClassMapping.put("conta.criacao.falhou", CriacaoContaFalhouEvent.class);
+        idClassMapping.put("conta.operacao.movimentacao", MovimentacaoEvent.class);
+        idClassMapping.put("conta.operacao.criada", ContaCriadaEvent.class);
+        idClassMapping.put("conta.operacao.limite-alterado", ContaLimiteAlteradoEvent.class);
         idClassMapping.put("conta.alterar-limite.command", AlterarLimiteContaCommand.class);
         idClassMapping.put("conta.limite-alterado", ContaLimiteAlteradoEvent.class);
         idClassMapping.put("conta.alteracao-limite.falhou", ContaAlteracaoLimiteFalhouEvent.class);

@@ -217,6 +217,7 @@ public class RabbitConfig {
         idClassMapping.put("cliente.perfil-alterado", ClientePerfilAlteradoEvent.class);
         idClassMapping.put("cliente.alteracao-perfil.falhou", ClienteAlteracaoFalhouEvent.class);
         idClassMapping.put("conta.limite-alterado", ContaLimiteAlteradoEvent.class);
+        idClassMapping.put("conta.operacao.limite-alterado", ContaLimiteAlteradoEvent.class);
         idClassMapping.put("conta.alteracao-limite.falhou", ClienteAlteracaoFalhouEvent.class);
 
         // Saga Inserir Gerente
