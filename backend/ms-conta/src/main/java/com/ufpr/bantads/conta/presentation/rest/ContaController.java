@@ -1,5 +1,7 @@
 package com.ufpr.bantads.conta.presentation.rest;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ufpr.bantads.conta.application.dto.request.TransferenciaRequest;
@@ -7,11 +9,13 @@ import com.ufpr.bantads.conta.application.dto.request.ValorRequest;
 import com.ufpr.bantads.conta.application.dto.response.ContaResponse;
 import com.ufpr.bantads.conta.application.dto.response.DepositoSaqueResponse;
 import com.ufpr.bantads.conta.application.dto.response.ExtratoResponse;
+import com.ufpr.bantads.conta.application.dto.response.ResumoContasGerenteResponse;
 import com.ufpr.bantads.conta.application.dto.response.SaldoResponse;
 import com.ufpr.bantads.conta.application.dto.response.TransferenciaResponse;
 import com.ufpr.bantads.conta.application.usecase.DepositarUseCase;
 import com.ufpr.bantads.conta.application.usecase.GetContaByCpfUseCase;
 import com.ufpr.bantads.conta.application.usecase.GetExtratoUseCase;
+import com.ufpr.bantads.conta.application.usecase.GetResumoContasGerentesUseCase;
 import com.ufpr.bantads.conta.application.usecase.GetSaldoUseCase;
 import com.ufpr.bantads.conta.application.usecase.SacarUseCase;
 import com.ufpr.bantads.conta.application.usecase.TransferenciaUseCase;
@@ -35,11 +39,18 @@ public class ContaController {
     private final SacarUseCase sacarUseCase;
     private final TransferenciaUseCase transferenciaUseCase;
     private final GetContaByCpfUseCase contaByCpfUseCase;
+    private final GetResumoContasGerentesUseCase resumoContasGerentesUseCase;
 
     @GetMapping("/contas/cpf/{cpf}")
     public ResponseEntity<ContaResponse> getClienteByCpf(@PathVariable String cpf) {
         ContaResponse contaResponse = contaByCpfUseCase.execute(cpf);
         return ResponseEntity.ok(contaResponse);
+    }
+
+    @GetMapping("/contas/resumo-gerentes")
+    public ResponseEntity<List<ResumoContasGerenteResponse>> getResumoContasGerentes() {
+        List<ResumoContasGerenteResponse> resumos = resumoContasGerentesUseCase.execute();
+        return ResponseEntity.ok(resumos);
     }
 
     @GetMapping("/contas/{conta}/saldo")

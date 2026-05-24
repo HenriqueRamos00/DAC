@@ -3,7 +3,7 @@ import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { getSessionAutenticada } from "~/services/auth.server";
 import { LayoutDashboard, TrendingDown, TrendingUp, Users } from "lucide-react";
 import { TabelaGerentes } from "~/features/tabela-gerentes/tabela-gerentes";
-import type { GerenteResumo } from "~/models/dto/GerenteResumo";
+import type { GerenteDashboard, GerenteResumo } from "~/models/dto/GerenteResumo";
 import Painel from "~/components/app-painel";
 import { getFormattedCurrency } from "~/lib/utils/formatCurrency";
 
@@ -16,14 +16,26 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({ request }: Route.LoaderArgs) {
     const { apiClient } = await getSessionAutenticada(request);
-    const response = await apiClient.get("/admin/dashboard");
+    const response = await apiClient.get("/gerentes?filtro=dashboard");
 
     if (!response.ok) {
         throw new Response("Erro ao carregar dashboard", { status: response.status });
     }
 
-    const gerentes = (await response.json()) as GerenteResumo[];
+    const dashboard = (await response.json()) as GerenteDashboard[];
+    const gerentes = dashboard.map(toGerenteResumo);
     return { gerentes };
+}
+
+function toGerenteResumo(item: GerenteDashboard): GerenteResumo {
+    return {
+        cpf: item.gerente.cpf,
+        nome: item.gerente.nome,
+        email: item.gerente.email,
+        quantidadeClientes: item.clientes.length,
+        totalSaldoPositivo: item.saldo_positivo,
+        totalSaldoNegativo: item.saldo_negativo,
+    };
 }
 
 export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
