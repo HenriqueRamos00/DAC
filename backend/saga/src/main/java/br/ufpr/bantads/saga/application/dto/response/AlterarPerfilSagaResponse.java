@@ -15,8 +15,7 @@ public record AlterarPerfilSagaResponse(
     String conta,
     BigDecimal saldo,
     BigDecimal limite,
-    String gerente,
-    String gerente_nome
+    String gerente
 ) {
 
     public static AlterarPerfilSagaResponse fromEvent(
@@ -40,8 +39,7 @@ public record AlterarPerfilSagaResponse(
             contaEvent.getNumeroConta(),
             contaEvent.getSaldo(),
             contaEvent.getLimite(),
-            contaEvent.getGerenteCpf(),
-            contaEvent.getGerenteNome()
+            contaEvent.getGerenteCpf()
         );
     }
 

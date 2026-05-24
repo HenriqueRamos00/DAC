@@ -1,9 +1,11 @@
 package com.ufpr.bantads.cliente.application.usecase;
 
+import java.util.regex.*;
+
 import org.springframework.stereotype.Service;
 
-import com.ufpr.bantads.cliente.application.dto.request.AlterarPerfilRequest;
-import com.ufpr.bantads.cliente.application.dto.response.ClienteResponse;
+import com.ufpr.bantads.cliente.application.dto.command.AlterarPerfilClienteCommand;
+import com.ufpr.bantads.cliente.application.dto.event.ClientePerfilAlteradoEvent;
 import com.ufpr.bantads.cliente.domain.exception.ClienteNaoEncontradoException;
 import com.ufpr.bantads.cliente.domain.model.Cliente;
 import com.ufpr.bantads.cliente.domain.model.StatusCliente;
@@ -16,8 +18,13 @@ import lombok.RequiredArgsConstructor;
 public class AlterarPerfilUseCase {
 
     private final ClienteRepository clienteRepository;
+    private final String regex = ",\\s*(\\d+)$";
+    private final Pattern pattern = Pattern.compile(regex);
 
-    public ClienteResponse execute(String cpf, AlterarPerfilRequest request) {
+    public ClientePerfilAlteradoEvent execute(
+        String sagaId,
+        String cpf, 
+        AlterarPerfilClienteCommand request) {
         Cliente cliente = clienteRepository.findByCpf(cpf)
             .orElseThrow(() -> new ClienteNaoEncontradoException(cpf));
 
@@ -32,14 +39,20 @@ public class AlterarPerfilUseCase {
 
         var endereco = cliente.getEndereco();
         endereco.setCep(request.cep());
-        endereco.setLogradouro(request.logradouro());
-        endereco.setNumero(request.numero());
-        endereco.setComplemento(request.complemento());
+        Matcher matcher = pattern.matcher(request.logradouro());
+        if (matcher.find()) {
+            String numero = matcher.group(1);
+            String logradouro = request.logradouro().replaceFirst(regex, "");
+            endereco.setLogradouro(logradouro);
+            endereco.setNumero(numero);
+        } else {
+            endereco.setLogradouro(request.logradouro());
+        }
         endereco.setCidade(request.cidade());
         endereco.setEstado(request.estado());
 
         Cliente atualizado = clienteRepository.save(cliente);
 
-        return ClienteResponse.fromEntity(atualizado);
+        return ClientePerfilAlteradoEvent.fromEntity(sagaId, atualizado);
     }
 }

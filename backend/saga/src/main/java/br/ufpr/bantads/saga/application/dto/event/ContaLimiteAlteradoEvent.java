@@ -16,6 +16,5 @@ public class ContaLimiteAlteradoEvent {
     private BigDecimal saldo;
     private BigDecimal limite;
     private String gerenteCpf;
-    private String gerenteNome;
 
 }

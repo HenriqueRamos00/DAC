@@ -50,4 +50,7 @@ public class ContaQuery {
     @Column(name = "gerente_nome", nullable = false, length = 150)
     private String gerenteNome;
 
+    @Column(name = "gerente_email", nullable = false, length = 150)
+    private String gerenteEmail;
+
 }

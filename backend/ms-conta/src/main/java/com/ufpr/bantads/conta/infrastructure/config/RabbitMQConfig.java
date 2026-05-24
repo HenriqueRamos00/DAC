@@ -23,6 +23,7 @@ import com.ufpr.bantads.conta.application.dto.command.AtribuirGerenteContaComman
 import com.ufpr.bantads.conta.application.dto.command.ConsultarGerenteMaisContasCommand;
 import com.ufpr.bantads.conta.application.dto.event.AtribuicaoGerenteContaFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ConsultaGerenteMaisContasFalhouEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaAlteracaoLimiteFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteAtribuidoContaEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteMaisContasConsultadoEvent;
@@ -149,6 +150,7 @@ public class RabbitMQConfig {
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("conta.alterar-limite.command", AlterarLimiteContaCommand.class);
         idClassMapping.put("conta.limite-alterado", ContaLimiteAlteradoEvent.class);
+        idClassMapping.put("conta.alteracao-limite.falhou", ContaAlteracaoLimiteFalhouEvent.class);
 
         // Saga Inserir Gerente
         idClassMapping.put("conta.consultar-gerente-mais-contas", ConsultarGerenteMaisContasCommand.class);

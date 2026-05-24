@@ -26,7 +26,7 @@ public class Endereco {
     @Column(nullable = false, length = 200)
     private String logradouro;
 
-    @Column(nullable = false, length = 10)
+    @Column(length = 10)
     private String numero;
 
     @Column(length = 100)
@@ -40,4 +40,10 @@ public class Endereco {
 
     @Column(nullable = false, length = 2)
     private String estado;
+
+    @Override
+    public String toString() {
+        return this.numero != null ? this.logradouro + ", " + this.numero :
+        this.logradouro;
+    }
 }
