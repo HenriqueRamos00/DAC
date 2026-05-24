@@ -49,7 +49,8 @@ CREATE TABLE conta_read.conta_view (
     cliente_nome    VARCHAR(150)  NOT NULL,
     cliente_cpf     VARCHAR(11)   NOT NULL,
     gerente_cpf     VARCHAR(11)   NOT NULL,
-    gerente_nome    VARCHAR(150)  NOT NULL
+    gerente_nome    VARCHAR(150)  NOT NULL,
+    gerente_email   VARCHAR(150)  NOT NULL
 );
 
 CREATE TABLE conta_read.movimentacao_view (

@@ -78,7 +78,7 @@ export async function registerClienteRoutes(gateway: FastifyInstance) {
     },
     async (request, reply) => {
       const response = await httpClient.put<unknown>(
-        `${env.upstreams.cliente}/clientes/${request.params.cpf}`,
+        `${env.upstreams.sagas}/sagas/clientes/${request.params.cpf}/perfil`,
         request.body,
         buildUpstreamHeaders(request),
       );

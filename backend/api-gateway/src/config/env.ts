@@ -7,7 +7,6 @@ export const env = {
     cliente: process.env.CLIENTE_URL || 'http://localhost:8082',
     conta:   process.env.CONTA_URL   || 'http://localhost:8083',
     gerente: process.env.GERENTE_URL || 'http://localhost:8084',
-    admin:   process.env.ADMIN_URL   || 'http://localhost:8085',
     sagas:   process.env.SAGAS_URL   || 'http://localhost:8086',
   },
 };

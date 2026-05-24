@@ -40,11 +40,6 @@ export async function registerClientByCpf(gateway: FastifyInstance) {
                     `${env.upstreams.conta}/contas/cpf/${cpf}`,
                     upstreamHeaders)
             ]);
-
-            gerente = await httpClient.get<GerenteMsResponse>(
-                `${env.upstreams.gerente}/gerentes/${conta.gerenteCpf}`,
-                upstreamHeaders
-            );
         } catch (error) {
             throw error;
         }
@@ -55,6 +50,7 @@ export async function registerClientByCpf(gateway: FastifyInstance) {
             nome: cliente.nome,
             telefone: cliente.telefone,
             email: cliente.email,
+            cep: cliente.CEP,
             endereco: cliente.endereco,
             cidade: cliente.cidade,
             estado: cliente.estado,
@@ -62,9 +58,9 @@ export async function registerClientByCpf(gateway: FastifyInstance) {
             conta: conta.numeroConta,
             saldo: String(conta.saldo),
             limite: conta.limite,
-            gerente: gerente.cpf,
-            gerente_nome: gerente.nome,
-            gerente_email: gerente.email
+            gerente: conta.gerenteCpf,
+            gerente_nome: conta.gerenteNome,
+            gerente_email: conta.gerenteEmail
         };
     });
 }

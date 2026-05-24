@@ -3,6 +3,7 @@ export type ClientResponseDto = {
   nome: string;
   telefone: string;
   email: string;
+  cep: string;
   endereco: string;
   cidade: string;
   estado: string;

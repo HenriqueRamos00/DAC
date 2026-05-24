@@ -34,7 +34,7 @@ public class AlterarPerfilClienteCommand {
             cpf,
             request.nome(), 
             request.email(), 
-            null,
+            request.telefone(),
             request.salario(), 
             request.CEP(), 
             request.endereco(), 

@@ -4,7 +4,7 @@ export type Cliente = {
   telefone: string
   email: string
   endereco: string
-  CEP: string
+  cep: string
   cidade: string
   estado: string
   salario: number

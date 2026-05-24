@@ -76,7 +76,7 @@ function toFormValues(cliente: Cliente): PerfilFormValues {
     email: cliente.email,
     telefone: cliente.telefone,
     endereco: cliente.endereco,
-    CEP: formatCep(cliente.CEP),
+    CEP: formatCep(cliente.cep),
     cidade: cliente.cidade,
     estado: normalizeEstado(cliente.estado),
     salario: getFormattedCurrency(cliente.salario),
@@ -90,6 +90,10 @@ function parseCurrencyValue(value: string): number {
     .replace(",", ".");
 
   return Number(normalized);
+}
+
+function onlyDigits(value: string): string {
+  return value.replace(/\D/g, "");
 }
 
 export function meta({}: Route.MetaArgs) {
@@ -153,6 +157,8 @@ export async function action({ request }: Route.ActionArgs) {
 
   const response = await apiClient.put(`/clientes/${cpf}`, {
     ...parsed.data,
+    telefone: onlyDigits(parsed.data.telefone),
+    CEP: onlyDigits(parsed.data.CEP),
     salario,
   });
 

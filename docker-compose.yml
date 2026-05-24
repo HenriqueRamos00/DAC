@@ -162,14 +162,14 @@ services:
     ports:
       - "8086:8086"
     depends_on:
-      #ms-auth:
-      #  condition: service_started
+      ms-auth:
+        condition: service_started
       ms-cliente:
         condition: service_started
       ms-conta:
         condition: service_started
-      #ms-gerente:
-      #  condition: service_started
+      ms-gerente:
+        condition: service_started
     networks:
       - bantads-network
 
@@ -186,7 +186,6 @@ services:
       CLIENTE_URL: http://ms-cliente:8082
       CONTA_URL: http://ms-conta:8083
       GERENTE_URL: http://ms-gerente:8084
-      ADMIN_URL: http://ms-admin:8085
       SAGAS_URL: http://ms-saga:8086
     ports:
       - "3000:3000"

@@ -10,7 +10,8 @@ public record ContaResponse(
     String clienteNome,
     String clienteCpf,
     String gerenteCpf,
-    String gerenteNome
+    String gerenteNome,
+    String gerenteEmail
 ) {
     public static ContaResponse fromEntity(ContaQuery contaQuery) {
         return new ContaResponse(
@@ -21,7 +22,8 @@ public record ContaResponse(
             contaQuery.getClienteNome(),
             contaQuery.getClienteCpf(),
             contaQuery.getGerenteCpf(),
-            contaQuery.getGerenteNome()
+            contaQuery.getGerenteNome(),
+            contaQuery.getGerenteEmail()
         );
     }
 }

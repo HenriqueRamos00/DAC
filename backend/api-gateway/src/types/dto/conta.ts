@@ -7,4 +7,5 @@ export type ContaMsResponse = {
   clienteCpf: string;
   gerenteCpf: string;
   gerenteNome: string;
+  gerenteEmail: string;
 };
