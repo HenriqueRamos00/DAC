@@ -3,6 +3,8 @@ package com.ufpr.bantads.conta.application.usecase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 import com.ufpr.bantads.conta.domain.model.entity.ContaQuery;
 import com.ufpr.bantads.conta.domain.model.entity.MovimentacaoQuery;
@@ -18,6 +20,39 @@ public class SyncMovimentacaoUseCase {
     private final MovimentacaoQueryRepository movimentacaoQueryRepository;
 
     private final ContaQueryRepository contaQueryRepository;
+
+    @Transactional
+    public void sincronizarContaCriada(ContaCriadaEvent event) {
+        if (contaQueryRepository.findByNumeroConta(event.getNumeroConta()).isPresent()) {
+            return;
+        }
+
+        ContaQuery conta = new ContaQuery(
+            event.getContaId(),
+            event.getNumeroConta(),
+            event.getDataCriacao(),
+            event.getSaldo(),
+            event.getLimite(),
+            event.getClienteNome(),
+            event.getClienteCpf(),
+            event.getGerenteCpf(),
+            event.getGerenteNome(),
+            event.getGerenteEmail()
+        );
+
+        contaQueryRepository.save(conta);
+    }
+
+    @Transactional
+    public void sincronizarLimiteAlterado(ContaLimiteAlteradoEvent event) {
+        ContaQuery conta = contaQueryRepository.findByClienteCpf(event.cpf())
+            .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada para o CPF " + event.cpf()));
+
+        conta.setSaldo(event.saldo());
+        conta.setLimite(event.limite());
+        conta.setGerenteCpf(event.gerenteCpf());
+        contaQueryRepository.save(conta);
+    }
 
     @Transactional
     public void execute(MovimentacaoEvent event) {
