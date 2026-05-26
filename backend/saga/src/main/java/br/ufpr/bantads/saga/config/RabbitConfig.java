@@ -31,6 +31,15 @@ import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteAtribuidoCont
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteInseridoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteMaisContasConsultadoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.InsercaoGerenteFalhouEvent;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.command.ListarGerentesAtivosCommand;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.command.ReatribuirContasGerenteCommand;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.command.RemoverGerenteCommand;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ContasReatribuidasEvent;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.GerenteRemovidoEvent;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.GerentesAtivosListadosEvent;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ListagemGerentesAtivosFalhouEvent;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ReatribuicaoContasFalhouEvent;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.RemocaoGerenteFalhouEvent;
 
 @Configuration
 public class RabbitConfig {
@@ -73,6 +82,27 @@ public class RabbitConfig {
 
     @Value("${saga.rabbitmq.routing-key.conta.alterar-limite.falha}")
     private String contaAlterarLimiteFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.remocao-gerente.response}")
+    private String remocaoGerenteResponseQueue;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos.sucesso}")
+    private String gerenteListarAtivosSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos.falha}")
+    private String gerenteListarAtivosFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.reatribuir-contas-gerente.sucesso}")
+    private String contaReatribuirContasSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.reatribuir-contas-gerente.falha}")
+    private String contaReatribuirContasFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.remover.sucesso}")
+    private String gerenteRemoverSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.remover.falha}")
+    private String gerenteRemoverFalhaRoutingKey;
 
     @Bean
     public TopicExchange sagaExchange() {
@@ -200,6 +230,77 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Queue remocaoGerenteResponseQueue() {
+        return QueueBuilder.durable(remocaoGerenteResponseQueue).build();
+    }
+
+    @Bean
+    public Binding gerenteListarAtivosSucessoBinding(
+        Queue remocaoGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(remocaoGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(gerenteListarAtivosSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding gerenteListarAtivosFalhaBinding(
+        Queue remocaoGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(remocaoGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(gerenteListarAtivosFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding contaReatribuirContasSucessoBinding(
+        Queue remocaoGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(remocaoGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(contaReatribuirContasSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding contaReatribuirContasFalhaBinding(
+        Queue remocaoGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(remocaoGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(contaReatribuirContasFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding gerenteRemoverSucessoBinding(
+        Queue remocaoGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(remocaoGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(gerenteRemoverSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding gerenteRemoverFalhaBinding(
+        Queue remocaoGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(remocaoGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(gerenteRemoverFalhaRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
         jsonConverter.setClassMapper(sagaClassMapper());
@@ -230,6 +331,17 @@ public class RabbitConfig {
         idClassMapping.put("conta.atribuir-gerente", AtribuirGerenteContaCommand.class);
         idClassMapping.put("conta.gerente-atribuido", GerenteAtribuidoContaEvent.class);
         idClassMapping.put("conta.atribuicao-gerente.falhou", AtribuicaoGerenteContaFalhouEvent.class);
+
+        // Saga Remoção de Gerente
+        idClassMapping.put("gerente.listar-ativos", ListarGerentesAtivosCommand.class);
+        idClassMapping.put("gerente.ativos-listados", GerentesAtivosListadosEvent.class);
+        idClassMapping.put("gerente.listagem-ativos.falhou", ListagemGerentesAtivosFalhouEvent.class);
+        idClassMapping.put("conta.reatribuir-contas-gerente", ReatribuirContasGerenteCommand.class);
+        idClassMapping.put("conta.contas-reatribuidas", ContasReatribuidasEvent.class);
+        idClassMapping.put("conta.reatribuicao-contas.falhou", ReatribuicaoContasFalhouEvent.class);
+        idClassMapping.put("gerente.remover", RemoverGerenteCommand.class);
+        idClassMapping.put("gerente.removido", GerenteRemovidoEvent.class);
+        idClassMapping.put("gerente.remocao.falhou", RemocaoGerenteFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;
