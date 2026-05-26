@@ -17,20 +17,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import br.ufpr.bantads.saga.application.dto.command.AlterarLimiteContaCommand;
-import br.ufpr.bantads.saga.application.dto.command.AlterarPerfilClienteCommand;
-import br.ufpr.bantads.saga.application.dto.command.AtribuirGerenteContaCommand;
-import br.ufpr.bantads.saga.application.dto.command.ConsultarGerenteMaisContasCommand;
-import br.ufpr.bantads.saga.application.dto.command.InserirGerenteCommand;
-import br.ufpr.bantads.saga.application.dto.event.AtribuicaoGerenteContaFalhouEvent;
-import br.ufpr.bantads.saga.application.dto.event.ClienteAlteracaoFalhouEvent;
-import br.ufpr.bantads.saga.application.dto.event.ClientePerfilAlteradoEvent;
-import br.ufpr.bantads.saga.application.dto.event.ConsultaGerenteMaisContasFalhouEvent;
-import br.ufpr.bantads.saga.application.dto.event.ContaLimiteAlteradoEvent;
-import br.ufpr.bantads.saga.application.dto.event.GerenteAtribuidoContaEvent;
-import br.ufpr.bantads.saga.application.dto.event.GerenteInseridoEvent;
-import br.ufpr.bantads.saga.application.dto.event.GerenteMaisContasConsultadoEvent;
-import br.ufpr.bantads.saga.application.dto.event.InsercaoGerenteFalhouEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.AlterarLimiteContaCommand;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.AlterarPerfilClienteCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.AtribuirGerenteContaCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.ConsultarGerenteMaisContasCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.InserirGerenteCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.AtribuicaoGerenteContaFalhouEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClienteAlteracaoFalhouEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClientePerfilAlteradoEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.ConsultaGerenteMaisContasFalhouEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ContaLimiteAlteradoEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteAtribuidoContaEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteInseridoEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteMaisContasConsultadoEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.InsercaoGerenteFalhouEvent;
 
 @Configuration
 public class RabbitConfig {
