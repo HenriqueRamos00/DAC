@@ -3,6 +3,12 @@ package com.ufpr.bantads.conta.presentation.rest;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
@@ -25,15 +31,9 @@ import com.ufpr.bantads.conta.application.usecase.SacarUseCase;
 import com.ufpr.bantads.conta.application.usecase.TransferenciaUseCase;
 import com.ufpr.bantads.conta.domain.exception.ContaJaExisteException;
 import com.ufpr.bantads.conta.domain.exception.NumeroContaIndisponivelException;
+import com.ufpr.bantads.conta.infrastructure.config.ContaSeedService;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -48,6 +48,13 @@ public class ContaController {
     private final GetContaByCpfUseCase contaByCpfUseCase;
     private final GetResumoContasGerentesUseCase resumoContasGerentesUseCase;
     private final CriarContaUseCase criarContaUseCase;
+    private final ContaSeedService contaSeedService;
+
+    @GetMapping("/reboot")
+    public ResponseEntity<Void> reboot() {
+        contaSeedService.reboot();
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("/contas")
     public ResponseEntity<ContaResponse> criar(@RequestBody CriarContaRequest request) {
@@ -76,7 +83,7 @@ public class ContaController {
         SaldoResponse saldoResponse = getSaldoUseCase.execute(conta);
         return ResponseEntity.ok(saldoResponse);
     }
-    
+
     @GetMapping("/contas/{conta}/extrato")
     public ResponseEntity<ExtratoResponse> getExtrato(@PathVariable String conta) {
         ExtratoResponse extratoResponse = getExtratoUseCase.getExtrato(conta);
@@ -85,9 +92,8 @@ public class ContaController {
 
     @PostMapping("/contas/{conta}/depositar")
     public ResponseEntity<DepositoSaqueResponse> depositar(
-        @PathVariable String conta,
-        @RequestBody ValorRequest request
-    ) {
+            @PathVariable String conta,
+            @RequestBody ValorRequest request) {
         if (request == null || request.valor() == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -98,9 +104,8 @@ public class ContaController {
 
     @PostMapping("/contas/{conta}/sacar")
     public ResponseEntity<DepositoSaqueResponse> sacar(
-        @PathVariable String conta,
-        @RequestBody ValorRequest request
-    ) {
+            @PathVariable String conta,
+            @RequestBody ValorRequest request) {
         if (request == null || request.valor() == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -108,17 +113,17 @@ public class ContaController {
         DepositoSaqueResponse depositoResponse = sacarUseCase.execute(conta, request.valor());
         return ResponseEntity.ok(depositoResponse);
     }
-    
+
     @PostMapping("/contas/{conta}/transferir")
     public ResponseEntity<TransferenciaResponse> transferir(
-        @PathVariable String conta,
-        @RequestBody TransferenciaRequest request
-    ) {
+            @PathVariable String conta,
+            @RequestBody TransferenciaRequest request) {
         if (request == null || request.valor() == null) {
             return ResponseEntity.badRequest().build();
         }
 
-        TransferenciaResponse transferenciaResponse = transferenciaUseCase.execute(conta, request.destino(), request.valor());
+        TransferenciaResponse transferenciaResponse = transferenciaUseCase.execute(conta, request.destino(),
+                request.valor());
         return ResponseEntity.ok(transferenciaResponse);
     }
 }
