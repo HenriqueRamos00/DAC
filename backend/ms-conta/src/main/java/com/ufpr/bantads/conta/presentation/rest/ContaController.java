@@ -31,6 +31,7 @@ import com.ufpr.bantads.conta.application.usecase.SacarUseCase;
 import com.ufpr.bantads.conta.application.usecase.TransferenciaUseCase;
 import com.ufpr.bantads.conta.domain.exception.ContaJaExisteException;
 import com.ufpr.bantads.conta.domain.exception.NumeroContaIndisponivelException;
+import com.ufpr.bantads.conta.domain.repository.ContaQueryRepository;
 import com.ufpr.bantads.conta.infrastructure.config.ContaSeedService;
 
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ public class ContaController {
     private final GetContaByCpfUseCase contaByCpfUseCase;
     private final GetResumoContasGerentesUseCase resumoContasGerentesUseCase;
     private final CriarContaUseCase criarContaUseCase;
+    private final ContaQueryRepository contaQueryRepository;
     private final ContaSeedService contaSeedService;
 
     @GetMapping("/reboot")
@@ -70,6 +72,15 @@ public class ContaController {
     public ResponseEntity<ContaResponse> getByClienteCpf(@RequestParam String clienteCpf) {
         ContaResponse contaResponse = contaByCpfUseCase.execute(clienteCpf);
         return ResponseEntity.ok(contaResponse);
+    }
+
+    @GetMapping(value = "/contas", params = "gerenteCpf")
+    public ResponseEntity<List<ContaResponse>> getByGerenteCpf(@RequestParam String gerenteCpf) {
+        List<ContaResponse> contas = contaQueryRepository.findByGerenteCpf(gerenteCpf)
+                .stream()
+                .map(ContaResponse::fromEntity)
+                .toList();
+        return ResponseEntity.ok(contas);
     }
 
     @GetMapping("/contas/resumo-gerentes")
