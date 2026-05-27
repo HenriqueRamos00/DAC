@@ -15,4 +15,10 @@ public interface SagaStepRepository extends JpaRepository<SagaStep, Long> {
         SagaStepStatus status
     );
 
+    Optional<SagaStep> findFirstBySagaSagaIdAndStepNameAndStatusOrderByIdDesc(
+        String sagaId,
+        String stepName,
+        SagaStepStatus status
+    );
+
 }

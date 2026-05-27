@@ -125,6 +125,30 @@ public class SagaPersistenceService {
         sagaRepository.save(saga);
     }
 
+    @Transactional
+    public <T> T getCompletedStepResponse(
+        String sagaId,
+        String stepName,
+        Class<T> responseType
+    ) {
+        SagaStep step = stepRepository
+            .findFirstBySagaSagaIdAndStepNameAndStatusOrderByIdDesc(
+                sagaId,
+                stepName,
+                SagaStepStatus.COMPLETED
+            )
+            .orElseThrow(() -> new IllegalStateException(
+                "Step completo não encontrado para sagaId=" + sagaId + ", stepName=" + stepName
+            ));
+
+        if (step.getResponsePayload() == null) {
+            throw new IllegalStateException(
+                "Step completo não possui response_payload para sagaId=" + sagaId + ", stepName=" + stepName
+            );
+        }
+
+        return objectMapper.convertValue(step.getResponsePayload(), responseType);
+    }
 
     private Map<String, Object> toMap(Object payload) {
         if (payload == null) {
