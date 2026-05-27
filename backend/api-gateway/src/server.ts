@@ -11,6 +11,7 @@ import { env } from './config/env.ts';
 import { registerClientByCpf } from './routes/composition/clientByCpf.ts';
 import { registerCreateGerenteSaga } from './routes/composition/createGerenteSaga.ts';
 import { registerGerentesComposition } from './routes/composition/gerentes.ts';
+import { registerGerenteClientes } from './routes/composition/gerenteClientes.ts';
 
 const gateway = Fastify({
   logger: true,
@@ -23,6 +24,7 @@ await gateway.register(jwtPlugin);
 await registerAuthRoutes(gateway);
 await registerClientByCpf(gateway);
 await registerGerentesComposition(gateway);
+await registerGerenteClientes(gateway);
 await registerCreateGerenteSaga(gateway);
 await registerClienteRoutes(gateway);
 
