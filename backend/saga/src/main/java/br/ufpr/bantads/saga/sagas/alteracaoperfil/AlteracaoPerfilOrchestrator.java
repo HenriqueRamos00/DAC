@@ -1,9 +1,7 @@
 package br.ufpr.bantads.saga.sagas.alteracaoperfil;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +15,9 @@ import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ContaLimiteAlteradoE
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.request.AlterarPerfilRequest;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.response.AlterarPerfilSagaResponse;
 import br.ufpr.bantads.saga.shared.dto.response.SagaErrorResponse;
+import br.ufpr.bantads.saga.shared.enums.SagaStatus;
+import br.ufpr.bantads.saga.shared.service.SagaPersistenceService;
 import br.ufpr.bantads.saga.shared.SagaResponseRegistry;
-import br.ufpr.bantads.saga.sagas.alteracaoperfil.AlteracaoPerfilCommandPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,11 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AlteracaoPerfilOrchestrator {
 
+    private static final String SAGA_TYPE = "ALTERACAO_PERFIL_CLIENTE";
+
+    private static final String STEP_ALTERAR_PERFIL_CLIENTE = "ALTERAR_PERFIL_CLIENTE";
+    private static final String STEP_ALTERAR_LIMITE_CONTA = "ALTERAR_LIMITE_CONTA";
+
     private final AlteracaoPerfilCommandPublisher commandPublisher;
     private final SagaResponseRegistry responseRegistry;
-
-    private final Map<String, ClientePerfilAlteradoEvent> clienteAlteradoPorSaga = new ConcurrentHashMap<>();
-    private final Map<String, String> statusPorSaga = new ConcurrentHashMap<>();
+    private final SagaPersistenceService sagaPersistenceService;
 
     @Value("${saga.step.timeout-ms:10000}")
     private Long timeoutMs;
@@ -39,13 +41,22 @@ public class AlteracaoPerfilOrchestrator {
     public AlterarPerfilSagaResponse iniciar(String cpf, AlterarPerfilRequest request) {
         String sagaId = UUID.randomUUID().toString();
 
-        statusPorSaga.put(sagaId, "STARTED");
+        sagaPersistenceService.createSaga(sagaId, SAGA_TYPE);
 
         CompletableFuture<Object> future = responseRegistry.register(sagaId);
 
-        AlterarPerfilClienteCommand command = AlterarPerfilClienteCommand.fromRequest(cpf, sagaId, request);
+        AlterarPerfilClienteCommand command = 
+            AlterarPerfilClienteCommand.fromRequest(cpf, sagaId, request);
 
-        statusPorSaga.put(sagaId, "CLIENTE_ALTERACAI_SOLICITADA");
+        sagaPersistenceService.markStepSent(
+            sagaId,
+            1,
+            STEP_ALTERAR_PERFIL_CLIENTE,
+            AlterarPerfilClienteCommand.class.getSimpleName(),
+            command,
+            SagaStatus.EXECUTING
+        );
+
         commandPublisher.publishAlterarPerfil(command);
 
         try {
@@ -60,52 +71,109 @@ public class AlteracaoPerfilOrchestrator {
             throw new IllegalStateException("Resposta inesperada da SAGA de alteração de perfil");
         } catch (Exception ex) {
             responseRegistry.cancel(sagaId);
-            statusPorSaga.put(sagaId, "FAILED");
-            clienteAlteradoPorSaga.remove(sagaId);
-            throw new IllegalStateException("SAGA de alteração de perfil não concluída: " + ex.getMessage(), ex);
+
+            sagaPersistenceService.failSaga(
+                sagaId,
+                "SAGA de alteração de perfil não concluída: " + ex.getMessage()
+            );
+
+            throw new IllegalStateException(
+                "SAGA de alteração de perfil não concluída: " + ex.getMessage(), ex);
         }
     }
 
     public void handleClientePerfilAlterado(ClientePerfilAlteradoEvent event) {
         log.info("SAGA {} recebeu sucesso do MS Cliente", event.getSagaId());
-        clienteAlteradoPorSaga.put(event.getSagaId(), event);
-        statusPorSaga.put(event.getSagaId(), "CLIENTE_ALTERADO");
+
+        sagaPersistenceService.markStepCompleted(
+            event.getSagaId(),
+            STEP_ALTERAR_PERFIL_CLIENTE,
+            ClientePerfilAlteradoEvent.class.getSimpleName(),
+            event
+        );
 
         AlterarLimiteContaCommand command = AlterarLimiteContaCommand.fromEvent(event);
-        statusPorSaga.put(event.getSagaId(), "CONTA_LIMITE_SOLICITADO");
+
+        sagaPersistenceService.markStepSent(
+            event.getSagaId(),
+            2,
+            STEP_ALTERAR_LIMITE_CONTA,
+            AlterarLimiteContaCommand.class.getSimpleName(),
+            command,
+            SagaStatus.EXECUTING
+        );
+
         commandPublisher.publishAlterarLimite(command);
     }
 
     public void handleContaLimiteAlterado(ContaLimiteAlteradoEvent event) {
         log.info("SAGA {} recebeu sucesso do MS Conta", event.getSagaId());
-        ClientePerfilAlteradoEvent clienteEvent = clienteAlteradoPorSaga.remove(event.getSagaId());
 
-        if (clienteEvent == null) {
-            fail(event.getSagaId(), event.getCpf(), "Evento de conta recebido sem dados parciais do cliente");
-            return;
-        }
+        sagaPersistenceService.markStepCompleted(
+            event.getSagaId(),
+            STEP_ALTERAR_LIMITE_CONTA,
+            ContaLimiteAlteradoEvent.class.getSimpleName(),
+            event
+        );
 
-        AlterarPerfilSagaResponse response = AlterarPerfilSagaResponse.fromEvent(clienteEvent, event);
+        ClientePerfilAlteradoEvent clienteEvent =
+            sagaPersistenceService.getCompletedStepResponse(
+                event.getSagaId(),
+                STEP_ALTERAR_PERFIL_CLIENTE,
+                ClientePerfilAlteradoEvent.class
+            );
 
-        statusPorSaga.put(event.getSagaId(), "COMPLETED");
+        AlterarPerfilSagaResponse response =
+            AlterarPerfilSagaResponse.fromEvent(clienteEvent, event);
+
+        sagaPersistenceService.completeSaga(event.getSagaId());
+
         responseRegistry.complete(event.getSagaId(), response);
     }
 
     public void handleClienteAlteracaoPerfilFalhou(ClienteAlteracaoFalhouEvent event) {
+        sagaPersistenceService.failStep(
+            event.sagaId(),
+            STEP_ALTERAR_PERFIL_CLIENTE,
+            event.motivo()
+        );
+
         fail(event.sagaId(), event.cpf(), "Falha no MS Cliente: " + event.motivo());
     }
 
     public void handleContaAlteracaoLimiteFalhou(ClienteAlteracaoFalhouEvent event) {
-        statusPorSaga.put(event.sagaId(), "COMPENSATION_REQUIRED");
-        // Aqui deve entrar o comando cliente.reverter-alteracao-perfil.command.
+        sagaPersistenceService.failStep(
+            event.sagaId(),
+            STEP_ALTERAR_LIMITE_CONTA,
+            event.motivo()
+        );
+
+        sagaPersistenceService.requireCompensation(
+            event.sagaId(),
+            "Falha no MS Conta: " + event.motivo()
+        );
+
+        /*
+         * Aqui futuramente entra:
+         *
+         * 1. Buscar no banco o step ALTERAR_PERFIL_CLIENTE.
+         * 2. Ler o payload/response_payload antigo em JSONB.
+         * 3. Publicar cliente.reverter-alteracao-perfil.command.
+         * 4. Marcar a SAGA como COMPENSATED ou FAILED.
+         */
+
         fail(event.sagaId(), event.cpf(), "Falha no MS Conta: " + event.motivo());
     }
 
     private void fail(String sagaId, String cpf, String motivo) {
         log.warn("SAGA {} falhou para CPF {}: {}", sagaId, cpf, motivo);
-        statusPorSaga.put(sagaId, "FAILED");
-        clienteAlteradoPorSaga.remove(sagaId);
-        responseRegistry.complete(sagaId, new SagaErrorResponse(sagaId, "FAILED", motivo));
+
+        sagaPersistenceService.failSaga(sagaId, motivo);
+
+        responseRegistry.complete(
+            sagaId,
+            new SagaErrorResponse(sagaId, "FAILED", motivo)
+        );
     }
 
 }

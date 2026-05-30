@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.request.AlterarPerfilRequest;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.response.AlterarPerfilSagaResponse;
-import br.ufpr.bantads.saga.sagas.alteracaoperfil.AlteracaoPerfilOrchestrator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;

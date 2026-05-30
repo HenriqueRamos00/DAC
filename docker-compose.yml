@@ -159,6 +159,11 @@ services:
     environment:
       SERVER_PORT: 8086
       RABBITMQ_HOST: rabbitmq
+      DB_HOST: postgres-db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: 5432
     ports:
       - "8086:8086"
     depends_on:
