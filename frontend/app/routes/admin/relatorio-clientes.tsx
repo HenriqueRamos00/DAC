@@ -1,7 +1,6 @@
-
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { getSessionAutenticada } from "~/services/auth.server";
-import { Clipboard, LayoutDashboard } from "lucide-react";
+import { Clipboard } from "lucide-react";
 import type { Cliente } from "~/models/dto/Cliente";
 import { TabelaAdminClientes } from "~/features/tabela-admin-clientes/tabela-admin-clientes";
 import type { Route } from "./+types/relatorio-clientes";
@@ -15,7 +14,7 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({ request }: Route.LoaderArgs) {
     const { apiClient } = await getSessionAutenticada(request);
-    const response = await apiClient.get("/clientes");
+    const response = await apiClient.get("/clientes?filtro=adm_relatorio_clientes");
 
     if (!response.ok) {
         throw new Response("Erro ao carregar tela de relatório de clientes", { status: response.status });

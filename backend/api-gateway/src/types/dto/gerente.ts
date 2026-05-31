@@ -22,17 +22,6 @@ export type InserirGerenteSagaResponse = {
   tipo: string;
 };
 
-export type ContaGerenteMsResponse = {
-  numeroConta: string;
-  dataCriacao: string;
-  saldo: number;
-  limite: number;
-  clienteNome: string;
-  clienteCpf: string;
-  gerenteCpf: string;
-  gerenteNome: string;
-};
-
 export type ClienteDashboardResponse = {
   cliente: string;
   numero: string;
@@ -40,13 +29,6 @@ export type ClienteDashboardResponse = {
   limite: number;
   gerente: string;
   criacao: string;
-};
-
-export type ResumoContasGerenteMsResponse = {
-  gerenteCpf: string;
-  clientes: ContaGerenteMsResponse[];
-  saldoPositivo: number;
-  saldoNegativo: number;
 };
 
 export type GerenteDashboardResponse = {
