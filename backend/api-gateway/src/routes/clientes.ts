@@ -62,10 +62,13 @@ export async function registerClienteRoutes(gateway: FastifyInstance) {
       preHandler: authorize('GERENTE'),
     },
     async (request, reply) => {
+      const headers = buildUpstreamHeaders(request);
+      const cpf = encodeURIComponent(request.params.cpf);
+
       const response = await httpClient.post<unknown>(
-        `${env.upstreams.cliente}/clientes/${request.params.cpf}/aprovar`,
+        `${env.upstreams.sagas}/sagas/clientes/${cpf}/aprovar`,
         {},
-        buildUpstreamHeaders(request),
+        headers,
       );
 
       return reply.code(200).send(response);

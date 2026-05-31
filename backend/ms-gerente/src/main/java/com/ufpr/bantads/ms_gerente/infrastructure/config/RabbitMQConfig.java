@@ -18,8 +18,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.ufpr.bantads.ms_gerente.application.dto.command.InserirGerenteCommand;
+import com.ufpr.bantads.ms_gerente.application.dto.command.ListarGerentesAtivosDetalhadoCommand;
 import com.ufpr.bantads.ms_gerente.application.dto.event.GerenteInseridoEvent;
+import com.ufpr.bantads.ms_gerente.application.dto.event.GerentesAtivosDetalhadosListadosEvent;
 import com.ufpr.bantads.ms_gerente.application.dto.event.InsercaoGerenteFalhouEvent;
+import com.ufpr.bantads.ms_gerente.application.dto.event.ListagemGerentesAtivosDetalhadosFalhouEvent;
 
 @Configuration
 public class RabbitMQConfig {
@@ -33,6 +36,12 @@ public class RabbitMQConfig {
     @Value("${saga.rabbitmq.routing-key.gerente.inserir.command}")
     private String inserirGerenteCommandRoutingKey;
 
+    @Value("${saga.rabbitmq.queue.gerente.listar-ativos-detalhado.command}")
+    private String listarGerentesAtivosDetalhadoCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos-detalhado.command}")
+    private String listarGerentesAtivosDetalhadoCommandRoutingKey;
+
     @Bean
     public TopicExchange sagaExchange() {
         return new TopicExchange(sagaExchange);
@@ -44,6 +53,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue listarGerentesAtivosDetalhadoCommandQueue() {
+        return QueueBuilder.durable(listarGerentesAtivosDetalhadoCommandQueue).build();
+    }
+
+    @Bean
     public Binding inserirGerenteCommandBinding(
         Queue inserirGerenteCommandQueue,
         TopicExchange sagaExchange
@@ -52,6 +66,17 @@ public class RabbitMQConfig {
             .bind(inserirGerenteCommandQueue)
             .to(sagaExchange)
             .with(inserirGerenteCommandRoutingKey);
+    }
+
+    @Bean
+    public Binding listarGerentesAtivosDetalhadoCommandBinding(
+        Queue listarGerentesAtivosDetalhadoCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(listarGerentesAtivosDetalhadoCommandQueue)
+            .to(sagaExchange)
+            .with(listarGerentesAtivosDetalhadoCommandRoutingKey);
     }
 
     @Bean
@@ -70,6 +95,9 @@ public class RabbitMQConfig {
         idClassMapping.put("gerente.inserir", InserirGerenteCommand.class);
         idClassMapping.put("gerente.inserido", GerenteInseridoEvent.class);
         idClassMapping.put("gerente.insercao.falhou", InsercaoGerenteFalhouEvent.class);
+        idClassMapping.put("gerente.listar-ativos-detalhado", ListarGerentesAtivosDetalhadoCommand.class);
+        idClassMapping.put("gerente.ativos-detalhados-listados", GerentesAtivosDetalhadosListadosEvent.class);
+        idClassMapping.put("gerente.listagem-ativos-detalhados.falhou", ListagemGerentesAtivosDetalhadosFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

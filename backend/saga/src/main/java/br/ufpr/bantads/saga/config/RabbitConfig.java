@@ -86,6 +86,39 @@ public class RabbitConfig {
     @Value("${saga.rabbitmq.queue.remocao-gerente.response}")
     private String remocaoGerenteResponseQueue;
 
+    @Value("${saga.rabbitmq.queue.aprovacao-cliente.response}")
+    private String aprovacaoClienteResponseQueue;
+
+    @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-cliente.sucesso}")
+    private String authCriarUsuarioClienteSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-cliente.falha}")
+    private String authCriarUsuarioClienteFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos-detalhado.sucesso}")
+    private String gerenteListarAtivosDetalhadoSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos-detalhado.falha}")
+    private String gerenteListarAtivosDetalhadoFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.selecionar-gerente-para-nova-conta.sucesso}")
+    private String contaSelecionarGerenteParaNovaContaSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.selecionar-gerente-para-nova-conta.falha}")
+    private String contaSelecionarGerenteParaNovaContaFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.criar.sucesso}")
+    private String contaCriarSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.criar.falha}")
+    private String contaCriarFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.aprovar.sucesso}")
+    private String clienteAprovarSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.aprovar.falha}")
+    private String clienteAprovarFalhaRoutingKey;
+
     @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos.sucesso}")
     private String gerenteListarAtivosSucessoRoutingKey;
 
@@ -235,6 +268,121 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Queue aprovacaoClienteResponseQueue() {
+        return QueueBuilder.durable(aprovacaoClienteResponseQueue).build();
+    }
+
+    @Bean
+    public Binding authCriarUsuarioClienteSucessoBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(authCriarUsuarioClienteSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding authCriarUsuarioClienteFalhaBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(authCriarUsuarioClienteFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding gerenteListarAtivosDetalhadoSucessoBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(gerenteListarAtivosDetalhadoSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding gerenteListarAtivosDetalhadoFalhaBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(gerenteListarAtivosDetalhadoFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding contaSelecionarGerenteParaNovaContaSucessoBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(contaSelecionarGerenteParaNovaContaSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding contaSelecionarGerenteParaNovaContaFalhaBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(contaSelecionarGerenteParaNovaContaFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding contaCriarSucessoBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(contaCriarSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding contaCriarFalhaBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(contaCriarFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding clienteAprovarSucessoBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(clienteAprovarSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding clienteAprovarFalhaBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(clienteAprovarFalhaRoutingKey);
+    }
+
+    @Bean
     public Binding gerenteListarAtivosSucessoBinding(
         Queue remocaoGerenteResponseQueue,
         TopicExchange sagaExchange
@@ -342,6 +490,23 @@ public class RabbitConfig {
         idClassMapping.put("gerente.remover", RemoverGerenteCommand.class);
         idClassMapping.put("gerente.removido", GerenteRemovidoEvent.class);
         idClassMapping.put("gerente.remocao.falhou", RemocaoGerenteFalhouEvent.class);
+
+        // Saga Aprovação de Cliente
+        idClassMapping.put("auth.criar-usuario-cliente.command", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarUsuarioClienteCommand.class);
+        idClassMapping.put("auth.usuario-cliente-criado", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.UsuarioClienteCriadoEvent.class);
+        idClassMapping.put("auth.criacao-usuario-cliente.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoUsuarioClienteFalhouEvent.class);
+        idClassMapping.put("gerente.listar-ativos-detalhado", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ListarGerentesAtivosCommand.class);
+        idClassMapping.put("gerente.ativos-detalhados-listados", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.GerentesAtivosListadosEvent.class);
+        idClassMapping.put("gerente.listagem-ativos-detalhados.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ListagemGerentesAtivosFalhouEvent.class);
+        idClassMapping.put("conta.selecionar-gerente-para-nova-conta", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.SelecionarGerenteParaNovaContaCommand.class);
+        idClassMapping.put("conta.gerente-para-nova-conta-selecionado", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.GerenteParaNovaContaSelecionadoEvent.class);
+        idClassMapping.put("conta.selecao-gerente-para-nova-conta.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.SelecaoGerenteParaNovaContaFalhouEvent.class);
+        idClassMapping.put("conta.criar.command", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarContaCommand.class);
+        idClassMapping.put("conta.criada", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ContaCriadaSagaEvent.class);
+        idClassMapping.put("conta.criacao.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoContaFalhouEvent.class);
+        idClassMapping.put("cliente.aprovar", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.AprovarClienteCommand.class);
+        idClassMapping.put("cliente.aprovado", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteAprovadoEvent.class);
+        idClassMapping.put("cliente.aprovacao.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.AprovacaoClienteFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

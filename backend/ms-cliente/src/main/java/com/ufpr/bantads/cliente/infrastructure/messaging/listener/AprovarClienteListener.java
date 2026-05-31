@@ -41,11 +41,11 @@ public class AprovarClienteListener {
                     + "Email de aprovação não será enviado.", command.cpf());
             }
 
-            aprovarClienteEventPublisher.publishSucesso(ClienteAprovadoEvent.fromEntity(cliente));
+            aprovarClienteEventPublisher.publishSucesso(ClienteAprovadoEvent.fromEntity(command.sagaId(), cliente));
         } catch (ClienteNaoEncontradoException | ClienteNaoPendenteException ex) {
             log.warn("Não foi possível aprovar cliente {}: {}", command.cpf(), ex.getMessage());
             aprovarClienteEventPublisher.publishFalha(
-                new AprovacaoClienteFalhouEvent(command.cpf(), ex.getMessage())
+                new AprovacaoClienteFalhouEvent(command.sagaId(), command.cpf(), ex.getMessage())
             );
         }
     }

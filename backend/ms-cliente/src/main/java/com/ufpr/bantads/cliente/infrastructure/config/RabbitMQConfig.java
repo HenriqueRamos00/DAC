@@ -18,7 +18,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.ufpr.bantads.cliente.application.dto.command.AlterarPerfilClienteCommand;
+import com.ufpr.bantads.cliente.application.dto.command.AprovarClienteCommand;
+import com.ufpr.bantads.cliente.application.dto.event.AprovacaoClienteFalhouEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClienteAlteracaoFalhouEvent;
+import com.ufpr.bantads.cliente.application.dto.event.ClienteAprovadoEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClientePerfilAlteradoEvent;
 
 @Configuration
@@ -111,6 +114,9 @@ public class RabbitMQConfig {
         classMapper.setTrustedPackages("*");
 
         Map<String, Class<?>> idClassMapping = new HashMap<>();
+        idClassMapping.put("cliente.aprovar", AprovarClienteCommand.class);
+        idClassMapping.put("cliente.aprovado", ClienteAprovadoEvent.class);
+        idClassMapping.put("cliente.aprovacao.falhou", AprovacaoClienteFalhouEvent.class);
         idClassMapping.put("cliente.alterar-perfil.command", AlterarPerfilClienteCommand.class);
         idClassMapping.put("cliente.perfil-alterado", ClientePerfilAlteradoEvent.class);
         idClassMapping.put("cliente.alteracao-perfil.falhou", ClienteAlteracaoFalhouEvent.class);
