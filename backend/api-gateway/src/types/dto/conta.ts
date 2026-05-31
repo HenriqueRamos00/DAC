@@ -9,3 +9,10 @@ export type ContaMsResponse = {
   gerenteNome: string;
   gerenteEmail: string;
 };
+
+export type ResumoContasGerenteMsResponse = {
+  gerenteCpf: string;
+  clientes: ContaMsResponse[];
+  saldoPositivo: number;
+  saldoNegativo: number;
+};

@@ -1,8 +1,14 @@
 const LANG = "pt-BR";
 const CURRENCY = "BRL";
 
-function getFormattedCurrency(value: number):string {
-  return value.toLocaleString(
+function getFormattedCurrency(value: number | string | null | undefined): string {
+  const numericValue = typeof value === "string" ? Number(value) : value;
+
+  if (numericValue == null || !Number.isFinite(numericValue)) {
+    return "-";
+  }
+
+  return numericValue.toLocaleString(
     LANG,
     {
       style: "currency",

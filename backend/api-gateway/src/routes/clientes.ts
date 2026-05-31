@@ -3,9 +3,15 @@ import { env } from '../config/env.ts';
 import { buildUpstreamHeaders } from '../hooks/upstream-headers.ts';
 import { authenticate, authorize } from '../middlewares/authenticate.ts';
 import { httpClient } from '../services/http-client.ts';
+import type { ClienteMsResponse, ClientResponseDto } from '../types/dto/cliente.ts';
+import type { ResumoContasGerenteMsResponse } from '../types/dto/conta.ts';
 
 type ClienteParams = {
   cpf: string;
+};
+
+type ClientesQuery = {
+  filtro?: string;
 };
 
 type RejeitarClienteBody = {
@@ -30,7 +36,18 @@ export async function registerClienteRoutes(gateway: FastifyInstance) {
     return reply.code(201).send(response);
   });
 
-  gateway.get('/clientes', { preHandler: authenticate }, async (request, reply) => {
+  gateway.get<{ Querystring: ClientesQuery }>('/clientes', { preHandler: authenticate }, async (request, reply) => {
+    if (isRelatorioClientes(request.query)) {
+      await authorize('ADMINISTRADOR')(request, reply);
+
+      const response = await getClientesRelatorio(
+        request.raw.url ?? request.url,
+        buildUpstreamHeaders(request),
+      );
+
+      return reply.code(200).send(response);
+    }
+
     const response = await httpClient.get<unknown>(
       buildClientesUrl(request.raw.url ?? request.url),
       buildUpstreamHeaders(request),
@@ -86,4 +103,52 @@ export async function registerClienteRoutes(gateway: FastifyInstance) {
       return reply.code(200).send(response);
     },
   );
+}
+
+function isRelatorioClientes(query: ClientesQuery): boolean {
+  return query.filtro === 'adm_relatorio_clientes';
+}
+
+async function getClientesRelatorio(
+  requestUrl: string,
+  headers: Record<string, string>,
+): Promise<ClientResponseDto[]> {
+  const clientesUrl = new URL(buildClientesUrl(requestUrl));
+  clientesUrl.searchParams.delete('filtro');
+
+  const [clientes, resumosContas] = await Promise.all([
+    httpClient.get<ClienteMsResponse[]>(clientesUrl.toString(), headers),
+    httpClient.get<ResumoContasGerenteMsResponse[]>(
+      `${env.upstreams.conta}/contas/resumo-gerentes`,
+      headers,
+    ),
+  ]);
+
+  const contasPorCpf = new Map(
+    resumosContas
+      .flatMap((resumo) => resumo.clientes)
+      .map((conta) => [conta.clienteCpf, conta]),
+  );
+
+  return clientes.map((cliente) => {
+    const conta = contasPorCpf.get(cliente.cpf);
+
+    return {
+      cpf: cliente.cpf,
+      nome: cliente.nome,
+      telefone: cliente.telefone,
+      email: cliente.email,
+      cep: cliente.CEP,
+      endereco: cliente.endereco,
+      cidade: cliente.cidade,
+      estado: cliente.estado,
+      salario: cliente.salario,
+      conta: conta?.numeroConta ?? '',
+      saldo: String(conta?.saldo ?? 0),
+      limite: conta?.limite ?? 0,
+      gerente: conta?.gerenteCpf ?? '',
+      gerente_nome: conta?.gerenteNome ?? '',
+      gerente_email: conta?.gerenteEmail ?? '',
+    };
+  });
 }

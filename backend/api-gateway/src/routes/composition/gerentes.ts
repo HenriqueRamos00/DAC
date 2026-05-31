@@ -3,12 +3,11 @@ import { env } from '../../config/env.ts';
 import { buildUpstreamHeaders } from '../../hooks/upstream-headers.ts';
 import { authorize } from '../../middlewares/authenticate.ts';
 import { httpClient } from '../../services/http-client.ts';
+import type { ContaMsResponse, ResumoContasGerenteMsResponse } from '../../types/dto/conta.ts';
 import type {
   ClienteDashboardResponse,
-  ContaGerenteMsResponse,
   GerenteDashboardResponse,
   GerenteMsResponse,
-  ResumoContasGerenteMsResponse,
 } from '../../types/dto/gerente.ts';
 
 type GerentesQuery = {
@@ -90,7 +89,7 @@ function montarResumoGerente(
   };
 }
 
-function toClienteDashboard(conta: ContaGerenteMsResponse): ClienteDashboardResponse {
+function toClienteDashboard(conta: ContaMsResponse): ClienteDashboardResponse {
   return {
     cliente: conta.clienteCpf,
     numero: conta.numeroConta,
