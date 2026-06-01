@@ -14,7 +14,7 @@ function myFetch(request: Request) {
         return fetch(`${API_URL}${endpoint}`, {
             ...init,
             headers: {
-                "Content-Type": "application/json",
+                ...(init?.body !== undefined ? { "Content-Type": "application/json" } : {}),
                 ...(token ? { Authorization: `Bearer ${token}`} : {}),
                 ...init?.headers,
             }
@@ -33,7 +33,7 @@ export function api(request: Request) {
             fetcher(endpoint, {
                 ...init,
                 method: "POST",
-                body: JSON.stringify(body),
+                ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
             }),
 
         put: (endpoint: string, body?: unknown, init?: RequestInit) =>
@@ -54,6 +54,5 @@ export function api(request: Request) {
             fetcher(endpoint, { ...init, method: "DELETE" }),
     };
 }
-
 
 

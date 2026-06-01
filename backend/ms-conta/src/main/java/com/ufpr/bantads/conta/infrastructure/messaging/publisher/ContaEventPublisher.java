@@ -6,8 +6,11 @@ import org.springframework.stereotype.Component;
 
 import com.ufpr.bantads.conta.application.dto.event.ContaAlteracaoLimiteFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaCriadaSagaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
 import com.ufpr.bantads.conta.application.dto.event.CriacaoContaFalhouEvent;
+import com.ufpr.bantads.conta.application.dto.event.GerenteParaNovaContaSelecionadoEvent;
+import com.ufpr.bantads.conta.application.dto.event.SelecaoGerenteParaNovaContaFalhouEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,14 +43,22 @@ public class ContaEventPublisher {
     @Value("${saga.rabbitmq.routing-key.conta.alterar-limite.falha}")
     private String alterarLimiteFalhaRoutingKey;
 
+    @Value("${saga.rabbitmq.routing-key.conta.selecionar-gerente-para-nova-conta.sucesso}")
+    private String selecionarGerenteParaNovaContaSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.selecionar-gerente-para-nova-conta.falha}")
+    private String selecionarGerenteParaNovaContaFalhaRoutingKey;
+
     public void publishContaCriadaCqrs(ContaCriadaEvent event) {
         log.info("Publicando evento CQRS de conta criada: {}", event);
         rabbitTemplate.convertAndSend(cqrsExchange, CONTA_CRIADA_CQRS_ROUTING_KEY, event);
     }
 
     public void publishContaCriadaSaga(ContaCriadaEvent event) {
-        log.info("Publicando sucesso de criação de conta para saga: {}", event);
-        rabbitTemplate.convertAndSend(sagaExchange, criarContaSucessoRoutingKey, event);
+        ContaCriadaSagaEvent sagaEvent = ContaCriadaSagaEvent.from(event);
+
+        log.info("Publicando sucesso de criação de conta para saga: {}", sagaEvent);
+        rabbitTemplate.convertAndSend(sagaExchange, criarContaSucessoRoutingKey, sagaEvent);
     }
 
     public void publishCriacaoContaFalhou(CriacaoContaFalhouEvent event) {
@@ -68,5 +79,15 @@ public class ContaEventPublisher {
     public void publishAlteracaoLimiteFalhou(ContaAlteracaoLimiteFalhouEvent event) {
         log.info("Publicando falha de alteração de limite para saga: {}", event);
         rabbitTemplate.convertAndSend(sagaExchange, alterarLimiteFalhaRoutingKey, event);
+    }
+
+    public void publishGerenteParaNovaContaSelecionado(GerenteParaNovaContaSelecionadoEvent event) {
+        log.info("Publicando gerente para nova conta selecionado: {}", event);
+        rabbitTemplate.convertAndSend(sagaExchange, selecionarGerenteParaNovaContaSucessoRoutingKey, event);
+    }
+
+    public void publishSelecaoGerenteParaNovaContaFalhou(SelecaoGerenteParaNovaContaFalhouEvent event) {
+        log.info("Publicando falha de seleção de gerente para saga: {}", event);
+        rabbitTemplate.convertAndSend(sagaExchange, selecionarGerenteParaNovaContaFalhaRoutingKey, event);
     }
 }

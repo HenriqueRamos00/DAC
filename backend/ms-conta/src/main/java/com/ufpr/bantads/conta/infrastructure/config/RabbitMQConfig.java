@@ -22,15 +22,19 @@ import com.ufpr.bantads.conta.application.dto.command.AlterarLimiteContaCommand;
 import com.ufpr.bantads.conta.application.dto.command.AtribuirGerenteContaCommand;
 import com.ufpr.bantads.conta.application.dto.command.ConsultarGerenteMaisContasCommand;
 import com.ufpr.bantads.conta.application.dto.command.CriarContaCommand;
+import com.ufpr.bantads.conta.application.dto.command.SelecionarGerenteParaNovaContaCommand;
 import com.ufpr.bantads.conta.application.dto.event.AtribuicaoGerenteContaFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ConsultaGerenteMaisContasFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaAlteracaoLimiteFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaCriadaSagaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
 import com.ufpr.bantads.conta.application.dto.event.CriacaoContaFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteAtribuidoContaEvent;
+import com.ufpr.bantads.conta.application.dto.event.GerenteParaNovaContaSelecionadoEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteMaisContasConsultadoEvent;
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
+import com.ufpr.bantads.conta.application.dto.event.SelecaoGerenteParaNovaContaFalhouEvent;
 
 @Configuration
 public class RabbitMQConfig {
@@ -71,6 +75,12 @@ public class RabbitMQConfig {
     @Value("${saga.rabbitmq.routing-key.conta.atribuir-gerente.command}")
     private String atribuirGerenteContaCommandRoutingKey;
 
+    @Value("${saga.rabbitmq.queue.conta.selecionar-gerente-para-nova-conta.command}")
+    private String selecionarGerenteParaNovaContaCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.conta.selecionar-gerente-para-nova-conta.command}")
+    private String selecionarGerenteParaNovaContaCommandRoutingKey;
+
     @Bean
     public TopicExchange productExchange() {
         return new TopicExchange(exchange);
@@ -104,6 +114,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue atribuirGerenteContaCommandQueue() {
         return QueueBuilder.durable(atribuirGerenteContaCommandQueue).build();
+    }
+
+    @Bean
+    public Queue selecionarGerenteParaNovaContaCommandQueue() {
+        return QueueBuilder.durable(selecionarGerenteParaNovaContaCommandQueue).build();
     }
 
     @Bean
@@ -162,6 +177,17 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding selecionarGerenteParaNovaContaCommandBinding(
+        @Qualifier("selecionarGerenteParaNovaContaCommandQueue") Queue selecionarGerenteParaNovaContaCommandQueue,
+        @Qualifier("sagaExchange") TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(selecionarGerenteParaNovaContaCommandQueue)
+            .to(sagaExchange)
+            .with(selecionarGerenteParaNovaContaCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
         jsonConverter.setClassMapper(contaClassMapper());
@@ -175,7 +201,7 @@ public class RabbitMQConfig {
 
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("conta.criar.command", CriarContaCommand.class);
-        idClassMapping.put("conta.criada", ContaCriadaEvent.class);
+        idClassMapping.put("conta.criada", ContaCriadaSagaEvent.class);
         idClassMapping.put("conta.criacao.falhou", CriacaoContaFalhouEvent.class);
         idClassMapping.put("conta.operacao.movimentacao", MovimentacaoEvent.class);
         idClassMapping.put("conta.operacao.criada", ContaCriadaEvent.class);
@@ -191,6 +217,11 @@ public class RabbitMQConfig {
         idClassMapping.put("conta.atribuir-gerente", AtribuirGerenteContaCommand.class);
         idClassMapping.put("conta.gerente-atribuido", GerenteAtribuidoContaEvent.class);
         idClassMapping.put("conta.atribuicao-gerente.falhou", AtribuicaoGerenteContaFalhouEvent.class);
+
+        //Saga autocadastro
+        idClassMapping.put("conta.selecionar-gerente-para-nova-conta", SelecionarGerenteParaNovaContaCommand.class);
+        idClassMapping.put("conta.gerente-para-nova-conta-selecionado", GerenteParaNovaContaSelecionadoEvent.class);
+        idClassMapping.put("conta.selecao-gerente-para-nova-conta.falhou", SelecaoGerenteParaNovaContaFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

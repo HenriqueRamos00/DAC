@@ -40,6 +40,8 @@ saga:
           command: ${SAGA_RABBITMQ_QUEUE_CONTA_CONSULTAR_GERENTE_MAIS_CONTAS_COMMAND:conta.consultar-gerente-mais-contas.command}
         atribuir-gerente:
           command: ${SAGA_RABBITMQ_QUEUE_CONTA_ATRIBUIR_GERENTE_COMMAND:conta.atribuir-gerente.command}
+        selecionar-gerente-para-nova-conta:
+          command: ${SAGA_RABBITMQ_QUEUE_CONTA_SELECIONAR_GERENTE_PARA_NOVA_CONTA_COMMAND:conta.selecionar-gerente-para-nova-conta.command}
     routing-key:
       conta:
         criar:
@@ -58,3 +60,7 @@ saga:
           command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ATRIBUIR_GERENTE_COMMAND:conta.atribuir-gerente}
           sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ATRIBUIR_GERENTE_SUCESSO:conta.gerente-atribuido}
           falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ATRIBUIR_GERENTE_FALHA:conta.atribuicao-gerente.falhou}
+        selecionar-gerente-para-nova-conta:
+          command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_SELECIONAR_GERENTE_PARA_NOVA_CONTA_COMMAND:conta.selecionar-gerente-para-nova-conta}
+          sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_SELECIONAR_GERENTE_PARA_NOVA_CONTA_SUCESSO:conta.gerente-para-nova-conta-selecionado}
+          falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_SELECIONAR_GERENTE_PARA_NOVA_CONTA_FALHA:conta.selecao-gerente-para-nova-conta.falhou}
