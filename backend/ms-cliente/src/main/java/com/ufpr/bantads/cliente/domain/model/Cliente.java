@@ -41,7 +41,7 @@ public class Cliente {
     @Column(nullable = false, unique = true, length = 11)
     private String cpf;
 
-    @Column(unique = true, length = 15)
+    @Column(length = 15)
     private String telefone;
 
     @Column(nullable = false, precision = 12, scale = 2)

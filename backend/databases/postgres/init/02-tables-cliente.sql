@@ -15,7 +15,7 @@ CREATE TABLE cliente (
     nome            VARCHAR(100)    NOT NULL,
     email           VARCHAR(100)    NOT NULL UNIQUE,
     cpf             VARCHAR(11)     NOT NULL UNIQUE,
-    telefone        VARCHAR(15)     UNIQUE,
+    telefone        VARCHAR(15),
     salario         DECIMAL(12,2)   NOT NULL,
     endereco_id     BIGINT          NOT NULL UNIQUE REFERENCES endereco(id),
     status          VARCHAR(20)     NOT NULL DEFAULT 'PENDENTE',   --PENDENTE, APROVADO, REJEITADO

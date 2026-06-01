@@ -65,7 +65,7 @@ public class ContaSeedService {
                                 800.00, 5000.00, "GEN_CPF_1", "Catharyna", "Geniéve");
 
                 insertConta(2, "09506382000", "0950", "1990-10-10 00:00:00",
-                                -10000.00, 10000.00, "GOD_CPF_2", "Cleuddônio", "Godophredo");
+                                -10000.00, 10000.00, "GOD_CPF_2", "Cleudônio", "Godophredo");
 
                 insertConta(3, "85733854057", "8573", "2012-12-12 00:00:00",
                                 -1000.00, 1500.00, "GYA_CPF_3", "Catianna", "Gyândula");
@@ -84,12 +84,12 @@ public class ContaSeedService {
                 insertSaque(1, "2020-01-15 08:00:00", 500.00, "1291", "Catharyna");
 
                 insertTransferencia(1, 2, "2020-01-20 12:00:00",
-                                1700.00, "1291", "Catharyna", "0950", "Cleuddônio");
+                                1700.00, "1291", "Catharyna", "0950", "Cleudônio");
 
-                insertDeposito(2, "2025-01-01 12:00:00", 1000.00, "0950", "Cleuddônio");
-                insertDeposito(2, "2025-02-01 10:00:00", 5000.00, "0950", "Cleuddônio");
-                insertSaque(2, "2025-01-10 10:00:00", 200.00, "0950", "Cleuddônio");
-                insertDeposito(2, "2025-05-02 10:00:00", 7000.00, "0950", "Cleuddônio");
+                insertDeposito(2, "2025-01-01 12:00:00", 1000.00, "0950", "Cleudônio");
+                insertDeposito(2, "2025-02-01 10:00:00", 5000.00, "0950", "Cleudônio");
+                insertSaque(2, "2025-01-10 10:00:00", 200.00, "0950", "Cleudônio");
+                insertDeposito(2, "2025-05-02 10:00:00", 7000.00, "0950", "Cleudônio");
 
                 insertDeposito(3, "2025-05-05 10:00:00", 1000.00, "8573", "Catianna");
                 insertSaque(3, "2025-05-06 10:00:00", 2000.00, "8573", "Catianna");

@@ -1,5 +1,7 @@
 package com.ufpr.bantads.cliente.application.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -24,10 +26,11 @@ public record AlterarPerfilRequest(
     @DecimalMin(value = "0.01", message = "Salário deve ser maior que zero")
     BigDecimal salario,
 
-    @NotBlank(message = "CEP é obrigatório")
+    @JsonAlias("CEP")
     String cep,
 
-    @NotBlank(message = "Logradouro é obrigatório")
+    String endereco,
+
     String logradouro,
 
     @NotBlank(message = "Cidade é obrigatória")
@@ -39,10 +42,30 @@ public record AlterarPerfilRequest(
 
     String complemento,
 
-    @NotBlank(message = "Número é obrigatório")
     String numero
 ) {
     public AlterarPerfilRequest {
         estado = estado == null ? null : estado.trim().toUpperCase(Locale.ROOT);
+    }
+
+    @AssertTrue(message = "Endereço é obrigatório")
+    public boolean isEnderecoInformado() {
+        return hasText(endereco) || hasText(logradouro);
+    }
+
+    public String enderecoNormalizado() {
+        return hasText(endereco) ? endereco : logradouro;
+    }
+
+    public String cepNormalizado() {
+        return cep == null ? "" : cep;
+    }
+
+    public String numeroNormalizado() {
+        return numero == null ? "" : numero;
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }
