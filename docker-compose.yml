@@ -164,7 +164,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PORT: 5432
-      CLIENTE_URL: http://ms-cliente:8082
     ports:
       - "8086:8086"
     depends_on:

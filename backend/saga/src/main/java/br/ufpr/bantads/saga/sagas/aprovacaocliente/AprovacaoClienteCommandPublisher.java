@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.AprovarClienteCommand;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ConsultarClienteParaAprovacaoCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarContaCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarUsuarioClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ListarGerentesAtivosCommand;
@@ -25,6 +26,9 @@ public class AprovacaoClienteCommandPublisher {
     @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-cliente.command}")
     private String criarUsuarioClienteRoutingKey;
 
+    @Value("${saga.rabbitmq.routing-key.cliente.consultar-para-aprovacao.command}")
+    private String consultarClienteParaAprovacaoRoutingKey;
+
     @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos-detalhado.command}")
     private String listarGerentesAtivosRoutingKey;
 
@@ -36,6 +40,11 @@ public class AprovacaoClienteCommandPublisher {
 
     @Value("${saga.rabbitmq.routing-key.cliente.aprovar.command}")
     private String aprovarClienteRoutingKey;
+
+    public void publishConsultarClienteParaAprovacao(ConsultarClienteParaAprovacaoCommand command) {
+        log.info("Publicando comando consultar cliente para aprovação: {}", command);
+        rabbitTemplate.convertAndSend(exchange, consultarClienteParaAprovacaoRoutingKey, command);
+    }
 
     public void publishCriarUsuarioCliente(CriarUsuarioClienteCommand command) {
         log.info("Publicando comando criar usuário cliente: {}", command);

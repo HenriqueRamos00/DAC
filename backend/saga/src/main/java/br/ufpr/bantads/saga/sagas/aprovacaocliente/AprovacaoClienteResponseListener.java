@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.AprovacaoClienteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteAprovadoEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteConsultadoParaAprovacaoEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ConsultaClienteParaAprovacaoFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ContaCriadaSagaEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoUsuarioClienteFalhouEvent;
@@ -24,6 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 public class AprovacaoClienteResponseListener {
 
     private final AprovacaoClienteOrchestrator orchestrator;
+
+    @RabbitHandler
+    public void handleClienteConsultadoParaAprovacao(ClienteConsultadoParaAprovacaoEvent event) {
+        orchestrator.handleClienteConsultadoParaAprovacao(event);
+    }
+
+    @RabbitHandler
+    public void handleConsultaClienteParaAprovacaoFalhou(ConsultaClienteParaAprovacaoFalhouEvent event) {
+        orchestrator.handleConsultaClienteParaAprovacaoFalhou(event);
+    }
 
     @RabbitHandler
     public void handleUsuarioClienteCriado(UsuarioClienteCriadoEvent event) {

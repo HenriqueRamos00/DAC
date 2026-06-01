@@ -19,10 +19,13 @@ import org.springframework.context.annotation.Configuration;
 
 import com.ufpr.bantads.cliente.application.dto.command.AlterarPerfilClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.command.AprovarClienteCommand;
+import com.ufpr.bantads.cliente.application.dto.command.ConsultarClienteParaAprovacaoCommand;
 import com.ufpr.bantads.cliente.application.dto.event.AprovacaoClienteFalhouEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClienteAlteracaoFalhouEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClienteAprovadoEvent;
+import com.ufpr.bantads.cliente.application.dto.event.ClienteConsultadoParaAprovacaoEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClientePerfilAlteradoEvent;
+import com.ufpr.bantads.cliente.application.dto.event.ConsultaClienteParaAprovacaoFalhouEvent;
 
 @Configuration
 public class RabbitMQConfig {
@@ -35,6 +38,12 @@ public class RabbitMQConfig {
 
     @Value("${saga.rabbitmq.routing-key.cliente.aprovar.command}")
     private String aprovarClienteCommandRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.cliente.consultar-para-aprovacao.command}")
+    private String consultarClienteParaAprovacaoCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.consultar-para-aprovacao.command}")
+    private String consultarClienteParaAprovacaoCommandRoutingKey;
 
     @Value("${saga.rabbitmq.queue.cliente.rejeitar.command}")
     private String rejeitarClienteCommandQueue;
@@ -59,6 +68,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue consultarClienteParaAprovacaoCommandQueue() {
+        return QueueBuilder.durable(consultarClienteParaAprovacaoCommandQueue).build();
+    }
+
+    @Bean
     public Queue rejeitarClienteCommandQueue() {
         return QueueBuilder.durable(rejeitarClienteCommandQueue).build();
     }
@@ -77,6 +91,17 @@ public class RabbitMQConfig {
             .bind(aprovarClienteCommandQueue)
             .to(sagaExchange)
             .with(aprovarClienteCommandRoutingKey);
+    }
+
+    @Bean
+    public Binding consultarClienteParaAprovacaoCommandBinding(
+        Queue consultarClienteParaAprovacaoCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(consultarClienteParaAprovacaoCommandQueue)
+            .to(sagaExchange)
+            .with(consultarClienteParaAprovacaoCommandRoutingKey);
     }
 
     @Bean
@@ -114,6 +139,9 @@ public class RabbitMQConfig {
         classMapper.setTrustedPackages("*");
 
         Map<String, Class<?>> idClassMapping = new HashMap<>();
+        idClassMapping.put("cliente.consultar-para-aprovacao", ConsultarClienteParaAprovacaoCommand.class);
+        idClassMapping.put("cliente.consultado-para-aprovacao", ClienteConsultadoParaAprovacaoEvent.class);
+        idClassMapping.put("cliente.consulta-para-aprovacao.falhou", ConsultaClienteParaAprovacaoFalhouEvent.class);
         idClassMapping.put("cliente.aprovar", AprovarClienteCommand.class);
         idClassMapping.put("cliente.aprovado", ClienteAprovadoEvent.class);
         idClassMapping.put("cliente.aprovacao.falhou", AprovacaoClienteFalhouEvent.class);

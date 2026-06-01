@@ -89,6 +89,12 @@ public class RabbitConfig {
     @Value("${saga.rabbitmq.queue.aprovacao-cliente.response}")
     private String aprovacaoClienteResponseQueue;
 
+    @Value("${saga.rabbitmq.routing-key.cliente.consultar-para-aprovacao.sucesso}")
+    private String clienteConsultarParaAprovacaoSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.consultar-para-aprovacao.falha}")
+    private String clienteConsultarParaAprovacaoFalhaRoutingKey;
+
     @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-cliente.sucesso}")
     private String authCriarUsuarioClienteSucessoRoutingKey;
 
@@ -270,6 +276,28 @@ public class RabbitConfig {
     @Bean
     public Queue aprovacaoClienteResponseQueue() {
         return QueueBuilder.durable(aprovacaoClienteResponseQueue).build();
+    }
+
+    @Bean
+    public Binding clienteConsultarParaAprovacaoSucessoBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(clienteConsultarParaAprovacaoSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding clienteConsultarParaAprovacaoFalhaBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(clienteConsultarParaAprovacaoFalhaRoutingKey);
     }
 
     @Bean
@@ -492,6 +520,9 @@ public class RabbitConfig {
         idClassMapping.put("gerente.remocao.falhou", RemocaoGerenteFalhouEvent.class);
 
         // Saga Aprovação de Cliente
+        idClassMapping.put("cliente.consultar-para-aprovacao", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ConsultarClienteParaAprovacaoCommand.class);
+        idClassMapping.put("cliente.consultado-para-aprovacao", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteConsultadoParaAprovacaoEvent.class);
+        idClassMapping.put("cliente.consulta-para-aprovacao.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ConsultaClienteParaAprovacaoFalhouEvent.class);
         idClassMapping.put("auth.criar-usuario-cliente.command", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarUsuarioClienteCommand.class);
         idClassMapping.put("auth.usuario-cliente-criado", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.UsuarioClienteCriadoEvent.class);
         idClassMapping.put("auth.criacao-usuario-cliente.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoUsuarioClienteFalhouEvent.class);

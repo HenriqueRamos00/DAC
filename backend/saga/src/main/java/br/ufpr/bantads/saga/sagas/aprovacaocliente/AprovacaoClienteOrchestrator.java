@@ -12,16 +12,17 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.AprovarClienteCommand;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ConsultarClienteParaAprovacaoCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarContaCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarUsuarioClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ListarGerentesAtivosCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.SelecionarGerenteParaNovaContaCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.AprovacaoClienteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteAprovadoEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteConsultadoParaAprovacaoEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ConsultaClienteParaAprovacaoFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ContaCriadaSagaEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoUsuarioClienteFalhouEvent;
@@ -50,63 +51,27 @@ public class AprovacaoClienteOrchestrator {
     private final AprovacaoClienteCommandPublisher commandPublisher;
     private final SagaResponseRegistry responseRegistry;
     private final SagaPersistenceService sagaPersistenceService;
-    private final RestClient clienteRestClient;
 
     @Value("${saga.step.timeout-ms:10000}")
     private Long timeoutMs;
 
     public Object iniciar(AprovarClienteSagaRequest request) {
         String sagaId = UUID.randomUUID().toString();
+        ConsultarClienteParaAprovacaoCommand command =
+            new ConsultarClienteParaAprovacaoCommand(sagaId, request.cpf());
+        var future = responseRegistry.register(sagaId);
 
         sagaPersistenceService.createSaga(sagaId, SAGA_TYPE);
         sagaPersistenceService.markStepSent(
             sagaId,
             CONSULTAR_CLIENTE.order(),
             CONSULTAR_CLIENTE.stepName(),
-            AprovarClienteSagaRequest.class.getSimpleName(),
-            request,
-            SagaStatus.EXECUTING
-        );
-
-        ClienteAprovacaoDados cliente;
-
-        try {
-            cliente = consultarCliente(request.cpf());
-            sagaPersistenceService.markStepCompleted(
-                sagaId,
-                CONSULTAR_CLIENTE.stepName(),
-                ClienteAprovacaoDados.class.getSimpleName(),
-                cliente
-            );
-        } catch (Exception ex) {
-            log.warn("SAGA aprovação cliente {} não conseguiu consultar cliente {}", sagaId, request.cpf(), ex);
-            failPersistedStep(
-                sagaId,
-                CONSULTAR_CLIENTE.stepName(),
-                "Falha ao consultar cliente: " + ex.getMessage()
-            );
-
-            return new SagaErrorResponse(
-                sagaId,
-                "FAILED",
-                "Falha ao consultar cliente: " + ex.getMessage()
-            );
-        }
-
-        var future = responseRegistry.register(sagaId);
-        CriarUsuarioClienteCommand command =
-            new CriarUsuarioClienteCommand(sagaId, cliente.cpf(), cliente.email());
-
-        sagaPersistenceService.markStepSent(
-            sagaId,
-            CRIAR_USUARIO_CLIENTE.order(),
-            CRIAR_USUARIO_CLIENTE.stepName(),
-            CriarUsuarioClienteCommand.class.getSimpleName(),
+            ConsultarClienteParaAprovacaoCommand.class.getSimpleName(),
             command,
             SagaStatus.EXECUTING
         );
 
-        commandPublisher.publishCriarUsuarioCliente(command);
+        commandPublisher.publishConsultarClienteParaAprovacao(command);
 
         try {
             return future.get(timeoutMs, TimeUnit.MILLISECONDS);
@@ -119,6 +84,35 @@ public class AprovacaoClienteOrchestrator {
             );
             return new SagaErrorResponse(sagaId, "FAILED", "SAGA não concluída: " + ex.getMessage());
         }
+    }
+
+    public void handleClienteConsultadoParaAprovacao(ClienteConsultadoParaAprovacaoEvent event) {
+        ClienteAprovacaoDados cliente = event.toClienteAprovacaoDados();
+
+        sagaPersistenceService.markStepCompleted(
+            event.sagaId(),
+            CONSULTAR_CLIENTE.stepName(),
+            ClienteAprovacaoDados.class.getSimpleName(),
+            cliente
+        );
+
+        CriarUsuarioClienteCommand command =
+            new CriarUsuarioClienteCommand(event.sagaId(), cliente.cpf(), cliente.email());
+
+        sagaPersistenceService.markStepSent(
+            event.sagaId(),
+            CRIAR_USUARIO_CLIENTE.order(),
+            CRIAR_USUARIO_CLIENTE.stepName(),
+            CriarUsuarioClienteCommand.class.getSimpleName(),
+            command,
+            SagaStatus.EXECUTING
+        );
+
+        commandPublisher.publishCriarUsuarioCliente(command);
+    }
+
+    public void handleConsultaClienteParaAprovacaoFalhou(ConsultaClienteParaAprovacaoFalhouEvent event) {
+        fail(event.sagaId(), CONSULTAR_CLIENTE, "Falha ao consultar cliente: " + event.motivo());
     }
 
     public void handleUsuarioClienteCriado(UsuarioClienteCriadoEvent event) {
@@ -281,17 +275,4 @@ public class AprovacaoClienteOrchestrator {
         sagaPersistenceService.failSaga(sagaId, motivo);
     }
 
-    private ClienteAprovacaoDados consultarCliente(String cpf) {
-        ClienteAprovacaoDados cliente = clienteRestClient
-            .get()
-            .uri("/clientes/{cpf}", cpf)
-            .retrieve()
-            .body(ClienteAprovacaoDados.class);
-
-        if (cliente == null) {
-            throw new RestClientException("MS Cliente retornou corpo vazio");
-        }
-
-        return cliente;
-    }
 }
