@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { env } from '../config/env.ts';
 
 async function callReboot(upstream: string) {
   try {
@@ -19,11 +20,10 @@ async function callReboot(upstream: string) {
 export function registerRebootRoute(gateway: FastifyInstance) {
   gateway.get('/reboot', async (_request, reply) => {
     const upstreams = {
-      auth: process.env.AUTH_URL || 'http://localhost:8081',
-      cliente: process.env.CLIENTE_URL || 'http://localhost:8082',
-      conta: process.env.CONTA_URL || 'http://localhost:8083',
-      gerente: process.env.GERENTE_URL || 'http://localhost:8084',
-      admin: process.env.ADMIN_URL || 'http://localhost:8085',
+      auth: env.upstreams.auth,
+      cliente: env.upstreams.cliente,
+      conta: env.upstreams.conta,
+      gerente: env.upstreams.gerente,
     };
 
     const results = await Promise.all(
