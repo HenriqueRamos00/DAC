@@ -36,6 +36,11 @@ import com.ufpr.bantads.conta.application.dto.event.GerenteMaisContasConsultadoE
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 import com.ufpr.bantads.conta.application.dto.event.SelecaoGerenteParaNovaContaFalhouEvent;
 
+// Saga Remoção de Gerente
+import com.ufpr.bantads.conta.application.dto.command.ReatribuirContasGerenteCommand;
+import com.ufpr.bantads.conta.application.dto.event.ContasReatribuidasEvent;
+import com.ufpr.bantads.conta.application.dto.event.ReatribuicaoContasFalhouEvent;
+
 @Configuration
 public class RabbitMQConfig {
 
@@ -81,6 +86,12 @@ public class RabbitMQConfig {
     @Value("${saga.rabbitmq.routing-key.conta.selecionar-gerente-para-nova-conta.command}")
     private String selecionarGerenteParaNovaContaCommandRoutingKey;
 
+    @Value("${saga.rabbitmq.queue.conta.reatribuir-contas-gerente.command}")
+    private String reatribuirContasGerenteCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.conta.reatribuir-contas-gerente.command}")
+    private String reatribuirContasGerenteCommandRoutingKey;
+
     @Bean
     public TopicExchange productExchange() {
         return new TopicExchange(exchange);
@@ -119,6 +130,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue selecionarGerenteParaNovaContaCommandQueue() {
         return QueueBuilder.durable(selecionarGerenteParaNovaContaCommandQueue).build();
+    }
+
+    @Bean
+    public Queue reatribuirContasGerenteCommandQueue() {
+        return QueueBuilder.durable(reatribuirContasGerenteCommandQueue).build();
     }
 
     @Bean
@@ -188,6 +204,17 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding reatribuirContasGerenteCommandBinding(
+        @Qualifier("reatribuirContasGerenteCommandQueue") Queue reatribuirContasGerenteCommandQueue,
+        @Qualifier("sagaExchange") TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(reatribuirContasGerenteCommandQueue)
+            .to(sagaExchange)
+            .with(reatribuirContasGerenteCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
         jsonConverter.setClassMapper(contaClassMapper());
@@ -222,6 +249,11 @@ public class RabbitMQConfig {
         idClassMapping.put("conta.selecionar-gerente-para-nova-conta", SelecionarGerenteParaNovaContaCommand.class);
         idClassMapping.put("conta.gerente-para-nova-conta-selecionado", GerenteParaNovaContaSelecionadoEvent.class);
         idClassMapping.put("conta.selecao-gerente-para-nova-conta.falhou", SelecaoGerenteParaNovaContaFalhouEvent.class);
+
+        // Saga Remoção de Gerente
+        idClassMapping.put("conta.reatribuir-contas-gerente", ReatribuirContasGerenteCommand.class);
+        idClassMapping.put("conta.contas-reatribuidas", ContasReatribuidasEvent.class);
+        idClassMapping.put("conta.reatribuicao-contas.falhou", ReatribuicaoContasFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

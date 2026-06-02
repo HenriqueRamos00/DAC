@@ -1,5 +1,6 @@
 package com.ufpr.bantads.conta.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,8 @@ public interface ContaCommandRepository extends JpaRepository<ContaCommand, Long
     Optional<ContaCommand> findByClienteCpf(String clienteCpf);
 
     Optional<ContaCommand> findFirstByGerenteCpfOrderByDataCriacaoDesc(String gerenteCpf);
+
+    List<ContaCommand> findAllByGerenteCpf(String gerenteCpf);
+
+    long countByGerenteCpf(String gerenteCpf);
 }
