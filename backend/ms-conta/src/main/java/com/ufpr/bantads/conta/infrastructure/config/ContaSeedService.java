@@ -61,47 +61,46 @@ public class ContaSeedService {
         }
 
         private void applySeed() {
-                insertConta(1, "12912861012", "1291", "2000-01-01 00:00:00",
-                                800.00, 5000.00, "GEN_CPF_1", "Catharyna", "Geniéve");
+                long contaCatharynaId = insertConta("12912861012", "1291", "2000-01-01 00:00:00",
+                                800.00, 5000.00, "98574307084", "Catharyna", "Geniéve", "ger1@bantads.com.br");
 
-                insertConta(2, "09506382000", "0950", "1990-10-10 00:00:00",
-                                -10000.00, 10000.00, "GOD_CPF_2", "Cleudônio", "Godophredo");
+                long contaCleudonioId = insertConta("09506382000", "0950", "1990-10-10 00:00:00",
+                                -10000.00, 10000.00, "64065268052", "Cleudônio", "Godophredo", "ger2@bantads.com.br");
 
-                insertConta(3, "85733854057", "8573", "2012-12-12 00:00:00",
-                                -1000.00, 1500.00, "GYA_CPF_3", "Catianna", "Gyândula");
+                long contaCatiannaId = insertConta("85733854057", "8573", "2012-12-12 00:00:00",
+                                -1000.00, 1500.00, "23862179060", "Catianna", "Gyândula", "ger3@bantads.com.br");
 
-                insertConta(4, "58872160006", "5887", "2022-02-22 00:00:00",
-                                150000.00, 0.00, "GEN_CPF_1", "Cutardo", "Geniéve");
+                long contaCutardoId = insertConta("58872160006", "5887", "2022-02-22 00:00:00",
+                                150000.00, 0.00, "98574307084", "Cutardo", "Geniéve", "ger1@bantads.com.br");
 
-                insertConta(5, "76179646090", "7617", "2025-01-01 00:00:00",
-                                1500.00, 0.00, "GOD_CPF_2", "Coândrya", "Godophredo");
+                long contaCoandryaId = insertConta("76179646090", "7617", "2025-01-01 00:00:00",
+                                1500.00, 0.00, "64065268052", "Coândrya", "Godophredo", "ger2@bantads.com.br");
 
-                insertDeposito(1, "2020-01-01 10:00:00", 1000.00, "1291", "Catharyna");
-                insertDeposito(1, "2020-01-01 11:00:00", 900.00, "1291", "Catharyna");
-                insertSaque(1, "2020-01-01 12:00:00", 550.00, "1291", "Catharyna");
-                insertSaque(1, "2020-01-01 13:00:00", 350.00, "1291", "Catharyna");
-                insertDeposito(1, "2020-01-10 15:00:00", 2000.00, "1291", "Catharyna");
-                insertSaque(1, "2020-01-15 08:00:00", 500.00, "1291", "Catharyna");
+                insertDeposito(contaCatharynaId, "2020-01-01 10:00:00", 1000.00, "1291", "Catharyna");
+                insertDeposito(contaCatharynaId, "2020-01-01 11:00:00", 900.00, "1291", "Catharyna");
+                insertSaque(contaCatharynaId, "2020-01-01 12:00:00", 550.00, "1291", "Catharyna");
+                insertSaque(contaCatharynaId, "2020-01-01 13:00:00", 350.00, "1291", "Catharyna");
+                insertDeposito(contaCatharynaId, "2020-01-10 15:00:00", 2000.00, "1291", "Catharyna");
+                insertSaque(contaCatharynaId, "2020-01-15 08:00:00", 500.00, "1291", "Catharyna");
 
-                insertTransferencia(1, 2, "2020-01-20 12:00:00",
+                insertTransferencia(contaCatharynaId, contaCleudonioId, "2020-01-20 12:00:00",
                                 1700.00, "1291", "Catharyna", "0950", "Cleudônio");
 
-                insertDeposito(2, "2025-01-01 12:00:00", 1000.00, "0950", "Cleudônio");
-                insertDeposito(2, "2025-02-01 10:00:00", 5000.00, "0950", "Cleudônio");
-                insertSaque(2, "2025-01-10 10:00:00", 200.00, "0950", "Cleudônio");
-                insertDeposito(2, "2025-05-02 10:00:00", 7000.00, "0950", "Cleudônio");
+                insertDeposito(contaCleudonioId, "2025-01-01 12:00:00", 1000.00, "0950", "Cleudônio");
+                insertDeposito(contaCleudonioId, "2025-02-01 10:00:00", 5000.00, "0950", "Cleudônio");
+                insertSaque(contaCleudonioId, "2025-01-10 10:00:00", 200.00, "0950", "Cleudônio");
+                insertDeposito(contaCleudonioId, "2025-05-02 10:00:00", 7000.00, "0950", "Cleudônio");
 
-                insertDeposito(3, "2025-05-05 10:00:00", 1000.00, "8573", "Catianna");
-                insertSaque(3, "2025-05-06 10:00:00", 2000.00, "8573", "Catianna");
+                insertDeposito(contaCatiannaId, "2025-05-05 10:00:00", 1000.00, "8573", "Catianna");
+                insertSaque(contaCatiannaId, "2025-05-06 10:00:00", 2000.00, "8573", "Catianna");
 
-                insertDeposito(4, "2025-06-01 10:00:00", 150000.00, "5887", "Cutardo");
-                insertDeposito(5, "2025-07-01 10:00:00", 1500.00, "7617", "Coândrya");
+                insertDeposito(contaCutardoId, "2025-06-01 10:00:00", 150000.00, "5887", "Cutardo");
+                insertDeposito(contaCoandryaId, "2025-07-01 10:00:00", 1500.00, "7617", "Coândrya");
 
                 alignSequences();
         }
 
-        private void insertConta(
-                        long id,
+        private long insertConta(
                         String cpf,
                         String num,
                         String data,
@@ -109,11 +108,12 @@ public class ContaSeedService {
                         double limite,
                         String gerCpf,
                         String nomeCli,
-                        String nomeGer) {
+                        String nomeGer,
+                        String emailGer) {
                 LocalDateTime dt = Timestamp.valueOf(data).toLocalDateTime();
 
                 ContaCommand contaCmd = new ContaCommand(
-                                id,
+                                null,
                                 cpf,
                                 num,
                                 dt,
@@ -121,7 +121,8 @@ public class ContaSeedService {
                                 BigDecimal.valueOf(limite),
                                 gerCpf);
 
-                contaCommandRepository.save(contaCmd);
+                ContaCommand contaSalva = contaCommandRepository.saveAndFlush(contaCmd);
+                long id = contaSalva.getId();
 
                 ContaQuery contaView = ContaQuery.builder()
                                 .id(id)
@@ -133,9 +134,12 @@ public class ContaSeedService {
                                 .clienteCpf(cpf)
                                 .gerenteCpf(gerCpf)
                                 .gerenteNome(nomeGer)
+                                .gerenteEmail(emailGer)
                                 .build();
 
                 contaQueryRepository.save(contaView);
+
+                return id;
         }
 
         private void insertDeposito(
