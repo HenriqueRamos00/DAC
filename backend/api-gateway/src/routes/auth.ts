@@ -3,6 +3,7 @@ import { httpClient, UpstreamError } from '../services/http-client.ts';
 import { env } from '../config/env.ts';
 import { UnauthorizedError } from '../hooks/errors.ts';
 import type { LoginMsResponseDto, LoginRequestDto, LoginResponseDto } from '../types/dto/login.ts';
+import { authenticate } from '../middlewares/authenticate.ts';
 
 export async function registerAuthRoutes(gateway: FastifyInstance) {
   
@@ -46,4 +47,17 @@ export async function registerAuthRoutes(gateway: FastifyInstance) {
       },
     };
   });
+
+  gateway.post('/logout', 
+    { preHandler: authenticate },
+    async (request, reply) => {
+
+    const claims = request.user;
+
+    return {
+      email: claims.email,
+      token: null
+    }
+
+  })
 }
