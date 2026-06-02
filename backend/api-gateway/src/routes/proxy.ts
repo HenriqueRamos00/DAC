@@ -24,7 +24,7 @@ const proxyRoutes: ProxyRoute[] = [
     prefix: '/gerentes',
     rewritePrefix: '/gerentes',
     adminOnly: true,
-    httpMethods: ['PUT', 'DELETE'],
+    httpMethods: ['PUT'],
   },
   {
     upstream: process.env.ADMIN_URL || 'http://localhost:8085',
