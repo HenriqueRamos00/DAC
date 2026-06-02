@@ -12,7 +12,7 @@ public record Extrato(
     public static Extrato fromEntity(MovimentacaoQuery movimentacaoQuery) {
         return new Extrato(
             movimentacaoQuery.getDataHora().toString(),
-            movimentacaoQuery.getTipo().name(),
+            movimentacaoQuery.getTipo().toString(),
             movimentacaoQuery.getContaOrigemNumero(),
             movimentacaoQuery.getContaDestinoNumero(),
             movimentacaoQuery.getValor().doubleValue()

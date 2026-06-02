@@ -7,6 +7,8 @@ import { DataTable } from "~/components/data-table";
 import { getFormattedCurrency } from "~/lib/utils/formatCurrency";
 
 function isEntrada(movimentacao: Movimentacao, conta: string) {
+  if (movimentacao.tipo === "depósito") return true;
+  if (movimentacao.tipo === "saque") return false;
   return movimentacao.destino === conta;
 }
 

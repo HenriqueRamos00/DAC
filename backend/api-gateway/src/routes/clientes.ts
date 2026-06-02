@@ -40,12 +40,17 @@ export async function registerClienteRoutes(gateway: FastifyInstance) {
     if (isRelatorioClientes(request.query)) {
       await authorize('ADMINISTRADOR')(request, reply);
 
-      const response = await getClientesRelatorio(
-        request.raw.url ?? request.url,
-        buildUpstreamHeaders(request),
-      );
+      const response = await getClientesRelatorio(buildUpstreamHeaders(request));
 
       return reply.code(200).send(response);
+    }
+
+    if (isMelhoresClientes(request.query)) {
+      const todos = await getClientesRelatorio(buildUpstreamHeaders(request));
+      const top3 = todos
+        .sort((a, b) => parseFloat(b.saldo) - parseFloat(a.saldo))
+        .slice(0, 3);
+      return reply.code(200).send(top3);
     }
 
     const response = await httpClient.get<unknown>(
@@ -112,15 +117,18 @@ function isRelatorioClientes(query: ClientesQuery): boolean {
   return query.filtro === 'adm_relatorio_clientes';
 }
 
+function isMelhoresClientes(query: ClientesQuery): boolean {
+  return query.filtro === 'melhores_clientes';
+}
+
 async function getClientesRelatorio(
-  requestUrl: string,
   headers: Record<string, string>,
 ): Promise<ClientResponseDto[]> {
-  const clientesUrl = new URL(buildClientesUrl(requestUrl));
-  clientesUrl.searchParams.delete('filtro');
-
   const [clientes, resumosContas] = await Promise.all([
-    httpClient.get<ClienteMsResponse[]>(clientesUrl.toString(), headers),
+    httpClient.get<ClienteMsResponse[]>(
+      `${env.upstreams.cliente}/clientes`,
+      headers,
+    ),
     httpClient.get<ResumoContasGerenteMsResponse[]>(
       `${env.upstreams.conta}/contas/resumo-gerentes`,
       headers,
