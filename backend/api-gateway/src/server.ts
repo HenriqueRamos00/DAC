@@ -10,6 +10,7 @@ import { registerAuthRoutes } from './routes/auth.ts';
 import { env } from './config/env.ts';
 import { registerClientByCpf } from './routes/composition/clientByCpf.ts';
 import { registerCreateGerenteSaga } from './routes/composition/createGerenteSaga.ts';
+import { registerDeleteGerenteSaga } from './routes/composition/deleteGerenteSaga.ts';
 import { registerGerentesComposition } from './routes/composition/gerentes.ts';
 import { registerGerenteClientes } from './routes/composition/gerenteClientes.ts';
 
@@ -26,6 +27,7 @@ await registerClientByCpf(gateway);
 await registerGerentesComposition(gateway);
 await registerGerenteClientes(gateway);
 await registerCreateGerenteSaga(gateway);
+await registerDeleteGerenteSaga(gateway);
 await registerClienteRoutes(gateway);
 
 await registerProxies(gateway);

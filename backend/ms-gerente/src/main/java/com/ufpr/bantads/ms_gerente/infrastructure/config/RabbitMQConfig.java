@@ -24,6 +24,14 @@ import com.ufpr.bantads.ms_gerente.application.dto.event.GerentesAtivosDetalhado
 import com.ufpr.bantads.ms_gerente.application.dto.event.InsercaoGerenteFalhouEvent;
 import com.ufpr.bantads.ms_gerente.application.dto.event.ListagemGerentesAtivosDetalhadosFalhouEvent;
 
+// Saga Remoção de Gerente
+import com.ufpr.bantads.ms_gerente.application.dto.command.ListarGerentesAtivosCommand;
+import com.ufpr.bantads.ms_gerente.application.dto.command.RemoverGerenteCommand;
+import com.ufpr.bantads.ms_gerente.application.dto.event.GerentesAtivosListadosEvent;
+import com.ufpr.bantads.ms_gerente.application.dto.event.ListagemGerentesAtivosFalhouEvent;
+import com.ufpr.bantads.ms_gerente.application.dto.event.GerenteRemovidoEvent;
+import com.ufpr.bantads.ms_gerente.application.dto.event.RemocaoGerenteFalhouEvent;
+
 @Configuration
 public class RabbitMQConfig {
 
@@ -41,6 +49,18 @@ public class RabbitMQConfig {
 
     @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos-detalhado.command}")
     private String listarGerentesAtivosDetalhadoCommandRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.gerente.listar-ativos.command}")
+    private String listarGerentesAtivosCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos.command}")
+    private String listarGerentesAtivosCommandRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.gerente.remover.command}")
+    private String removerGerenteCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.remover.command}")
+    private String removerGerenteCommandRoutingKey;
 
     @Bean
     public TopicExchange sagaExchange() {
@@ -80,6 +100,38 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue listarGerentesAtivosCommandQueue() {
+        return QueueBuilder.durable(listarGerentesAtivosCommandQueue).build();
+    }
+
+    @Bean
+    public Queue removerGerenteCommandQueue() {
+        return QueueBuilder.durable(removerGerenteCommandQueue).build();
+    }
+
+    @Bean
+    public Binding listarGerentesAtivosCommandBinding(
+        Queue listarGerentesAtivosCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(listarGerentesAtivosCommandQueue)
+            .to(sagaExchange)
+            .with(listarGerentesAtivosCommandRoutingKey);
+    }
+
+    @Bean
+    public Binding removerGerenteCommandBinding(
+        Queue removerGerenteCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(removerGerenteCommandQueue)
+            .to(sagaExchange)
+            .with(removerGerenteCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         Jackson2JsonMessageConverter jsonConverter = new Jackson2JsonMessageConverter();
         jsonConverter.setClassMapper(gerenteClassMapper());
@@ -98,6 +150,14 @@ public class RabbitMQConfig {
         idClassMapping.put("gerente.listar-ativos-detalhado", ListarGerentesAtivosDetalhadoCommand.class);
         idClassMapping.put("gerente.ativos-detalhados-listados", GerentesAtivosDetalhadosListadosEvent.class);
         idClassMapping.put("gerente.listagem-ativos-detalhados.falhou", ListagemGerentesAtivosDetalhadosFalhouEvent.class);
+
+        // Saga Remoção de Gerente
+        idClassMapping.put("gerente.listar-ativos", ListarGerentesAtivosCommand.class);
+        idClassMapping.put("gerente.ativos-listados", GerentesAtivosListadosEvent.class);
+        idClassMapping.put("gerente.listagem-ativos.falhou", ListagemGerentesAtivosFalhouEvent.class);
+        idClassMapping.put("gerente.remover", RemoverGerenteCommand.class);
+        idClassMapping.put("gerente.removido", GerenteRemovidoEvent.class);
+        idClassMapping.put("gerente.remocao.falhou", RemocaoGerenteFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;
