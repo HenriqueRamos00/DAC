@@ -2,7 +2,6 @@ package com.ufpr.bantads.cliente.application.usecase;
 
 import com.ufpr.bantads.cliente.application.dto.request.CriarClientePendenteRequest;
 import com.ufpr.bantads.cliente.domain.exception.EmailJaCadastradoException;
-import com.ufpr.bantads.cliente.domain.exception.TelefoneJaCadastradoException;
 import com.ufpr.bantads.cliente.domain.exception.CpfJaCadastradoException;
 import com.ufpr.bantads.cliente.domain.model.Cliente;
 import com.ufpr.bantads.cliente.domain.model.Endereco;
@@ -24,9 +23,6 @@ public class CriarClientePendenteUseCase {
         if (repository.existsByEmail(request.email())) {
             throw new EmailJaCadastradoException(request.email());
         }
-        if (repository.existsByTelefone(request.telefone())) {
-            throw new TelefoneJaCadastradoException(request.telefone());
-        }
 
         Cliente cliente = new Cliente();
         cliente.setCpf(request.cpf());
@@ -42,12 +38,12 @@ public class CriarClientePendenteUseCase {
 
     private Endereco buildEndereco(CriarClientePendenteRequest request) {
         Endereco endereco = new Endereco();
-        endereco.setCep(request.cep());
-        endereco.setLogradouro(request.logradouro());
+        endereco.setCep(request.cepNormalizado());
+        endereco.setLogradouro(request.enderecoNormalizado());
         endereco.setCidade(request.cidade());
         endereco.setEstado(request.estado());
         endereco.setComplemento(request.complemento());
-        endereco.setNumero(request.numero());
+        endereco.setNumero(request.numeroNormalizado());
         return endereco;
     }
 }

@@ -12,7 +12,7 @@ db.usuarios.insertMany([
         tipoUsuario: "CLIENTE"
     },
     {
-        nome: "Cleuddônio",
+        nome: "Cleudônio",
         cpf: "09506382000",
         email: "cli2@bantads.com.br",
         senha: "r5eTmzlTp34gyz3tbZmuYw==:T/GfCwM++LnL+8Q8OWQphqMmINHC5jU1AYG/uyyVy6g=",

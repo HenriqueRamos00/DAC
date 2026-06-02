@@ -2,7 +2,6 @@ package com.ufpr.bantads.cliente.presentation.advice;
 
 import com.ufpr.bantads.cliente.domain.exception.ClienteNaoPendenteException;
 import com.ufpr.bantads.cliente.domain.exception.EmailJaCadastradoException;
-import com.ufpr.bantads.cliente.domain.exception.TelefoneJaCadastradoException;
 import com.ufpr.bantads.cliente.domain.exception.CpfJaCadastradoException;
 import com.ufpr.bantads.cliente.domain.exception.ClienteNaoEncontradoException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,19 +29,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailJaCadastradoException.class)
     public ResponseEntity<ApiErrorResponse> handleEmailJaCadastrado(EmailJaCadastradoException ex) {
-        HttpStatus status = HttpStatus.CONFLICT;
-
-        ApiErrorResponse response = new ApiErrorResponse(
-            status.value(),
-            status.getReasonPhrase(),
-            ex.getMessage()
-        );
-
-        return ResponseEntity.status(status).body(response);
-    }
-
-    @ExceptionHandler(TelefoneJaCadastradoException.class)
-    public ResponseEntity<ApiErrorResponse> handleTelefoneJaCadastrado(TelefoneJaCadastradoException ex) {
         HttpStatus status = HttpStatus.CONFLICT;
 
         ApiErrorResponse response = new ApiErrorResponse(
@@ -92,8 +78,6 @@ public class GlobalExceptionHandler {
         if (exceptionMessage != null) {
             if (exceptionMessage.contains("cliente_email_key")) {
                 message = "Ja existe cliente cadastrado com este email";
-            } else if (exceptionMessage.contains("cliente_telefone_key")) {
-                message = "Ja existe cliente cadastrado com este telefone";
             } else if (exceptionMessage.contains("cliente_cpf_key")) {
                 message = "Ja existe cliente cadastrado com este CPF";
             }
