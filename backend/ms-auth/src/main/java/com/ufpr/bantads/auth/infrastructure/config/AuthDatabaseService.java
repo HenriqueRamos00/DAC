@@ -25,7 +25,7 @@ public class AuthDatabaseService {
 		return List.of(
 				usuario("Catharyna", "12912861012", "cli1@bantads.com.br",
 						"8PgqjzcWYmB93ZM7/UGNCw==:vBJG389YrpkR7zu08qCdrv/f/CmhH6x8rXoZHaohuYs=", TipoUsuario.CLIENTE),
-				usuario("Cleudônio", "09506382000", "cli2@bantads.com.br",
+				usuario("Cleuddônio", "09506382000", "cli2@bantads.com.br",
 						"r5eTmzlTp34gyz3tbZmuYw==:T/GfCwM++LnL+8Q8OWQphqMmINHC5jU1AYG/uyyVy6g=", TipoUsuario.CLIENTE),
 				usuario("Catianna", "85733854057", "cli3@bantads.com.br",
 						"pxId7AS2gh39oyx68B/4Xw==:Yv7Lx6wZb+VaH7TWqaL7Qu0hkeBBPsOJW+WSr/o2ddg=", TipoUsuario.CLIENTE),
