@@ -5,6 +5,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaExcluidaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 import com.ufpr.bantads.conta.application.usecase.SyncMovimentacaoUseCase;
@@ -30,6 +31,12 @@ public class MovimentacaoEventListener {
     public void handle(ContaCriadaEvent event) {
         log.info("Recebido evento CQRS de conta criada: {}", event);
         syncMovimentacaoUseCase.sincronizarContaCriada(event);
+    }
+
+    @RabbitHandler
+    public void handle(ContaExcluidaEvent event) {
+        log.info("Recebido evento CQRS de conta excluída: {}", event);
+        syncMovimentacaoUseCase.sincronizarContaExcluida(event);
     }
 
     @RabbitHandler

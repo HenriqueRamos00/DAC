@@ -535,6 +535,7 @@ public class RabbitConfig {
         idClassMapping.put("conta.criar.command", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarContaCommand.class);
         idClassMapping.put("conta.criada", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ContaCriadaSagaEvent.class);
         idClassMapping.put("conta.criacao.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoContaFalhouEvent.class);
+        idClassMapping.put("conta.excluir-conta-cliente.command", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirContaClienteCommand.class);
         idClassMapping.put("cliente.aprovar", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.AprovarClienteCommand.class);
         idClassMapping.put("cliente.aprovado", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteAprovadoEvent.class);
         idClassMapping.put("cliente.aprovacao.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.AprovacaoClienteFalhouEvent.class);

@@ -34,6 +34,8 @@ saga:
       conta:
         criar:
           command: ${SAGA_RABBITMQ_QUEUE_CONTA_CRIAR_COMMAND:conta.criar.command}
+        excluir-conta-cliente:
+          command: ${SAGA_RABBITMQ_QUEUE_CONTA_EXCLUIR_CONTA_CLIENTE_COMMAND:conta.excluir-conta-cliente.command}
         alterar-limite:
           command: ${SAGA_RABBITMQ_QUEUE_CONTA_ALTERAR_LIMITE_COMMAND:conta.alterar-limite.command}
         consultar-gerente-mais-contas:
@@ -50,6 +52,10 @@ saga:
           command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_CRIAR_COMMAND:conta.criar.command}
           sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_CRIAR_SUCESSO:conta.criada}
           falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_CRIAR_FALHA:conta.criacao.falhou}
+        excluir-conta-cliente:
+          command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_EXCLUIR_CONTA_CLIENTE_COMMAND:conta.excluir-conta-cliente.command}
+          sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_EXCLUIR_CONTA_CLIENTE_SUCESSO:conta.conta-cliente-excluida}
+          falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_EXCLUIR_CONTA_CLIENTE_FALHA:conta.exclusao-conta-cliente.falhou}
         alterar-limite:
           command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ALTERAR_LIMITE_COMMAND:conta.alterar-limite.command}
           sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_ALTERAR_LIMITE_SUCESSO:conta.limite-alterado}

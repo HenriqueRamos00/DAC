@@ -22,14 +22,18 @@ import com.ufpr.bantads.conta.application.dto.command.AlterarLimiteContaCommand;
 import com.ufpr.bantads.conta.application.dto.command.AtribuirGerenteContaCommand;
 import com.ufpr.bantads.conta.application.dto.command.ConsultarGerenteMaisContasCommand;
 import com.ufpr.bantads.conta.application.dto.command.CriarContaCommand;
+import com.ufpr.bantads.conta.application.dto.command.ExcluirContaClienteCommand;
 import com.ufpr.bantads.conta.application.dto.command.SelecionarGerenteParaNovaContaCommand;
 import com.ufpr.bantads.conta.application.dto.event.AtribuicaoGerenteContaFalhouEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaClienteExcluidaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ConsultaGerenteMaisContasFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaAlteracaoLimiteFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaSagaEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaExcluidaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
 import com.ufpr.bantads.conta.application.dto.event.CriacaoContaFalhouEvent;
+import com.ufpr.bantads.conta.application.dto.event.ExclusaoContaClienteFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteAtribuidoContaEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteParaNovaContaSelecionadoEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteMaisContasConsultadoEvent;
@@ -61,6 +65,12 @@ public class RabbitMQConfig {
 
     @Value("${saga.rabbitmq.routing-key.conta.criar.command}")
     private String criarContaCommandRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.conta.excluir-conta-cliente.command}")
+    private String excluirContaClienteCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.conta.excluir-conta-cliente.command}")
+    private String excluirContaClienteCommandRoutingKey;
 
     @Value("${saga.rabbitmq.queue.conta.alterar-limite.command}")
     private String alterarLimiteContaCommandQueue;
@@ -113,6 +123,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue excluirContaClienteCommandQueue() {
+        return QueueBuilder.durable(excluirContaClienteCommandQueue).build();
+    }
+
+    @Bean
     public Queue alterarLimiteContaCommandQueue() {
         return QueueBuilder.durable(alterarLimiteContaCommandQueue).build();
     }
@@ -157,6 +172,17 @@ public class RabbitMQConfig {
             .bind(criarContaCommandQueue)
             .to(sagaExchange)
             .with(criarContaCommandRoutingKey);
+    }
+
+    @Bean
+    public Binding excluirContaClienteCommandBinding(
+        @Qualifier("excluirContaClienteCommandQueue") Queue excluirContaClienteCommandQueue,
+        @Qualifier("sagaExchange") TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(excluirContaClienteCommandQueue)
+            .to(sagaExchange)
+            .with(excluirContaClienteCommandRoutingKey);
     }
 
     @Bean
@@ -230,8 +256,12 @@ public class RabbitMQConfig {
         idClassMapping.put("conta.criar.command", CriarContaCommand.class);
         idClassMapping.put("conta.criada", ContaCriadaSagaEvent.class);
         idClassMapping.put("conta.criacao.falhou", CriacaoContaFalhouEvent.class);
+        idClassMapping.put("conta.excluir-conta-cliente.command", ExcluirContaClienteCommand.class);
+        idClassMapping.put("conta.conta-cliente-excluida", ContaClienteExcluidaEvent.class);
+        idClassMapping.put("conta.exclusao-conta-cliente.falhou", ExclusaoContaClienteFalhouEvent.class);
         idClassMapping.put("conta.operacao.movimentacao", MovimentacaoEvent.class);
         idClassMapping.put("conta.operacao.criada", ContaCriadaEvent.class);
+        idClassMapping.put("conta.operacao.excluida", ContaExcluidaEvent.class);
         idClassMapping.put("conta.operacao.limite-alterado", ContaLimiteAlteradoEvent.class);
         idClassMapping.put("conta.alterar-limite.command", AlterarLimiteContaCommand.class);
         idClassMapping.put("conta.limite-alterado", ContaLimiteAlteradoEvent.class);
