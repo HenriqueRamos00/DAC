@@ -1,16 +1,4 @@
-import { ServiceUnavailableError, GatewayError } from '../hooks/errors.ts';
-
-export class UpstreamError extends GatewayError {
-  public body: unknown;
-  public url: string;
-
-  constructor(status: number, body: unknown, url: string) {
-    super(status, `Upstream ${url} respondeu ${status}`);
-    this.body = body;
-    this.url = url;
-    this.name = 'UpstreamError';
-  }
-}
+import { BadGatewatError, UpstreamError } from '../hooks/errors.ts';
 
 async function request<T>(
   method: string,
@@ -27,7 +15,7 @@ async function request<T>(
     });
   } catch (err) {
     // Falha de rede / DNS / connection refused
-    throw new ServiceUnavailableError(new URL(url).host);
+    throw new BadGatewatError(new URL(url).host);
   }
 
   const isJson = res.headers.get('content-type')?.includes('json');

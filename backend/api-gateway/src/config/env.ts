@@ -2,6 +2,8 @@ export const env = {
   PORT: Number(process.env.GATEWAY_PORT) || 3000,
   JWT_SECRET: process.env.JWT_SECRET || 'dev-secret-change-me',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1h',
+  REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
+
   upstreams: {
     auth:    process.env.AUTH_URL    || 'http://localhost:8081',
     cliente: process.env.CLIENTE_URL || 'http://localhost:8082',

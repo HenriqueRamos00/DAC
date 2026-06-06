@@ -1,9 +1,10 @@
 import type { FastifyInstance } from 'fastify';
-import { httpClient, UpstreamError } from '../services/http-client.ts';
+import { httpClient } from '../services/http-client.ts';
 import { env } from '../config/env.ts';
-import { UnauthorizedError } from '../hooks/errors.ts';
+import { UnauthorizedError, UpstreamError } from '../hooks/errors.ts';
 import type { LoginMsResponseDto, LoginRequestDto, LoginResponseDto } from '../types/dto/login.ts';
-import { authenticate } from '../middlewares/authenticate.ts';
+import { authenticate, revokeToken } from '../middlewares/authenticate.ts';
+import { randomUUID } from 'node:crypto';
 
 export async function registerAuthRoutes(gateway: FastifyInstance) {
   
@@ -28,13 +29,17 @@ export async function registerAuthRoutes(gateway: FastifyInstance) {
       throw err; // outros erros viram 5xx pelo handler global
     }
 
-    console.log(auth)
-
-  const accessToken = await reply.jwtSign({
-        sub: auth.cpf,
-        role: auth.tipoUsuario,
-        email: auth.email,
-      });
+  const accessToken = await reply.jwtSign(
+    {
+      sub: auth.cpf,
+      role: auth.tipoUsuario,
+      email: auth.email,
+      jti: randomUUID(),
+    },
+    {
+      expiresIn: '1h',
+    }
+  );
 
   return {
       access_token: accessToken,
@@ -48,16 +53,12 @@ export async function registerAuthRoutes(gateway: FastifyInstance) {
     };
   });
 
-  gateway.post('/logout', 
-    { preHandler: authenticate },
-    async (request, reply) => {
+  gateway.post('/logout', { preHandler: authenticate }, async (request, reply) => {
 
-    const claims = request.user;
+    await revokeToken(request);
 
-    return {
-      email: claims.email,
-      token: null
-    }
-
-  })
+    return reply.code(200).send({
+      email: request.user.email,
+    });
+  });
 }

@@ -1,6 +1,5 @@
 import type { FastifyError, FastifyInstance } from 'fastify';
-import { GatewayError, ServiceUnavailableError } from './errors.ts';
-import { UpstreamError } from '../services/http-client.ts';
+import { GatewayError, ServiceUnavailableError, UpstreamError } from './errors.ts';
 
 export function registerErrorHandler(gateway: FastifyInstance) {
   gateway.setErrorHandler<FastifyError | GatewayError>((error, request, reply) => {

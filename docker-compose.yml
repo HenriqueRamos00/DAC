@@ -62,6 +62,20 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: bantads-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - bantads-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   ms-auth:
     build:
       context: ./backend/ms-auth
@@ -192,9 +206,12 @@ services:
       CONTA_URL: http://ms-conta:8083
       GERENTE_URL: http://ms-gerente:8084
       SAGAS_URL: http://ms-saga:8086
+      REDIS_URL: redis://redis:6379
     ports:
       - "3000:3000"
     depends_on:
+      redis:
+        condition: service_healthy
       ms-auth:
         condition: service_started
       ms-cliente:

@@ -8,10 +8,10 @@ export class GatewayError extends Error {
   }
 }
 
-export class ServiceUnavailableError extends GatewayError {
+export class BadGatewatError extends GatewayError {
   constructor(service: string) {
     super(502, `Serviço "${service}" indisponível. Tente novamente mais tarde.`);
-    this.name = 'ServiceUnavailableError';
+    this.name = 'BadGatewayError';
   }
 }
 
@@ -47,5 +47,24 @@ export class TimeoutError extends GatewayError {
   constructor(service: string) {
     super(504, `Tempo limite excedido ao conectar com "${service}".`);
     this.name = 'TimeoutError';
+  }
+}
+
+export class ServiceUnavailableError extends GatewayError {
+  constructor(message?: string) {
+    super(503, `Falha de processamento da requisição: ${message}`);
+    this.name = 'ServiceUnavailableError'
+  }
+}
+
+export class UpstreamError extends GatewayError {
+  public body: unknown;
+  public url: string;
+
+  constructor(status: number, body: unknown, url: string) {
+    super(status, `Upstream ${url} respondeu ${status}`);
+    this.body = body;
+    this.url = url;
+    this.name = 'UpstreamError';
   }
 }
