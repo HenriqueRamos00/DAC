@@ -1,6 +1,7 @@
 package com.ufpr.bantads.conta.application.usecase;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -42,26 +43,26 @@ public class TransferenciaUseCase {
         ContaCommand contaDestino = contaCommandRepository.findByNumeroConta(numeroContaDestino)
                 .orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada"));
 
-        Double saldoOrigem = contaOrigem.getSaldo().doubleValue();
-        Double limiteOrigem = contaOrigem.getLimite().doubleValue();
+        BigDecimal valorTransferencia = BigDecimal.valueOf(valor).setScale(2, RoundingMode.HALF_UP);
 
-        if ((saldoOrigem + limiteOrigem) < valor) {
+        if (contaOrigem.getSaldo().add(contaOrigem.getLimite()).compareTo(valorTransferencia) < 0) {
             throw new IllegalArgumentException("Saldo insuficiente para transferência");
         }
 
-        Double novoSaldoOrigem = saldoOrigem - valor;
-        contaOrigem.setSaldo(BigDecimal.valueOf(novoSaldoOrigem));
+        BigDecimal novoSaldoOrigem =
+            contaOrigem.getSaldo().subtract(valorTransferencia).setScale(2, RoundingMode.HALF_UP);
+        contaOrigem.setSaldo(novoSaldoOrigem);
         contaCommandRepository.save(contaOrigem);
 
-        Double saldoDestino = contaDestino.getSaldo().doubleValue();
-        Double novoSaldoDestino = saldoDestino + valor;
-        contaDestino.setSaldo(BigDecimal.valueOf(novoSaldoDestino));
+        BigDecimal novoSaldoDestino =
+            contaDestino.getSaldo().add(valorTransferencia).setScale(2, RoundingMode.HALF_UP);
+        contaDestino.setSaldo(novoSaldoDestino);
         contaCommandRepository.save(contaDestino);
 
         TransferenciaCommand transferencia = TransferenciaCommand.builder()
                 .contaOrigemId(contaOrigem.getId())
                 .contaDestinoId(contaDestino.getId())
-                .valor(BigDecimal.valueOf(valor))
+                .valor(valorTransferencia)
                 .build();
 
         transferenciaCommandRepository.save(transferencia);
@@ -70,7 +71,7 @@ public class TransferenciaUseCase {
                 .eventId(UUID.randomUUID().toString())
                 .movimentacaoId(transferencia.getId())
                 .tipo(TipoMovimentacao.TRANSFERENCIA)
-                .valor(BigDecimal.valueOf(valor))
+                .valor(valorTransferencia)
                 .dataHora(transferencia.getDataHora())
                 .numeroContaOrigem(contaOrigem.getNumeroConta())
                 .numeroContaDestino(contaDestino.getNumeroConta())

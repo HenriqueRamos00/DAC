@@ -9,7 +9,7 @@ export type ClientResponseDto = {
   estado: string;
   salario: number;
   conta: string;
-  saldo: string;
+  saldo: number;
   limite: number;
   gerente: string;
   gerente_nome: string;

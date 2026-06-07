@@ -1,6 +1,7 @@
 package com.ufpr.bantads.conta.application.usecase;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -34,13 +35,15 @@ public class DepositarUseCase {
         ContaCommand conta = contaCommandRepository.findByNumeroConta(numeroConta)
             .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
 
-        Double saldo = conta.getSaldo().doubleValue() + valor;
-        conta.setSaldo(BigDecimal.valueOf(saldo));
+        BigDecimal valorDeposito = BigDecimal.valueOf(valor).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal novoSaldo = conta.getSaldo().add(valorDeposito).setScale(2, RoundingMode.HALF_UP);
+
+        conta.setSaldo(novoSaldo);
         contaCommandRepository.save(conta);
 
         DepositoCommand deposito = DepositoCommand.builder()
             .contaId(conta.getId())
-            .valor(BigDecimal.valueOf(valor))
+            .valor(valorDeposito)
             .build();
 
         depositoCommandRepository.save(deposito);
