@@ -54,7 +54,7 @@ public class ClienteSeedService {
                 enderecoSeed("Rua XV de Novembro", "100", "Apto 101", "80020310")
             ),
             clienteSeed(
-                "Cleudônio",
+                "Cleuddônio",
                 "cli2@bantads.com.br",
                 "09506382000",
                 "41999990002",

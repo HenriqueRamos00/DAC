@@ -13,13 +13,17 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.DefaultClassMapper;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.ufpr.bantads.auth.application.dto.command.CriarUsuarioClienteCommand;
+import com.ufpr.bantads.auth.application.dto.command.ExcluirUsuarioClienteCommand;
 import com.ufpr.bantads.auth.application.dto.event.CriacaoUsuarioClienteFalhouEvent;
+import com.ufpr.bantads.auth.application.dto.event.ExclusaoUsuarioClienteFalhouEvent;
 import com.ufpr.bantads.auth.application.dto.event.UsuarioClienteCriadoEvent;
+import com.ufpr.bantads.auth.application.dto.event.UsuarioClienteExcluidoEvent;
 
 @Configuration
 public class RabbitMQConfig {
@@ -33,6 +37,12 @@ public class RabbitMQConfig {
     @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-cliente.command}")
     private String criarUsuarioClienteCommandRoutingKey;
 
+    @Value("${saga.rabbitmq.queue.auth.excluir-usuario-cliente.command}")
+    private String excluirUsuarioClienteCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.auth.excluir-usuario-cliente.command}")
+    private String excluirUsuarioClienteCommandRoutingKey;
+
     @Bean
     public TopicExchange sagaExchange() {
         return new TopicExchange(exchange);
@@ -44,14 +54,30 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue excluirUsuarioClienteCommandQueue() {
+        return QueueBuilder.durable(excluirUsuarioClienteCommandQueue).build();
+    }
+
+    @Bean
     public Binding criarUsuarioClienteCommandBinding(
-        Queue criarUsuarioClienteCommandQueue,
+        @Qualifier("criarUsuarioClienteCommandQueue") Queue criarUsuarioClienteCommandQueue,
         TopicExchange sagaExchange
     ) {
         return BindingBuilder
             .bind(criarUsuarioClienteCommandQueue)
             .to(sagaExchange)
             .with(criarUsuarioClienteCommandRoutingKey);
+    }
+
+    @Bean
+    public Binding excluirUsuarioClienteCommandBinding(
+        @Qualifier("excluirUsuarioClienteCommandQueue") Queue excluirUsuarioClienteCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(excluirUsuarioClienteCommandQueue)
+            .to(sagaExchange)
+            .with(excluirUsuarioClienteCommandRoutingKey);
     }
 
     @Bean
@@ -70,6 +96,9 @@ public class RabbitMQConfig {
         idClassMapping.put("auth.criar-usuario-cliente.command", CriarUsuarioClienteCommand.class);
         idClassMapping.put("auth.usuario-cliente-criado", UsuarioClienteCriadoEvent.class);
         idClassMapping.put("auth.criacao-usuario-cliente.falhou", CriacaoUsuarioClienteFalhouEvent.class);
+        idClassMapping.put("auth.excluir-usuario-cliente.command", ExcluirUsuarioClienteCommand.class);
+        idClassMapping.put("auth.usuario-cliente-excluido", UsuarioClienteExcluidoEvent.class);
+        idClassMapping.put("auth.exclusao-usuario-cliente.falhou", ExclusaoUsuarioClienteFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

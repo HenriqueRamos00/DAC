@@ -65,7 +65,7 @@ public class ContaSeedService {
                                 800.00, 5000.00, "98574307084", "Catharyna", "Geniéve", "ger1@bantads.com.br");
 
                 long contaCleudonioId = insertConta("09506382000", "0950", "1990-10-10 00:00:00",
-                                -10000.00, 10000.00, "64065268052", "Cleudônio", "Godophredo", "ger2@bantads.com.br");
+                                -10000.00, 10000.00, "64065268052", "Cleuddônio", "Godophredo", "ger2@bantads.com.br");
 
                 long contaCatiannaId = insertConta("85733854057", "8573", "2012-12-12 00:00:00",
                                 -1000.00, 1500.00, "23862179060", "Catianna", "Gyândula", "ger3@bantads.com.br");
@@ -84,12 +84,12 @@ public class ContaSeedService {
                 insertSaque(contaCatharynaId, "2020-01-15 08:00:00", 500.00, "1291", "Catharyna");
 
                 insertTransferencia(contaCatharynaId, contaCleudonioId, "2020-01-20 12:00:00",
-                                1700.00, "1291", "Catharyna", "0950", "Cleudônio");
+                                1700.00, "1291", "Catharyna", "0950", "Cleuddônio");
 
-                insertDeposito(contaCleudonioId, "2025-01-01 12:00:00", 1000.00, "0950", "Cleudônio");
-                insertDeposito(contaCleudonioId, "2025-02-01 10:00:00", 5000.00, "0950", "Cleudônio");
-                insertSaque(contaCleudonioId, "2025-01-10 10:00:00", 200.00, "0950", "Cleudônio");
-                insertDeposito(contaCleudonioId, "2025-05-02 10:00:00", 7000.00, "0950", "Cleudônio");
+                insertDeposito(contaCleudonioId, "2025-01-01 12:00:00", 1000.00, "0950", "Cleuddônio");
+                insertDeposito(contaCleudonioId, "2025-02-01 10:00:00", 5000.00, "0950", "Cleuddônio");
+                insertSaque(contaCleudonioId, "2025-01-10 10:00:00", 200.00, "0950", "Cleuddônio");
+                insertDeposito(contaCleudonioId, "2025-05-02 10:00:00", 7000.00, "0950", "Cleuddônio");
 
                 insertDeposito(contaCatiannaId, "2025-05-05 10:00:00", 1000.00, "8573", "Catianna");
                 insertSaque(contaCatiannaId, "2025-05-06 10:00:00", 2000.00, "8573", "Catianna");

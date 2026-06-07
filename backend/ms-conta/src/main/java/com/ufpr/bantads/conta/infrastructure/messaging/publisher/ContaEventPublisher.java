@@ -5,10 +5,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.ufpr.bantads.conta.application.dto.event.ContaAlteracaoLimiteFalhouEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaClienteExcluidaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaSagaEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaExcluidaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
 import com.ufpr.bantads.conta.application.dto.event.CriacaoContaFalhouEvent;
+import com.ufpr.bantads.conta.application.dto.event.ExclusaoContaClienteFalhouEvent;
 import com.ufpr.bantads.conta.application.dto.event.GerenteParaNovaContaSelecionadoEvent;
 import com.ufpr.bantads.conta.application.dto.event.SelecaoGerenteParaNovaContaFalhouEvent;
 
@@ -21,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ContaEventPublisher {
 
     private static final String CONTA_CRIADA_CQRS_ROUTING_KEY = "conta.operacao.criada";
+    private static final String CONTA_EXCLUIDA_CQRS_ROUTING_KEY = "conta.operacao.excluida";
     private static final String CONTA_LIMITE_ALTERADO_CQRS_ROUTING_KEY = "conta.operacao.limite-alterado";
 
     private final RabbitTemplate rabbitTemplate;
@@ -36,6 +40,12 @@ public class ContaEventPublisher {
 
     @Value("${saga.rabbitmq.routing-key.conta.criar.falha}")
     private String criarContaFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.excluir-conta-cliente.sucesso}")
+    private String excluirContaClienteSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.excluir-conta-cliente.falha}")
+    private String excluirContaClienteFalhaRoutingKey;
 
     @Value("${saga.rabbitmq.routing-key.conta.alterar-limite.sucesso}")
     private String alterarLimiteSucessoRoutingKey;
@@ -54,6 +64,11 @@ public class ContaEventPublisher {
         rabbitTemplate.convertAndSend(cqrsExchange, CONTA_CRIADA_CQRS_ROUTING_KEY, event);
     }
 
+    public void publishContaExcluidaCqrs(ContaExcluidaEvent event) {
+        log.info("Publicando evento CQRS de conta excluída: {}", event);
+        rabbitTemplate.convertAndSend(cqrsExchange, CONTA_EXCLUIDA_CQRS_ROUTING_KEY, event);
+    }
+
     public void publishContaCriadaSaga(ContaCriadaEvent event) {
         ContaCriadaSagaEvent sagaEvent = ContaCriadaSagaEvent.from(event);
 
@@ -64,6 +79,16 @@ public class ContaEventPublisher {
     public void publishCriacaoContaFalhou(CriacaoContaFalhouEvent event) {
         log.info("Publicando falha de criação de conta para saga: {}", event);
         rabbitTemplate.convertAndSend(sagaExchange, criarContaFalhaRoutingKey, event);
+    }
+
+    public void publishContaClienteExcluida(ContaClienteExcluidaEvent event) {
+        log.info("Publicando sucesso de exclusão de conta para saga: {}", event);
+        rabbitTemplate.convertAndSend(sagaExchange, excluirContaClienteSucessoRoutingKey, event);
+    }
+
+    public void publishExclusaoContaClienteFalhou(ExclusaoContaClienteFalhouEvent event) {
+        log.info("Publicando falha de exclusão de conta para saga: {}", event);
+        rabbitTemplate.convertAndSend(sagaExchange, excluirContaClienteFalhaRoutingKey, event);
     }
 
     public void publishLimiteAlteradoCqrs(ContaLimiteAlteradoEvent event) {

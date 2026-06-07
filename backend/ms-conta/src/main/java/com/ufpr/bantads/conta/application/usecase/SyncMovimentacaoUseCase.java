@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
+import com.ufpr.bantads.conta.application.dto.event.ContaExcluidaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 import com.ufpr.bantads.conta.domain.model.entity.ContaQuery;
@@ -41,6 +42,12 @@ public class SyncMovimentacaoUseCase {
         );
 
         contaQueryRepository.save(conta);
+    }
+
+    @Transactional
+    public void sincronizarContaExcluida(ContaExcluidaEvent event) {
+        contaQueryRepository.findByClienteCpf(event.getClienteCpf())
+            .ifPresent(contaQueryRepository::delete);
     }
 
     @Transactional
