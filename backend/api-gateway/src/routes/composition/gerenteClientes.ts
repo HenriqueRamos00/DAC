@@ -49,7 +49,7 @@ export async function registerGerenteClientes(gateway: FastifyInstance) {
             estado: cliente.estado,
             salario: cliente.salario,
             conta: conta.numeroConta,
-            saldo: String(conta.saldo),
+            saldo: conta.saldo,
             limite: conta.limite,
             gerente: conta.gerenteCpf,
             gerente_nome: conta.gerenteNome,

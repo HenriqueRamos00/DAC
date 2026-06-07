@@ -48,7 +48,7 @@ export async function registerClienteRoutes(gateway: FastifyInstance) {
     if (isMelhoresClientes(request.query)) {
       const todos = await getClientesRelatorio(buildUpstreamHeaders(request));
       const top3 = todos
-        .sort((a, b) => parseFloat(b.saldo) - parseFloat(a.saldo))
+        .sort((a, b) => b.saldo - a.saldo)
         .slice(0, 3);
       return reply.code(200).send(top3);
     }
@@ -155,7 +155,7 @@ async function getClientesRelatorio(
       estado: cliente.estado,
       salario: cliente.salario,
       conta: conta?.numeroConta ?? '',
-      saldo: String(conta?.saldo ?? 0),
+      saldo: conta?.saldo ?? 0,
       limite: conta?.limite ?? 0,
       gerente: conta?.gerenteCpf ?? '',
       gerente_nome: conta?.gerenteNome ?? '',

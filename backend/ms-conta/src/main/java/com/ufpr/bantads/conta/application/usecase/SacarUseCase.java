@@ -1,6 +1,7 @@
 package com.ufpr.bantads.conta.application.usecase;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -34,21 +35,20 @@ public class SacarUseCase {
         ContaCommand conta = contaCommandRepository.findByNumeroConta(numeroConta)
                 .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
 
-        Double saldoAtual = conta.getSaldo().doubleValue();
-        Double limite = conta.getLimite().doubleValue();
+        BigDecimal valorSaque = BigDecimal.valueOf(valor).setScale(2, RoundingMode.HALF_UP);
 
-        if ((saldoAtual + limite) < valor) {
+        if (conta.getSaldo().add(conta.getLimite()).compareTo(valorSaque) < 0) {
             throw new IllegalArgumentException("Saldo insuficiente considerando o limite");
         }
 
 
-        Double novoSaldo = saldoAtual - valor;
-        conta.setSaldo(BigDecimal.valueOf(novoSaldo));
+        BigDecimal novoSaldo = conta.getSaldo().subtract(valorSaque).setScale(2, RoundingMode.HALF_UP);
+        conta.setSaldo(novoSaldo);
         contaCommandRepository.save(conta);
 
         SaqueCommand saque = SaqueCommand.builder()
                 .contaId(conta.getId())
-                .valor(BigDecimal.valueOf(valor))
+                .valor(valorSaque)
                 .build();
 
         saqueCommandRepository.save(saque);
