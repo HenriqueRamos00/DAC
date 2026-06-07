@@ -5,6 +5,7 @@ import static br.ufpr.bantads.saga.sagas.aprovacaocliente.AprovacaoClienteStep.C
 import static br.ufpr.bantads.saga.sagas.aprovacaocliente.AprovacaoClienteStep.CRIAR_CONTA;
 import static br.ufpr.bantads.saga.sagas.aprovacaocliente.AprovacaoClienteStep.CRIAR_USUARIO_CLIENTE;
 import static br.ufpr.bantads.saga.sagas.aprovacaocliente.AprovacaoClienteStep.EXCLUIR_CONTA_CLIENTE;
+import static br.ufpr.bantads.saga.sagas.aprovacaocliente.AprovacaoClienteStep.EXCLUIR_USUARIO_CLIENTE;
 import static br.ufpr.bantads.saga.sagas.aprovacaocliente.AprovacaoClienteStep.LISTAR_GERENTES_ATIVOS;
 import static br.ufpr.bantads.saga.sagas.aprovacaocliente.AprovacaoClienteStep.SELECIONAR_GERENTE_PARA_NOVA_CONTA;
 
@@ -19,6 +20,7 @@ import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ConsultarClienteP
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarContaCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarUsuarioClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirContaClienteCommand;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirUsuarioClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ListarGerentesAtivosCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.SelecionarGerenteParaNovaContaCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.AprovacaoClienteFalhouEvent;
@@ -30,11 +32,13 @@ import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ContaCriadaSagaEven
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoUsuarioClienteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ExclusaoContaClienteFalhouEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ExclusaoUsuarioClienteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.GerenteParaNovaContaSelecionadoEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.GerentesAtivosListadosEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ListagemGerentesAtivosFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.SelecaoGerenteParaNovaContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.UsuarioClienteCriadoEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.UsuarioClienteExcluidoEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.request.AprovarClienteSagaRequest;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.response.ClienteAprovadoSagaResponse;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.shared.ClienteAprovacaoDados;
@@ -255,15 +259,28 @@ public class AprovacaoClienteOrchestrator {
     }
 
     public void handleListagemGerentesAtivosFalhou(ListagemGerentesAtivosFalhouEvent event) {
-        fail(event.sagaId(), LISTAR_GERENTES_ATIVOS, "Falha ao listar gerentes ativos: " + event.motivo());
+        String motivo = "Falha ao listar gerentes ativos: " + event.motivo();
+
+        sagaPersistenceService.failStep(event.sagaId(), LISTAR_GERENTES_ATIVOS.stepName(), motivo);
+        compensarUsuarioCriado(event.sagaId(), motivo);
     }
 
     public void handleSelecaoGerenteParaNovaContaFalhou(SelecaoGerenteParaNovaContaFalhouEvent event) {
-        fail(event.sagaId(), SELECIONAR_GERENTE_PARA_NOVA_CONTA, "Falha ao selecionar gerente: " + event.motivo());
+        String motivo = "Falha ao selecionar gerente: " + event.motivo();
+
+        sagaPersistenceService.failStep(
+            event.sagaId(),
+            SELECIONAR_GERENTE_PARA_NOVA_CONTA.stepName(),
+            motivo
+        );
+        compensarUsuarioCriado(event.sagaId(), motivo);
     }
 
     public void handleCriacaoContaFalhou(CriacaoContaFalhouEvent event) {
-        fail(event.sagaId(), CRIAR_CONTA, "Falha ao criar conta: " + event.motivo());
+        String motivo = "Falha ao criar conta: " + event.motivo();
+
+        sagaPersistenceService.failStep(event.sagaId(), CRIAR_CONTA.stepName(), motivo);
+        compensarUsuarioCriado(event.sagaId(), motivo);
     }
 
     public void handleAprovacaoClienteFalhou(AprovacaoClienteFalhouEvent event) {
@@ -282,17 +299,40 @@ public class AprovacaoClienteOrchestrator {
         );
 
         String motivo = sagaPersistenceService.getSagaErrorMessage(event.sagaId());
-        String mensagem = motivo == null || motivo.isBlank()
-            ? "SAGA falhou; conta criada foi compensada"
-            : motivo + ". Conta criada foi compensada";
-
-        responseRegistry.complete(event.sagaId(), new SagaErrorResponse(event.sagaId(), "FAILED", mensagem));
+        compensarUsuarioCriado(
+            event.sagaId(),
+            motivo == null || motivo.isBlank() ? "SAGA falhou após criar conta" : motivo
+        );
     }
 
     public void handleExclusaoContaClienteFalhou(ExclusaoContaClienteFalhouEvent event) {
         String motivo = "Falha ao compensar conta criada: " + event.motivo();
 
         failPersistedStep(event.sagaId(), EXCLUIR_CONTA_CLIENTE.stepName(), motivo);
+        responseRegistry.complete(event.sagaId(), new SagaErrorResponse(event.sagaId(), "FAILED", motivo));
+    }
+
+    public void handleUsuarioClienteExcluido(UsuarioClienteExcluidoEvent event) {
+        sagaPersistenceService.markStepCompensated(
+            event.sagaId(),
+            EXCLUIR_USUARIO_CLIENTE.stepName(),
+            UsuarioClienteExcluidoEvent.class.getSimpleName(),
+            event
+        );
+        sagaPersistenceService.completeCompensation(event.sagaId());
+
+        String motivo = sagaPersistenceService.getSagaErrorMessage(event.sagaId());
+        String mensagem = motivo == null || motivo.isBlank()
+            ? "SAGA falhou; usuário cliente foi compensado"
+            : motivo + ". Usuário cliente foi compensado";
+
+        responseRegistry.complete(event.sagaId(), new SagaErrorResponse(event.sagaId(), "FAILED", mensagem));
+    }
+
+    public void handleExclusaoUsuarioClienteFalhou(ExclusaoUsuarioClienteFalhouEvent event) {
+        String motivo = "Falha ao compensar usuário cliente: " + event.motivo();
+
+        failPersistedStep(event.sagaId(), EXCLUIR_USUARIO_CLIENTE.stepName(), motivo);
         responseRegistry.complete(event.sagaId(), new SagaErrorResponse(event.sagaId(), "FAILED", motivo));
     }
 
@@ -343,6 +383,43 @@ public class AprovacaoClienteOrchestrator {
         );
 
         commandPublisher.publishExcluirContaCliente(command);
+    }
+
+    private void compensarUsuarioCriado(String sagaId, String motivo) {
+        UsuarioClienteCriadoEvent usuario;
+        try {
+            usuario = sagaPersistenceService.getCompletedStepResponse(
+                sagaId,
+                CRIAR_USUARIO_CLIENTE.stepName(),
+                UsuarioClienteCriadoEvent.class
+            );
+        } catch (Exception ex) {
+            String motivoCompensacao =
+                motivo + ". Não foi possível localizar o usuário criado para compensação";
+
+            log.warn("SAGA aprovação cliente {} não conseguiu iniciar compensação de usuário", sagaId, ex);
+            sagaPersistenceService.failSaga(sagaId, motivoCompensacao);
+            responseRegistry.complete(
+                sagaId,
+                new SagaErrorResponse(sagaId, "FAILED", motivoCompensacao)
+            );
+            return;
+        }
+
+        ExcluirUsuarioClienteCommand command =
+            new ExcluirUsuarioClienteCommand(sagaId, usuario.cpf(), usuario.email());
+
+        sagaPersistenceService.requireCompensation(sagaId, motivo);
+        sagaPersistenceService.markStepSent(
+            sagaId,
+            EXCLUIR_USUARIO_CLIENTE.order(),
+            EXCLUIR_USUARIO_CLIENTE.stepName(),
+            ExcluirUsuarioClienteCommand.class.getSimpleName(),
+            command,
+            SagaStatus.COMPENSATION_REQUIRED
+        );
+
+        commandPublisher.publishExcluirUsuarioCliente(command);
     }
 
 }

@@ -13,11 +13,13 @@ import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ContaCriadaSagaEven
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoUsuarioClienteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ExclusaoContaClienteFalhouEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ExclusaoUsuarioClienteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.GerenteParaNovaContaSelecionadoEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.GerentesAtivosListadosEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ListagemGerentesAtivosFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.SelecaoGerenteParaNovaContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.UsuarioClienteCriadoEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.UsuarioClienteExcluidoEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -97,5 +99,15 @@ public class AprovacaoClienteResponseListener {
     @RabbitHandler
     public void handleExclusaoContaClienteFalhou(ExclusaoContaClienteFalhouEvent event) {
         orchestrator.handleExclusaoContaClienteFalhou(event);
+    }
+
+    @RabbitHandler
+    public void handleUsuarioClienteExcluido(UsuarioClienteExcluidoEvent event) {
+        orchestrator.handleUsuarioClienteExcluido(event);
+    }
+
+    @RabbitHandler
+    public void handleExclusaoUsuarioClienteFalhou(ExclusaoUsuarioClienteFalhouEvent event) {
+        orchestrator.handleExclusaoUsuarioClienteFalhou(event);
     }
 }

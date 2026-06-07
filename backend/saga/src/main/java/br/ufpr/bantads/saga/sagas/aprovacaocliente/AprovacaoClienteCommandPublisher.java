@@ -9,6 +9,7 @@ import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ConsultarClienteP
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarContaCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarUsuarioClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirContaClienteCommand;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirUsuarioClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ListarGerentesAtivosCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.SelecionarGerenteParaNovaContaCommand;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,9 @@ public class AprovacaoClienteCommandPublisher {
     @Value("${saga.rabbitmq.routing-key.conta.excluir-conta-cliente.command}")
     private String excluirContaClienteRoutingKey;
 
+    @Value("${saga.rabbitmq.routing-key.auth.excluir-usuario-cliente.command}")
+    private String excluirUsuarioClienteRoutingKey;
+
     @Value("${saga.rabbitmq.routing-key.cliente.aprovar.command}")
     private String aprovarClienteRoutingKey;
 
@@ -73,6 +77,11 @@ public class AprovacaoClienteCommandPublisher {
     public void publishExcluirContaCliente(ExcluirContaClienteCommand command) {
         log.info("Publicando comando excluir conta de cliente: {}", command);
         rabbitTemplate.convertAndSend(exchange, excluirContaClienteRoutingKey, command);
+    }
+
+    public void publishExcluirUsuarioCliente(ExcluirUsuarioClienteCommand command) {
+        log.info("Publicando comando excluir usuário cliente: {}", command);
+        rabbitTemplate.convertAndSend(exchange, excluirUsuarioClienteRoutingKey, command);
     }
 
     public void publishAprovarCliente(AprovarClienteCommand command) {

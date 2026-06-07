@@ -119,6 +119,15 @@ public class SagaPersistenceService {
     }
 
     @Transactional
+    public void completeCompensation(String sagaId) {
+        SagaInstance saga = sagaRepository.getReferenceById(sagaId);
+        saga.setStatus(SagaStatus.COMPENSATED);
+        saga.setCurrentStep(null);
+        saga.setFinishedAt(LocalDateTime.now());
+        sagaRepository.save(saga);
+    }
+
+    @Transactional
     public void failStep(
         String sagaId,
         String stepName,

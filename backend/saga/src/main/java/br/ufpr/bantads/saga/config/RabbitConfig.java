@@ -101,6 +101,12 @@ public class RabbitConfig {
     @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-cliente.falha}")
     private String authCriarUsuarioClienteFalhaRoutingKey;
 
+    @Value("${saga.rabbitmq.routing-key.auth.excluir-usuario-cliente.sucesso}")
+    private String authExcluirUsuarioClienteSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.excluir-usuario-cliente.falha}")
+    private String authExcluirUsuarioClienteFalhaRoutingKey;
+
     @Value("${saga.rabbitmq.routing-key.gerente.listar-ativos-detalhado.sucesso}")
     private String gerenteListarAtivosDetalhadoSucessoRoutingKey;
 
@@ -329,6 +335,28 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding authExcluirUsuarioClienteSucessoBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(authExcluirUsuarioClienteSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding authExcluirUsuarioClienteFalhaBinding(
+        Queue aprovacaoClienteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(aprovacaoClienteResponseQueue)
+            .to(sagaExchange)
+            .with(authExcluirUsuarioClienteFalhaRoutingKey);
+    }
+
+    @Bean
     public Binding gerenteListarAtivosDetalhadoSucessoBinding(
         Queue aprovacaoClienteResponseQueue,
         TopicExchange sagaExchange
@@ -554,6 +582,9 @@ public class RabbitConfig {
         idClassMapping.put("auth.criar-usuario-cliente.command", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarUsuarioClienteCommand.class);
         idClassMapping.put("auth.usuario-cliente-criado", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.UsuarioClienteCriadoEvent.class);
         idClassMapping.put("auth.criacao-usuario-cliente.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoUsuarioClienteFalhouEvent.class);
+        idClassMapping.put("auth.excluir-usuario-cliente.command", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirUsuarioClienteCommand.class);
+        idClassMapping.put("auth.usuario-cliente-excluido", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.UsuarioClienteExcluidoEvent.class);
+        idClassMapping.put("auth.exclusao-usuario-cliente.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ExclusaoUsuarioClienteFalhouEvent.class);
         idClassMapping.put("gerente.listar-ativos-detalhado", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ListarGerentesAtivosCommand.class);
         idClassMapping.put("gerente.ativos-detalhados-listados", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.GerentesAtivosListadosEvent.class);
         idClassMapping.put("gerente.listagem-ativos-detalhados.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ListagemGerentesAtivosFalhouEvent.class);
