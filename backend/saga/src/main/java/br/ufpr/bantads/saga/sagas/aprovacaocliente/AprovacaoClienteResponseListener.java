@@ -8,9 +8,11 @@ import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.AprovacaoClienteFal
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteAprovadoEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteConsultadoParaAprovacaoEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ConsultaClienteParaAprovacaoFalhouEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ContaClienteExcluidaEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ContaCriadaSagaEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.CriacaoUsuarioClienteFalhouEvent;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ExclusaoContaClienteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.GerenteParaNovaContaSelecionadoEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.GerentesAtivosListadosEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ListagemGerentesAtivosFalhouEvent;
@@ -85,5 +87,15 @@ public class AprovacaoClienteResponseListener {
     @RabbitHandler
     public void handleAprovacaoClienteFalhou(AprovacaoClienteFalhouEvent event) {
         orchestrator.handleAprovacaoClienteFalhou(event);
+    }
+
+    @RabbitHandler
+    public void handleContaClienteExcluida(ContaClienteExcluidaEvent event) {
+        orchestrator.handleContaClienteExcluida(event);
+    }
+
+    @RabbitHandler
+    public void handleExclusaoContaClienteFalhou(ExclusaoContaClienteFalhouEvent event) {
+        orchestrator.handleExclusaoContaClienteFalhou(event);
     }
 }

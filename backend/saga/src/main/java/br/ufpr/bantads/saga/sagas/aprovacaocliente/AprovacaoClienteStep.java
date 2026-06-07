@@ -6,7 +6,8 @@ public enum AprovacaoClienteStep {
     LISTAR_GERENTES_ATIVOS(3),
     SELECIONAR_GERENTE_PARA_NOVA_CONTA(4),
     CRIAR_CONTA(5),
-    APROVAR_CLIENTE(6);
+    APROVAR_CLIENTE(6),
+    EXCLUIR_CONTA_CLIENTE(7);
 
     private final int order;
 

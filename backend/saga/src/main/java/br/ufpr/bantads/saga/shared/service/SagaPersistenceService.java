@@ -84,6 +84,32 @@ public class SagaPersistenceService {
     }
 
     @Transactional
+    public void markStepCompensated(
+        String sagaId,
+        String stepName,
+        String eventType,
+        Object responsePayload
+    ) {
+        SagaStep step = stepRepository
+            .findBySagaSagaIdAndStepNameAndStatus(sagaId, stepName, SagaStepStatus.SENT)
+            .orElseThrow(() -> new IllegalStateException(
+                "Step de compensação enviado não encontrado para sagaId=" + sagaId + ", stepName=" + stepName
+            ));
+
+        step.setStatus(SagaStepStatus.COMPENSATED);
+        step.setEventType(eventType);
+        step.setResponsePayload(toMap(responsePayload));
+        step.setCompletedAt(LocalDateTime.now());
+
+        SagaInstance saga = sagaRepository.getReferenceById(sagaId);
+        saga.setStatus(SagaStatus.COMPENSATION_REQUIRED);
+        saga.setCurrentStep(null);
+
+        stepRepository.save(step);
+        sagaRepository.save(saga);
+    }
+
+    @Transactional
     public void completeSaga(String sagaId) {
         SagaInstance saga = sagaRepository.getReferenceById(sagaId);
         saga.setStatus(SagaStatus.COMPLETED);
@@ -123,6 +149,11 @@ public class SagaPersistenceService {
         saga.setStatus(SagaStatus.COMPENSATION_REQUIRED);
         saga.setErrorMessage(errorMessage);
         sagaRepository.save(saga);
+    }
+
+    @Transactional(readOnly = true)
+    public String getSagaErrorMessage(String sagaId) {
+        return sagaRepository.getReferenceById(sagaId).getErrorMessage();
     }
 
     @Transactional
