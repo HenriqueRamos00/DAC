@@ -14,6 +14,8 @@ import com.ufpr.bantads.conta.domain.model.entity.DepositoCommand;
 import com.ufpr.bantads.conta.domain.model.enums.TipoMovimentacao;
 import com.ufpr.bantads.conta.domain.repository.ContaCommandRepository;
 import com.ufpr.bantads.conta.domain.repository.DepositoCommandRepository;
+import com.ufpr.bantads.conta.infrastructure.cache.redis.model.ContaCache;
+import com.ufpr.bantads.conta.infrastructure.cache.redis.repository.ContaCacheRedisRepository;
 import com.ufpr.bantads.conta.infrastructure.messaging.publisher.MovimentacaoEventPublisher;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,8 @@ public class DepositarUseCase {
     private final ContaCommandRepository contaCommandRepository;
 
     private final DepositoCommandRepository depositoCommandRepository;
+
+    private final ContaCacheRedisRepository cacheRedisRepository;
 
     private final MovimentacaoEventPublisher movimentacaoEventPublisher;
 
@@ -47,14 +51,25 @@ public class DepositarUseCase {
             .build();
 
         depositoCommandRepository.save(deposito);
+
+        String eventId = UUID.randomUUID().toString();
+
         movimentacaoEventPublisher.publish(MovimentacaoEvent.builder()
-            .eventId(UUID.randomUUID().toString())
+            .eventId(eventId)
             .movimentacaoId(deposito.getId())
             .tipo(TipoMovimentacao.DEPOSITO)
             .valor(deposito.getValor())
             .dataHora(deposito.getDataHora())
             .numeroContaOrigem(conta.getNumeroConta())
             .novoSaldoContaOrigem(conta.getSaldo())
+            .build());
+
+        cacheRedisRepository.save(ContaCache.builder()
+            .id(ContaCache.idForNumeroConta(conta.getNumeroConta()))
+            .clienteCpf(conta.getClienteCpf())
+            .numeroConta(conta.getNumeroConta())
+            .saldo(novoSaldo)
+            .eventId(eventId)
             .build());
 
         return new DepositoSaqueResponse(

@@ -14,6 +14,8 @@ import com.ufpr.bantads.conta.domain.model.entity.TransferenciaCommand;
 import com.ufpr.bantads.conta.domain.model.enums.TipoMovimentacao;
 import com.ufpr.bantads.conta.domain.repository.ContaCommandRepository;
 import com.ufpr.bantads.conta.domain.repository.TransferenciaCommandRepository;
+import com.ufpr.bantads.conta.infrastructure.cache.redis.model.ContaCache;
+import com.ufpr.bantads.conta.infrastructure.cache.redis.repository.ContaCacheRedisRepository;
 import com.ufpr.bantads.conta.infrastructure.messaging.publisher.MovimentacaoEventPublisher;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,8 @@ public class TransferenciaUseCase {
     private final ContaCommandRepository contaCommandRepository;
 
     private final TransferenciaCommandRepository transferenciaCommandRepository;
+
+    private final ContaCacheRedisRepository cacheRedisRepository;
 
     private final MovimentacaoEventPublisher movimentacaoEventPublisher;
 
@@ -67,8 +71,10 @@ public class TransferenciaUseCase {
 
         transferenciaCommandRepository.save(transferencia);
 
+        String eventId = UUID.randomUUID().toString();
+
         movimentacaoEventPublisher.publish(MovimentacaoEvent.builder()
-                .eventId(UUID.randomUUID().toString())
+                .eventId(eventId)
                 .movimentacaoId(transferencia.getId())
                 .tipo(TipoMovimentacao.TRANSFERENCIA)
                 .valor(valorTransferencia)
@@ -77,6 +83,22 @@ public class TransferenciaUseCase {
                 .numeroContaDestino(contaDestino.getNumeroConta())
                 .novoSaldoContaOrigem(contaOrigem.getSaldo())
                 .novoSaldoContaDestino(contaDestino.getSaldo())
+                .build());
+
+        cacheRedisRepository.save(ContaCache.builder()
+                .id(ContaCache.idForNumeroConta(contaOrigem.getNumeroConta()))
+                .clienteCpf(contaOrigem.getClienteCpf())
+                .numeroConta(contaOrigem.getNumeroConta())
+                .eventId(eventId)
+                .saldo(novoSaldoOrigem)
+                .build());
+
+        cacheRedisRepository.save(ContaCache.builder()
+                .id(ContaCache.idForNumeroConta(contaDestino.getNumeroConta()))
+                .clienteCpf(contaDestino.getClienteCpf())
+                .numeroConta(contaDestino.getNumeroConta())
+                .eventId(eventId)
+                .saldo(novoSaldoDestino)
                 .build());
         
         return new TransferenciaResponse(

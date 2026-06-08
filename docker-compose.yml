@@ -132,12 +132,17 @@ services:
       POSTGRES_HOST: postgres-db
       DB_HOST: postgres-db
       RABBITMQ_HOST: rabbitmq
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DATABASE_CONTA: 1
     ports:
       - "8083:8083"
     depends_on:
       postgres-db:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - bantads-network

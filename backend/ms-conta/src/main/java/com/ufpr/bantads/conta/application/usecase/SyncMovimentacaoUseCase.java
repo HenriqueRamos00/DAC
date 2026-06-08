@@ -2,6 +2,7 @@ package com.ufpr.bantads.conta.application.usecase;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaExcluidaEvent;
@@ -19,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 public class SyncMovimentacaoUseCase {
 
     private final MovimentacaoQueryRepository movimentacaoQueryRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     private final ContaQueryRepository contaQueryRepository;
 
@@ -85,6 +88,8 @@ public class SyncMovimentacaoUseCase {
             default:
                 break;
         }
+
+        eventPublisher.publishEvent(event);
         
     }
 

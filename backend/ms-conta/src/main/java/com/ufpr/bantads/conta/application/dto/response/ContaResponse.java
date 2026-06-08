@@ -26,4 +26,19 @@ public record ContaResponse(
             contaQuery.getGerenteEmail()
         );
     }
+
+    public static ContaResponse fromEntity(ContaQuery contaQuery , double saldo) {
+                
+        return new ContaResponse(
+            contaQuery.getNumeroConta(),
+            contaQuery.getDataCriacao().toString(),
+            saldo,
+            contaQuery.getLimite().doubleValue(),
+            contaQuery.getClienteNome(),
+            contaQuery.getClienteCpf(),
+            contaQuery.getGerenteCpf(),
+            contaQuery.getGerenteNome(),
+            contaQuery.getGerenteEmail()
+        );
+    }
 }
