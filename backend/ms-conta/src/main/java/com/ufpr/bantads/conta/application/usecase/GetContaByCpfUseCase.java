@@ -21,7 +21,7 @@ public class GetContaByCpfUseCase {
         return contaQueryRepository.findByClienteCpf(cpf)
             .map(conta -> {
                 ContaCache cache = cacheRedisRepository
-                    .findById(ContaCache.idForNumeroConta(conta.getNumeroConta()))
+                    .findById(conta.getNumeroConta())
                     .orElse(null);
 
                 if (cache != null) {

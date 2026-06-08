@@ -18,7 +18,7 @@ public class GetSaldoUseCase {
     private final ContaCacheRedisRepository cacheRedisRepository;
 
     public SaldoResponse execute(String conta) {
-        ContaCache cache = cacheRedisRepository.findById(ContaCache.idForNumeroConta(conta)).orElse(null);
+        ContaCache cache = cacheRedisRepository.findById(conta).orElse(null);
 
         if (cache != null) {
             return new SaldoResponse(

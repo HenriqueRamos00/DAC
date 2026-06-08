@@ -86,7 +86,6 @@ public class TransferenciaUseCase {
                 .build());
 
         cacheRedisRepository.save(ContaCache.builder()
-                .id(ContaCache.idForNumeroConta(contaOrigem.getNumeroConta()))
                 .clienteCpf(contaOrigem.getClienteCpf())
                 .numeroConta(contaOrigem.getNumeroConta())
                 .eventId(eventId)
@@ -94,7 +93,6 @@ public class TransferenciaUseCase {
                 .build());
 
         cacheRedisRepository.save(ContaCache.builder()
-                .id(ContaCache.idForNumeroConta(contaDestino.getNumeroConta()))
                 .clienteCpf(contaDestino.getClienteCpf())
                 .numeroConta(contaDestino.getNumeroConta())
                 .eventId(eventId)

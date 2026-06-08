@@ -5,7 +5,6 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
-import com.ufpr.bantads.conta.infrastructure.cache.redis.model.ContaCache;
 import com.ufpr.bantads.conta.infrastructure.cache.redis.repository.ContaCacheRedisRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,7 @@ public class SyncListener {
             return;
         }
 
-        cacheRedisRepository.deleteById(ContaCache.idForNumeroConta(numeroConta));
+        cacheRedisRepository.deleteById(numeroConta);
     }
 
 }

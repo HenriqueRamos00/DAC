@@ -65,7 +65,6 @@ public class DepositarUseCase {
             .build());
 
         cacheRedisRepository.save(ContaCache.builder()
-            .id(ContaCache.idForNumeroConta(conta.getNumeroConta()))
             .clienteCpf(conta.getClienteCpf())
             .numeroConta(conta.getNumeroConta())
             .saldo(novoSaldo)

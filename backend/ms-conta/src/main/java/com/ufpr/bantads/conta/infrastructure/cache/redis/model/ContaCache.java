@@ -20,14 +20,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ContaCache {
 
-    public static String idForNumeroConta(String numeroConta) {
-        return numeroConta;
-    }
-
     @Id
-    private String id;
-
-    @Indexed
     private String numeroConta;
 
     @Indexed

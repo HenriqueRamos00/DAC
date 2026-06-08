@@ -70,7 +70,6 @@ public class SacarUseCase {
                 .build());
 
         cacheRedisRepository.save(ContaCache.builder()
-                .id(ContaCache.idForNumeroConta(conta.getNumeroConta()))
                 .clienteCpf(conta.getClienteCpf())
                 .numeroConta(conta.getNumeroConta())
                 .eventId(eventId)
