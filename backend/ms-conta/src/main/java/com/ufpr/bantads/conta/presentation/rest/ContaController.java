@@ -40,6 +40,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 public class ContaController {
+    private static final long READ_MODEL_DELAY_MILLIS = 500;
 
     private final GetSaldoUseCase getSaldoUseCase;
     private final GetExtratoUseCase getExtratoUseCase;
@@ -110,6 +111,7 @@ public class ContaController {
         }
 
         DepositoSaqueResponse depositoResponse = depositarUseCase.execute(conta, request.valor());
+        aguardarAtualizacaoLeitura();
         return ResponseEntity.ok(depositoResponse);
     }
 
@@ -122,6 +124,7 @@ public class ContaController {
         }
 
         DepositoSaqueResponse depositoResponse = sacarUseCase.execute(conta, request.valor());
+        aguardarAtualizacaoLeitura();
         return ResponseEntity.ok(depositoResponse);
     }
 
@@ -135,6 +138,15 @@ public class ContaController {
 
         TransferenciaResponse transferenciaResponse = transferenciaUseCase.execute(conta, request.destino(),
                 request.valor());
+        aguardarAtualizacaoLeitura();
         return ResponseEntity.ok(transferenciaResponse);
+    }
+
+    private void aguardarAtualizacaoLeitura() {
+        try {
+            Thread.sleep(READ_MODEL_DELAY_MILLIS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

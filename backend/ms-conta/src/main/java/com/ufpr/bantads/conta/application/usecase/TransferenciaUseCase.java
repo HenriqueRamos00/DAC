@@ -81,6 +81,8 @@ public class TransferenciaUseCase {
         
         return new TransferenciaResponse(
             contaOrigem.getNumeroConta(), 
+            contaDestino.getNumeroConta(),
+            valorTransferencia.doubleValue(),
             contaOrigem.getSaldo().doubleValue(), 
             transferencia.getDataHora().toString());
     }
