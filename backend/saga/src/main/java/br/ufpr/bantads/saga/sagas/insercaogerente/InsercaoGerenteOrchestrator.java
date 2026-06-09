@@ -11,13 +11,16 @@ import org.springframework.stereotype.Service;
 
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.AtribuirGerenteContaCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.ConsultarGerenteMaisContasCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.CriarUsuarioGerenteCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.InserirGerenteCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.AtribuicaoGerenteContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.ConsultaGerenteMaisContasFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.CriacaoUsuarioGerenteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteAtribuidoContaEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteInseridoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteMaisContasConsultadoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.InsercaoGerenteFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.UsuarioGerenteCriadoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.request.InserirGerenteRequest;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.response.GerenteResponse;
 import br.ufpr.bantads.saga.shared.dto.response.SagaErrorResponse;
@@ -85,15 +88,33 @@ public class InsercaoGerenteOrchestrator {
         gerenteInseridoPorSaga.put(sagaId, event);
         statusPorSaga.put(sagaId, "GERENTE_INSERIDO");
 
+        InserirGerenteRequest request = requestPorSaga.get(sagaId);
+        if (request == null) {
+            fail(sagaId, "Estado do request perdido antes de criar usuário no auth");
+            return;
+        }
+
+        statusPorSaga.put(sagaId, "CRIAR_USUARIO_AUTH_SOLICITADO");
+        commandPublisher.publishCriarUsuarioGerente(
+            CriarUsuarioGerenteCommand.fromGerenteInserido(event, request)
+        );
+    }
+
+    public void handleUsuarioGerenteCriado(UsuarioGerenteCriadoEvent event) {
+        String sagaId = event.getSagaId();
+        log.info("SAGA {} recebeu usuário criado no auth para cpf {}", sagaId, event.getCpf());
+        statusPorSaga.put(sagaId, "USUARIO_AUTH_CRIADO");
+
+        GerenteInseridoEvent gerenteEvent = gerenteInseridoPorSaga.get(sagaId);
         String gerenteOriginalCpf = gerenteOriginalPorSaga.get(sagaId);
-        if (gerenteOriginalCpf == null) {
-            fail(sagaId, "Estado do gerente original perdido entre steps");
+        if (gerenteEvent == null || gerenteOriginalCpf == null) {
+            fail(sagaId, "Estado do gerente perdido antes de atribuir conta");
             return;
         }
 
         statusPorSaga.put(sagaId, "ATRIBUIR_GERENTE_CONTA_SOLICITADO");
         commandPublisher.publishAtribuirGerenteConta(
-            AtribuirGerenteContaCommand.fromGerenteInserido(gerenteOriginalCpf, event)
+            AtribuirGerenteContaCommand.fromGerenteInserido(gerenteOriginalCpf, gerenteEvent)
         );
     }
 
@@ -122,8 +143,14 @@ public class InsercaoGerenteOrchestrator {
 
     public void handleAtribuicaoGerenteContaFalhou(AtribuicaoGerenteContaFalhouEvent event) {
         statusPorSaga.put(event.getSagaId(), "COMPENSATION_REQUIRED");
-        // TODO Aqui entraria o comando de compensação para reverter a inserção do gerente.
+        // TODO Aqui entraria o comando de compensação para reverter a inserção do gerente + usuário auth.
         fail(event.getSagaId(), "Falha ao atribuir contas ao novo gerente: " + event.getMotivo());
+    }
+
+    public void handleCriacaoUsuarioGerenteFalhou(CriacaoUsuarioGerenteFalhouEvent event) {
+        statusPorSaga.put(event.getSagaId(), "COMPENSATION_REQUIRED");
+        // TODO Aqui entraria o comando de compensação para remover o gerente recém-inserido.
+        fail(event.getSagaId(), "Falha ao criar usuário no auth: " + event.getMotivo());
     }
 
     private void fail(String sagaId, String motivo) {

@@ -41,6 +41,11 @@ import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ListagemGerentesAtivo
 import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ReatribuicaoContasFalhouEvent;
 import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.RemocaoGerenteFalhouEvent;
 
+// Saga Inserir Gerente - auth step
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.CriarUsuarioGerenteCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.CriacaoUsuarioGerenteFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.UsuarioGerenteCriadoEvent;
+
 @Configuration
 public class RabbitConfig {
 
@@ -67,6 +72,12 @@ public class RabbitConfig {
 
     @Value("${saga.rabbitmq.routing-key.conta.atribuir-gerente.falha}")
     private String contaAtribuirGerenteFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-gerente.sucesso}")
+    private String authCriarUsuarioGerenteSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-gerente.falha}")
+    private String authCriarUsuarioGerenteFalhaRoutingKey;
 
     @Value("${saga.rabbitmq.queue.alteracao-perfil.response}")
     private String alteracaoPerfilResponseQueue;
@@ -229,6 +240,28 @@ public class RabbitConfig {
             .bind(inserirGerenteResponseQueue)
             .to(sagaExchange)
             .with(contaAtribuirGerenteFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding authCriarUsuarioGerenteSucessoBinding(
+        Queue inserirGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(inserirGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(authCriarUsuarioGerenteSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding authCriarUsuarioGerenteFalhaBinding(
+        Queue inserirGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(inserirGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(authCriarUsuarioGerenteFalhaRoutingKey);
     }
 
     @Bean
@@ -563,6 +596,9 @@ public class RabbitConfig {
         idClassMapping.put("conta.atribuir-gerente", AtribuirGerenteContaCommand.class);
         idClassMapping.put("conta.gerente-atribuido", GerenteAtribuidoContaEvent.class);
         idClassMapping.put("conta.atribuicao-gerente.falhou", AtribuicaoGerenteContaFalhouEvent.class);
+        idClassMapping.put("auth.criar-usuario-gerente.command", CriarUsuarioGerenteCommand.class);
+        idClassMapping.put("auth.usuario-gerente-criado", UsuarioGerenteCriadoEvent.class);
+        idClassMapping.put("auth.criacao-usuario-gerente.falhou", CriacaoUsuarioGerenteFalhouEvent.class);
 
         // Saga Remoção de Gerente
         idClassMapping.put("gerente.listar-ativos", ListarGerentesAtivosCommand.class);

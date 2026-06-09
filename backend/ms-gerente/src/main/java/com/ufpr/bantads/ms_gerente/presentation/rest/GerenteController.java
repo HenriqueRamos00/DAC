@@ -4,8 +4,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ufpr.bantads.ms_gerente.application.dto.request.GerenteRequest;
 import com.ufpr.bantads.ms_gerente.application.dto.response.GerenteResponse;
-import com.ufpr.bantads.ms_gerente.application.usecase.CreateGerenteUseCase;
-import com.ufpr.bantads.ms_gerente.application.usecase.DeleteGerenteUseCase;
 import com.ufpr.bantads.ms_gerente.application.usecase.GetGerenteByCpfUseCase;
 import com.ufpr.bantads.ms_gerente.application.usecase.ListAllGerentesUseCase;
 import com.ufpr.bantads.ms_gerente.application.usecase.UpdateGerenteUseCase;
@@ -19,10 +17,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -34,9 +30,7 @@ public class GerenteController {
 
     private final ListAllGerentesUseCase listAllGerentesUseCase;
     private final GetGerenteByCpfUseCase getGerenteByCpfUseCase;
-    private final CreateGerenteUseCase createGerenteUseCase;
     private final UpdateGerenteUseCase updateGerenteUseCase;
-    private final DeleteGerenteUseCase deleteGerenteUseCase;
     private final GerenteSeedService gerenteSeedService;
 
     @GetMapping("/gerentes")
@@ -67,19 +61,6 @@ public class GerenteController {
         return ResponseEntity.ok(gerente);
     }
 
-    @PostMapping("/gerentes")
-    public ResponseEntity<GerenteResponse> createGerente(
-        @RequestBody GerenteRequest request,
-        @RequestHeader(value = "X-User-Id", required = false) String userId,
-        @RequestHeader(value = "X-User-Role", required = false) String userRole
-    ) {
-        autenticar(userId, userRole);
-        autorizarAdmin(userRole);
-
-        GerenteResponse gerente = createGerenteUseCase.execute(request);
-        return ResponseEntity.status(201).body(gerente);
-    }
-
     @PutMapping("/gerentes/{cpf}")
     public ResponseEntity<GerenteResponse> updateGerente(
         @PathVariable String cpf,
@@ -94,21 +75,6 @@ public class GerenteController {
 
         GerenteResponse gerente = updateGerenteUseCase.execute(cpf, request);
         return ResponseEntity.ok(gerente);
-    }
-
-    @DeleteMapping("/gerentes/{cpf}")
-    public ResponseEntity<Void> deleteGerente(
-        @PathVariable String cpf,
-        @RequestHeader(value = "X-User-Id", required = false) String userId,
-        @RequestHeader(value = "X-User-Role", required = false) String userRole
-    ) {
-        validarCpf(cpf);
-
-        autenticar(userId, userRole);
-        autorizarAdmin(userRole);
-
-        deleteGerenteUseCase.execute(cpf);
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/reboot")
