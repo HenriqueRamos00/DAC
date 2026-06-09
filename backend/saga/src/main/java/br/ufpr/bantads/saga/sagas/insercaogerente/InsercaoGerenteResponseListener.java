@@ -6,10 +6,12 @@ import org.springframework.stereotype.Component;
 
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.AtribuicaoGerenteContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.ConsultaGerenteMaisContasFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.CriacaoUsuarioGerenteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteAtribuidoContaEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteInseridoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteMaisContasConsultadoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.InsercaoGerenteFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.UsuarioGerenteCriadoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.InsercaoGerenteOrchestrator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,5 +58,17 @@ public class InsercaoGerenteResponseListener {
     public void handleAtribuicaoGerenteContaFalhou(AtribuicaoGerenteContaFalhouEvent event) {
         log.info("Recebido AtribuicaoGerenteContaFalhouEvent saga {}", event.getSagaId());
         orchestrator.handleAtribuicaoGerenteContaFalhou(event);
+    }
+
+    @RabbitHandler
+    public void handleUsuarioGerenteCriado(UsuarioGerenteCriadoEvent event) {
+        log.info("Recebido UsuarioGerenteCriadoEvent saga {}", event.getSagaId());
+        orchestrator.handleUsuarioGerenteCriado(event);
+    }
+
+    @RabbitHandler
+    public void handleCriacaoUsuarioGerenteFalhou(CriacaoUsuarioGerenteFalhouEvent event) {
+        log.info("Recebido CriacaoUsuarioGerenteFalhouEvent saga {}", event.getSagaId());
+        orchestrator.handleCriacaoUsuarioGerenteFalhou(event);
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.AtribuirGerenteContaCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.ConsultarGerenteMaisContasCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.CriarUsuarioGerenteCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.InserirGerenteCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,9 @@ public class InsercaoGerenteCommandPublisher {
     @Value("${saga.rabbitmq.routing-key.conta.atribuir-gerente.command}")
     private String atribuirGerenteContaRoutingKey;
 
+    @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-gerente.command}")
+    private String criarUsuarioGerenteRoutingKey;
+
     public void publishConsultarGerenteMaisContas(ConsultarGerenteMaisContasCommand command) {
         log.info("Publicando comando consultar-gerente-mais-contas: {}", command);
         rabbitTemplate.convertAndSend(exchange, consultarGerenteMaisContasRoutingKey, command);
@@ -42,5 +46,10 @@ public class InsercaoGerenteCommandPublisher {
     public void publishAtribuirGerenteConta(AtribuirGerenteContaCommand command) {
         log.info("Publicando comando atribuir-gerente-conta: {}", command);
         rabbitTemplate.convertAndSend(exchange, atribuirGerenteContaRoutingKey, command);
+    }
+
+    public void publishCriarUsuarioGerente(CriarUsuarioGerenteCommand command) {
+        log.info("Publicando comando criar-usuario-gerente saga {} cpf {}", command.getSagaId(), command.getCpf());
+        rabbitTemplate.convertAndSend(exchange, criarUsuarioGerenteRoutingKey, command);
     }
 }
