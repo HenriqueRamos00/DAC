@@ -23,7 +23,7 @@ public class GetExtratoUseCase {
             .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
 
         List<Extrato> movimentacoes = movimentacaoQueryRepository
-            .findByContaOrigemNumeroOrContaDestinoNumero(numeroConta, numeroConta)
+            .findByContaOrigemNumeroOrContaDestinoNumeroOrderByDataHoraAsc(numeroConta, numeroConta)
             .stream()
             .map(Extrato::fromEntity)
             .toList();
