@@ -40,7 +40,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 public class ContaController {
-
     private final GetSaldoUseCase getSaldoUseCase;
     private final GetExtratoUseCase getExtratoUseCase;
     private final DepositarUseCase depositarUseCase;

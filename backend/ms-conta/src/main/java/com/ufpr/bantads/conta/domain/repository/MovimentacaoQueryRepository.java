@@ -16,4 +16,8 @@ public interface MovimentacaoQueryRepository extends JpaRepository<MovimentacaoQ
 
     List<MovimentacaoQuery> findByContaOrigemNumeroOrContaDestinoNumero(String contaOrigemNumero, String contaDestinoNumero);
 
+    List<MovimentacaoQuery> findByContaOrigemNumeroOrContaDestinoNumeroOrderByDataHoraAsc(
+        String contaOrigemNumero,
+        String contaDestinoNumero);
+
 }
