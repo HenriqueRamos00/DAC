@@ -13,6 +13,13 @@ import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteMaisContasCon
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.InsercaoGerenteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.UsuarioGerenteCriadoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.InsercaoGerenteOrchestrator;
+
+// Compensação saga inserir gerente
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.ExclusaoUsuarioGerenteCompensacaoFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteRemovidoCompensacaoEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.RemocaoGerenteCompensacaoFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.UsuarioGerenteExcluidoCompensacaoEvent;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,5 +77,29 @@ public class InsercaoGerenteResponseListener {
     public void handleCriacaoUsuarioGerenteFalhou(CriacaoUsuarioGerenteFalhouEvent event) {
         log.info("Recebido CriacaoUsuarioGerenteFalhouEvent saga {}", event.getSagaId());
         orchestrator.handleCriacaoUsuarioGerenteFalhou(event);
+    }
+
+    @RabbitHandler
+    public void handleGerenteRemovidoCompensacao(GerenteRemovidoCompensacaoEvent event) {
+        log.info("Recebido GerenteRemovidoCompensacaoEvent saga {}", event.getSagaId());
+        orchestrator.handleGerenteRemovidoCompensacao(event);
+    }
+
+    @RabbitHandler
+    public void handleRemocaoGerenteCompensacaoFalhou(RemocaoGerenteCompensacaoFalhouEvent event) {
+        log.info("Recebido RemocaoGerenteCompensacaoFalhouEvent saga {}", event.getSagaId());
+        orchestrator.handleRemocaoGerenteCompensacaoFalhou(event);
+    }
+
+    @RabbitHandler
+    public void handleUsuarioGerenteExcluidoCompensacao(UsuarioGerenteExcluidoCompensacaoEvent event) {
+        log.info("Recebido UsuarioGerenteExcluidoCompensacaoEvent saga {}", event.getSagaId());
+        orchestrator.handleUsuarioGerenteExcluidoCompensacao(event);
+    }
+
+    @RabbitHandler
+    public void handleExclusaoUsuarioGerenteCompensacaoFalhou(ExclusaoUsuarioGerenteCompensacaoFalhouEvent event) {
+        log.info("Recebido ExclusaoUsuarioGerenteCompensacaoFalhouEvent saga {}", event.getSagaId());
+        orchestrator.handleExclusaoUsuarioGerenteCompensacaoFalhou(event);
     }
 }

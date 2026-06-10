@@ -26,6 +26,15 @@ import br.ufpr.bantads.saga.sagas.insercaogerente.dto.response.GerenteResponse;
 import br.ufpr.bantads.saga.shared.dto.response.SagaErrorResponse;
 import br.ufpr.bantads.saga.shared.SagaResponseRegistry;
 import br.ufpr.bantads.saga.sagas.insercaogerente.InsercaoGerenteCommandPublisher;
+
+// Compensação saga inserir gerente
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.ExcluirUsuarioGerenteCompensacaoCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.RemoverGerenteCompensacaoCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.ExclusaoUsuarioGerenteCompensacaoFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteRemovidoCompensacaoEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.RemocaoGerenteCompensacaoFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.UsuarioGerenteExcluidoCompensacaoEvent;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,6 +50,7 @@ public class InsercaoGerenteOrchestrator {
     private final Map<String, GerenteInseridoEvent> gerenteInseridoPorSaga = new ConcurrentHashMap<>();
     private final Map<String, String> gerenteOriginalPorSaga = new ConcurrentHashMap<>();
     private final Map<String, String> statusPorSaga = new ConcurrentHashMap<>();
+    private final Map<String, String> motivoFalhaOriginalPorSaga = new ConcurrentHashMap<>();
 
     @Value("${saga.step.timeout-ms:10000}")
     private Long timeoutMs;
@@ -142,15 +152,75 @@ public class InsercaoGerenteOrchestrator {
     }
 
     public void handleAtribuicaoGerenteContaFalhou(AtribuicaoGerenteContaFalhouEvent event) {
-        statusPorSaga.put(event.getSagaId(), "COMPENSATION_REQUIRED");
-        // TODO Aqui entraria o comando de compensação para reverter a inserção do gerente + usuário auth.
-        fail(event.getSagaId(), "Falha ao atribuir contas ao novo gerente: " + event.getMotivo());
+        String sagaId = event.getSagaId();
+        String motivoOriginal = "Falha ao atribuir contas ao novo gerente: " + event.getMotivo();
+        motivoFalhaOriginalPorSaga.put(sagaId, motivoOriginal);
+
+        GerenteInseridoEvent gerenteEvent = gerenteInseridoPorSaga.get(sagaId);
+        if (gerenteEvent == null) {
+            fail(sagaId, motivoOriginal + " | compensação abortada: estado do gerente perdido");
+            return;
+        }
+
+        statusPorSaga.put(sagaId, "EXCLUIR_USUARIO_AUTH_COMPENSACAO_SOLICITADO");
+        commandPublisher.publishExcluirUsuarioGerenteCompensacao(
+            new ExcluirUsuarioGerenteCompensacaoCommand(sagaId, gerenteEvent.getCpf(), gerenteEvent.getEmail())
+        );
     }
 
     public void handleCriacaoUsuarioGerenteFalhou(CriacaoUsuarioGerenteFalhouEvent event) {
-        statusPorSaga.put(event.getSagaId(), "COMPENSATION_REQUIRED");
-        // TODO Aqui entraria o comando de compensação para remover o gerente recém-inserido.
-        fail(event.getSagaId(), "Falha ao criar usuário no auth: " + event.getMotivo());
+        String sagaId = event.getSagaId();
+        String motivoOriginal = "Falha ao criar usuário no auth: " + event.getMotivo();
+        motivoFalhaOriginalPorSaga.put(sagaId, motivoOriginal);
+
+        GerenteInseridoEvent gerenteEvent = gerenteInseridoPorSaga.get(sagaId);
+        if (gerenteEvent == null) {
+            fail(sagaId, motivoOriginal + " | compensação abortada: estado do gerente perdido");
+            return;
+        }
+
+        statusPorSaga.put(sagaId, "REMOVER_GERENTE_COMPENSACAO_SOLICITADO");
+        commandPublisher.publishRemoverGerenteCompensacao(
+            new RemoverGerenteCompensacaoCommand(sagaId, gerenteEvent.getCpf())
+        );
+    }
+
+    public void handleUsuarioGerenteExcluidoCompensacao(UsuarioGerenteExcluidoCompensacaoEvent event) {
+        String sagaId = event.getSagaId();
+        log.info("SAGA {} compensação auth concluída para cpf {}", sagaId, event.getCpf());
+
+        GerenteInseridoEvent gerenteEvent = gerenteInseridoPorSaga.get(sagaId);
+        if (gerenteEvent == null) {
+            String motivoOriginal = motivoFalhaOriginalPorSaga.getOrDefault(sagaId, "Falha desconhecida");
+            fail(sagaId, motivoOriginal + " | compensação parcial: estado do gerente perdido para remoção");
+            return;
+        }
+
+        statusPorSaga.put(sagaId, "REMOVER_GERENTE_COMPENSACAO_SOLICITADO");
+        commandPublisher.publishRemoverGerenteCompensacao(
+            new RemoverGerenteCompensacaoCommand(sagaId, gerenteEvent.getCpf())
+        );
+    }
+
+    public void handleExclusaoUsuarioGerenteCompensacaoFalhou(ExclusaoUsuarioGerenteCompensacaoFalhouEvent event) {
+        String sagaId = event.getSagaId();
+        String motivoOriginal = motivoFalhaOriginalPorSaga.getOrDefault(sagaId, "Falha desconhecida");
+        log.error("SAGA {} compensação auth falhou: {}", sagaId, event.getMotivo());
+        fail(sagaId, motivoOriginal + " | compensação auth também falhou: " + event.getMotivo());
+    }
+
+    public void handleGerenteRemovidoCompensacao(GerenteRemovidoCompensacaoEvent event) {
+        String sagaId = event.getSagaId();
+        log.info("SAGA {} compensação gerente concluída para cpf {}", sagaId, event.getCpf());
+        String motivoOriginal = motivoFalhaOriginalPorSaga.getOrDefault(sagaId, "Falha desconhecida");
+        fail(sagaId, motivoOriginal);
+    }
+
+    public void handleRemocaoGerenteCompensacaoFalhou(RemocaoGerenteCompensacaoFalhouEvent event) {
+        String sagaId = event.getSagaId();
+        String motivoOriginal = motivoFalhaOriginalPorSaga.getOrDefault(sagaId, "Falha desconhecida");
+        log.error("SAGA {} compensação gerente falhou: {}", sagaId, event.getMotivo());
+        fail(sagaId, motivoOriginal + " | compensação gerente também falhou: " + event.getMotivo());
     }
 
     private void fail(String sagaId, String motivo) {
@@ -164,5 +234,6 @@ public class InsercaoGerenteOrchestrator {
         requestPorSaga.remove(sagaId);
         gerenteInseridoPorSaga.remove(sagaId);
         gerenteOriginalPorSaga.remove(sagaId);
+        motivoFalhaOriginalPorSaga.remove(sagaId);
     }
 }
