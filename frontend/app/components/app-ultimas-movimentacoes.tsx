@@ -6,6 +6,15 @@ import { getFormattedCurrency } from "~/lib/utils/formatCurrency";
 import { Link } from "react-router";
 import { cn } from "~/lib/utils";
 
+function isEntrada(
+  movimentacao: Extrato["movimentacoes"][number],
+  conta: string
+) {
+  if (movimentacao.tipo === "depósito") return true;
+  if (movimentacao.tipo === "saque") return false;
+  return movimentacao.destino === conta;
+}
+
 interface UltimasMovimentacoesProps {
   extrato: Extrato;
   mostrarBotaoExtratoCompleto?: boolean;
@@ -29,7 +38,7 @@ export default function UltimasMovimentacoes({
       <div className="flex flex-col gap-2 py-2">
         {movimentacoes.map((movimentacao) => {
           const dataFormatada = DateUtil.formatDateTime(movimentacao.data);
-          const ehEntrada = movimentacao.destino === conta;
+          const ehEntrada = isEntrada(movimentacao, conta);
 
           return (
             <div key={movimentacao.id} className="flex justify-between items-center p-2 bg-sidebar-ring/5">
