@@ -7,7 +7,9 @@ import org.springframework.stereotype.Component;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.AtribuirGerenteContaCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.ConsultarGerenteMaisContasCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.CriarUsuarioGerenteCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.ExcluirUsuarioGerenteCompensacaoCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.InserirGerenteCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.RemoverGerenteCompensacaoCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +35,12 @@ public class InsercaoGerenteCommandPublisher {
     @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-gerente.command}")
     private String criarUsuarioGerenteRoutingKey;
 
+    @Value("${saga.rabbitmq.routing-key.gerente.remover-compensacao.command}")
+    private String removerGerenteCompensacaoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.excluir-usuario-gerente-compensacao.command}")
+    private String excluirUsuarioGerenteCompensacaoRoutingKey;
+
     public void publishConsultarGerenteMaisContas(ConsultarGerenteMaisContasCommand command) {
         log.info("Publicando comando consultar-gerente-mais-contas: {}", command);
         rabbitTemplate.convertAndSend(exchange, consultarGerenteMaisContasRoutingKey, command);
@@ -51,5 +59,15 @@ public class InsercaoGerenteCommandPublisher {
     public void publishCriarUsuarioGerente(CriarUsuarioGerenteCommand command) {
         log.info("Publicando comando criar-usuario-gerente saga {} cpf {}", command.getSagaId(), command.getCpf());
         rabbitTemplate.convertAndSend(exchange, criarUsuarioGerenteRoutingKey, command);
+    }
+
+    public void publishRemoverGerenteCompensacao(RemoverGerenteCompensacaoCommand command) {
+        log.info("Publicando comando remover-gerente-compensacao saga {} cpf {}", command.getSagaId(), command.getCpf());
+        rabbitTemplate.convertAndSend(exchange, removerGerenteCompensacaoRoutingKey, command);
+    }
+
+    public void publishExcluirUsuarioGerenteCompensacao(ExcluirUsuarioGerenteCompensacaoCommand command) {
+        log.info("Publicando comando excluir-usuario-gerente-compensacao saga {} cpf {}", command.getSagaId(), command.getCpf());
+        rabbitTemplate.convertAndSend(exchange, excluirUsuarioGerenteCompensacaoRoutingKey, command);
     }
 }

@@ -46,6 +46,14 @@ import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.CriarUsuarioGerent
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.CriacaoUsuarioGerenteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.UsuarioGerenteCriadoEvent;
 
+// Saga Inserir Gerente - compensação
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.ExcluirUsuarioGerenteCompensacaoCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.RemoverGerenteCompensacaoCommand;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.ExclusaoUsuarioGerenteCompensacaoFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteRemovidoCompensacaoEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.RemocaoGerenteCompensacaoFalhouEvent;
+import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.UsuarioGerenteExcluidoCompensacaoEvent;
+
 @Configuration
 public class RabbitConfig {
 
@@ -78,6 +86,18 @@ public class RabbitConfig {
 
     @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-gerente.falha}")
     private String authCriarUsuarioGerenteFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.remover-compensacao.sucesso}")
+    private String gerenteRemoverCompensacaoSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.remover-compensacao.falha}")
+    private String gerenteRemoverCompensacaoFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.excluir-usuario-gerente-compensacao.sucesso}")
+    private String authExcluirUsuarioGerenteCompensacaoSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.excluir-usuario-gerente-compensacao.falha}")
+    private String authExcluirUsuarioGerenteCompensacaoFalhaRoutingKey;
 
     @Value("${saga.rabbitmq.queue.alteracao-perfil.response}")
     private String alteracaoPerfilResponseQueue;
@@ -262,6 +282,50 @@ public class RabbitConfig {
             .bind(inserirGerenteResponseQueue)
             .to(sagaExchange)
             .with(authCriarUsuarioGerenteFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding gerenteRemoverCompensacaoSucessoBinding(
+        Queue inserirGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(inserirGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(gerenteRemoverCompensacaoSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding gerenteRemoverCompensacaoFalhaBinding(
+        Queue inserirGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(inserirGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(gerenteRemoverCompensacaoFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding authExcluirUsuarioGerenteCompensacaoSucessoBinding(
+        Queue inserirGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(inserirGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(authExcluirUsuarioGerenteCompensacaoSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding authExcluirUsuarioGerenteCompensacaoFalhaBinding(
+        Queue inserirGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(inserirGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(authExcluirUsuarioGerenteCompensacaoFalhaRoutingKey);
     }
 
     @Bean
@@ -599,6 +663,12 @@ public class RabbitConfig {
         idClassMapping.put("auth.criar-usuario-gerente.command", CriarUsuarioGerenteCommand.class);
         idClassMapping.put("auth.usuario-gerente-criado", UsuarioGerenteCriadoEvent.class);
         idClassMapping.put("auth.criacao-usuario-gerente.falhou", CriacaoUsuarioGerenteFalhouEvent.class);
+        idClassMapping.put("gerente.remover-compensacao", RemoverGerenteCompensacaoCommand.class);
+        idClassMapping.put("gerente.removido-compensacao", GerenteRemovidoCompensacaoEvent.class);
+        idClassMapping.put("gerente.remocao-compensacao.falhou", RemocaoGerenteCompensacaoFalhouEvent.class);
+        idClassMapping.put("auth.excluir-usuario-gerente-compensacao", ExcluirUsuarioGerenteCompensacaoCommand.class);
+        idClassMapping.put("auth.usuario-gerente-excluido-compensacao", UsuarioGerenteExcluidoCompensacaoEvent.class);
+        idClassMapping.put("auth.exclusao-usuario-gerente-compensacao.falhou", ExclusaoUsuarioGerenteCompensacaoFalhouEvent.class);
 
         // Saga Remoção de Gerente
         idClassMapping.put("gerente.listar-ativos", ListarGerentesAtivosCommand.class);

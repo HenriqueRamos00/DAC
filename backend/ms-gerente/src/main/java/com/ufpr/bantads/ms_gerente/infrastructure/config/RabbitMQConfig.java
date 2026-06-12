@@ -32,6 +32,11 @@ import com.ufpr.bantads.ms_gerente.application.dto.event.ListagemGerentesAtivosF
 import com.ufpr.bantads.ms_gerente.application.dto.event.GerenteRemovidoEvent;
 import com.ufpr.bantads.ms_gerente.application.dto.event.RemocaoGerenteFalhouEvent;
 
+// Compensação saga inserir gerente
+import com.ufpr.bantads.ms_gerente.application.dto.command.RemoverGerenteCompensacaoCommand;
+import com.ufpr.bantads.ms_gerente.application.dto.event.GerenteRemovidoCompensacaoEvent;
+import com.ufpr.bantads.ms_gerente.application.dto.event.RemocaoGerenteCompensacaoFalhouEvent;
+
 @Configuration
 public class RabbitMQConfig {
 
@@ -61,6 +66,12 @@ public class RabbitMQConfig {
 
     @Value("${saga.rabbitmq.routing-key.gerente.remover.command}")
     private String removerGerenteCommandRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.gerente.remover-compensacao.command}")
+    private String removerGerenteCompensacaoCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.gerente.remover-compensacao.command}")
+    private String removerGerenteCompensacaoCommandRoutingKey;
 
     @Bean
     public TopicExchange sagaExchange() {
@@ -132,6 +143,22 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue removerGerenteCompensacaoCommandQueue() {
+        return QueueBuilder.durable(removerGerenteCompensacaoCommandQueue).build();
+    }
+
+    @Bean
+    public Binding removerGerenteCompensacaoCommandBinding(
+        Queue removerGerenteCompensacaoCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(removerGerenteCompensacaoCommandQueue)
+            .to(sagaExchange)
+            .with(removerGerenteCompensacaoCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         Jackson2JsonMessageConverter jsonConverter = new Jackson2JsonMessageConverter();
         jsonConverter.setClassMapper(gerenteClassMapper());
@@ -158,6 +185,9 @@ public class RabbitMQConfig {
         idClassMapping.put("gerente.remover", RemoverGerenteCommand.class);
         idClassMapping.put("gerente.removido", GerenteRemovidoEvent.class);
         idClassMapping.put("gerente.remocao.falhou", RemocaoGerenteFalhouEvent.class);
+        idClassMapping.put("gerente.remover-compensacao", RemoverGerenteCompensacaoCommand.class);
+        idClassMapping.put("gerente.removido-compensacao", GerenteRemovidoCompensacaoEvent.class);
+        idClassMapping.put("gerente.remocao-compensacao.falhou", RemocaoGerenteCompensacaoFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

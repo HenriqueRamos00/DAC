@@ -30,6 +30,11 @@ import com.ufpr.bantads.auth.application.dto.command.CriarUsuarioGerenteCommand;
 import com.ufpr.bantads.auth.application.dto.event.UsuarioGerenteCriadoEvent;
 import com.ufpr.bantads.auth.application.dto.event.CriacaoUsuarioGerenteFalhouEvent;
 
+// Compensação saga inserir gerente
+import com.ufpr.bantads.auth.application.dto.command.ExcluirUsuarioGerenteCompensacaoCommand;
+import com.ufpr.bantads.auth.application.dto.event.UsuarioGerenteExcluidoCompensacaoEvent;
+import com.ufpr.bantads.auth.application.dto.event.ExclusaoUsuarioGerenteCompensacaoFalhouEvent;
+
 @Configuration
 public class RabbitMQConfig {
 
@@ -53,6 +58,12 @@ public class RabbitMQConfig {
 
     @Value("${saga.rabbitmq.routing-key.auth.criar-usuario-gerente.command}")
     private String criarUsuarioGerenteCommandRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.auth.excluir-usuario-gerente-compensacao.command}")
+    private String excluirUsuarioGerenteCompensacaoCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.auth.excluir-usuario-gerente-compensacao.command}")
+    private String excluirUsuarioGerenteCompensacaoCommandRoutingKey;
 
     @Bean
     public TopicExchange sagaExchange() {
@@ -108,6 +119,22 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue excluirUsuarioGerenteCompensacaoCommandQueue() {
+        return QueueBuilder.durable(excluirUsuarioGerenteCompensacaoCommandQueue).build();
+    }
+
+    @Bean
+    public Binding excluirUsuarioGerenteCompensacaoCommandBinding(
+        @Qualifier("excluirUsuarioGerenteCompensacaoCommandQueue") Queue excluirUsuarioGerenteCompensacaoCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(excluirUsuarioGerenteCompensacaoCommandQueue)
+            .to(sagaExchange)
+            .with(excluirUsuarioGerenteCompensacaoCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         Jackson2JsonMessageConverter jsonConverter = new Jackson2JsonMessageConverter();
         jsonConverter.setClassMapper(authClassMapper());
@@ -129,6 +156,9 @@ public class RabbitMQConfig {
         idClassMapping.put("auth.criar-usuario-gerente.command", CriarUsuarioGerenteCommand.class);
         idClassMapping.put("auth.usuario-gerente-criado", UsuarioGerenteCriadoEvent.class);
         idClassMapping.put("auth.criacao-usuario-gerente.falhou", CriacaoUsuarioGerenteFalhouEvent.class);
+        idClassMapping.put("auth.excluir-usuario-gerente-compensacao", ExcluirUsuarioGerenteCompensacaoCommand.class);
+        idClassMapping.put("auth.usuario-gerente-excluido-compensacao", UsuarioGerenteExcluidoCompensacaoEvent.class);
+        idClassMapping.put("auth.exclusao-usuario-gerente-compensacao.falhou", ExclusaoUsuarioGerenteCompensacaoFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;
