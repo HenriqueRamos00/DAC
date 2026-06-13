@@ -3,8 +3,8 @@ import { env } from '../config/env.ts';
 import { buildUpstreamHeaders } from '../hooks/upstream-headers.ts';
 import { authenticate, authorize } from '../middlewares/authenticate.ts';
 import { httpClient } from '../services/http-client.ts';
-import type { ClienteMsResponse, ClientResponseDto } from '../types/dto/cliente.ts';
-import type { ResumoContasGerenteMsResponse } from '../types/dto/conta.ts';
+import type { ClienteGerenteResponseDto, ClienteMsResponse, ClientResponseDto } from '../types/dto/cliente.ts';
+import type { ContaMsResponse, ResumoContasGerenteMsResponse } from '../types/dto/conta.ts';
 
 type ClienteParams = {
   cpf: string;
@@ -46,11 +46,23 @@ export async function registerClienteRoutes(gateway: FastifyInstance) {
     }
 
     if (isMelhoresClientes(request.query)) {
+      await authorize('GERENTE')(request, reply);
       const todos = await getClientesRelatorio(buildUpstreamHeaders(request));
       const top3 = todos
         .sort((a, b) => b.saldo - a.saldo)
         .slice(0, 3);
       return reply.code(200).send(top3);
+    }
+
+    if (!request.query.filtro) {
+      await authorize('GERENTE')(request, reply);
+
+      const response = await getClientesDoGerente(
+        request.user.sub,
+        buildUpstreamHeaders(request),
+      );
+
+      return reply.code(200).send(response);
     }
 
     const response = await httpClient.get<unknown>(
@@ -119,6 +131,50 @@ function isRelatorioClientes(query: ClientesQuery): boolean {
 
 function isMelhoresClientes(query: ClientesQuery): boolean {
   return query.filtro === 'melhores_clientes';
+}
+
+function isParaAprovar(query: ClientesQuery): boolean {
+  return query.filtro === 'para_aprovar';
+}
+
+async function getClientesDoGerente(
+  gerenteCpf: string,
+  headers: Record<string, string>,
+): Promise<ClienteGerenteResponseDto[]> {
+  const [contas, clientes] = await Promise.all([
+    httpClient.get<ContaMsResponse[]>(
+      `${env.upstreams.conta}/contas?gerenteCpf=${encodeURIComponent(gerenteCpf)}`,
+      headers,
+    ),
+    httpClient.get<ClienteMsResponse[]>(
+      `${env.upstreams.cliente}/clientes`,
+      headers,
+    ),
+  ]);
+
+  const clientesPorCpf = new Map(
+    clientes.map((cliente) => [cliente.cpf, cliente]),
+  );
+
+  return contas
+    .map((conta) => {
+      const cliente = clientesPorCpf.get(conta.clienteCpf);
+      if (!cliente) return null;
+
+      return {
+        cpf: cliente.cpf,
+        nome: cliente.nome,
+        email: cliente.email,
+        telefone: cliente.telefone,
+        endereco: cliente.endereco,
+        cidade: cliente.cidade,
+        estado: cliente.estado,
+        conta: conta.numeroConta,
+        saldo: conta.saldo,
+        limite: conta.limite,
+      };
+    })
+    .filter((cliente): cliente is ClienteGerenteResponseDto => cliente !== null);
 }
 
 async function getClientesRelatorio(
