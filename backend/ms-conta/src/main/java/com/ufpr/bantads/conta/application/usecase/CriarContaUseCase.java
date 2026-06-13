@@ -14,6 +14,7 @@ import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
 import com.ufpr.bantads.conta.application.dto.response.ContaResponse;
 import com.ufpr.bantads.conta.domain.exception.ContaJaExisteException;
 import com.ufpr.bantads.conta.domain.exception.NumeroContaIndisponivelException;
+import com.ufpr.bantads.conta.domain.exception.RequisicaoInvalidaException;
 import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
 import com.ufpr.bantads.conta.domain.repository.ContaCommandRepository;
 import com.ufpr.bantads.conta.infrastructure.messaging.publisher.ContaEventPublisher;
@@ -70,7 +71,7 @@ public class CriarContaUseCase {
 
     private void validar(CriarContaCommand command) {
         if (command == null) {
-            throw new IllegalArgumentException("Dados da conta são obrigatórios");
+            throw new RequisicaoInvalidaException("Dados da conta são obrigatórios");
         }
 
         validarCampo(command.clienteCpf(), "CPF do cliente é obrigatório");
@@ -82,7 +83,7 @@ public class CriarContaUseCase {
 
     private void validarCampo(String valor, String mensagem) {
         if (valor == null || valor.isBlank()) {
-            throw new IllegalArgumentException(mensagem);
+            throw new RequisicaoInvalidaException(mensagem);
         }
     }
 

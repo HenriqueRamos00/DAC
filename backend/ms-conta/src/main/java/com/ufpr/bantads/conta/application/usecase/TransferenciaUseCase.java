@@ -9,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 import com.ufpr.bantads.conta.application.dto.response.TransferenciaResponse;
+import com.ufpr.bantads.conta.domain.exception.ContaNaoEncontradaException;
+import com.ufpr.bantads.conta.domain.exception.RegraNegocioException;
+import com.ufpr.bantads.conta.domain.exception.RequisicaoInvalidaException;
 import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
 import com.ufpr.bantads.conta.domain.model.entity.TransferenciaCommand;
 import com.ufpr.bantads.conta.domain.model.enums.TipoMovimentacao;
@@ -36,21 +39,22 @@ public class TransferenciaUseCase {
 
     @Transactional
     public TransferenciaResponse execute(String numeroContaOrigem, String numeroContaDestino, Double valor) {
+        validar(numeroContaOrigem, numeroContaDestino, valor);
 
         if (numeroContaOrigem.equals(numeroContaDestino)) {
-             throw new IllegalArgumentException("Não é possível transferir para a mesma conta");
+             throw new RegraNegocioException("Não é possível transferir para a mesma conta");
         }
 
         ContaCommand contaOrigem = contaCommandRepository.findByNumeroConta(numeroContaOrigem)
-                .orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada"));
+                .orElseThrow(() -> new ContaNaoEncontradaException("Conta de origem não encontrada"));
 
         ContaCommand contaDestino = contaCommandRepository.findByNumeroConta(numeroContaDestino)
-                .orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada"));
+                .orElseThrow(() -> new ContaNaoEncontradaException("Conta de destino não encontrada"));
 
         BigDecimal valorTransferencia = BigDecimal.valueOf(valor).setScale(2, RoundingMode.HALF_UP);
 
         if (contaOrigem.getSaldo().add(contaOrigem.getLimite()).compareTo(valorTransferencia) < 0) {
-            throw new IllegalArgumentException("Saldo insuficiente para transferência");
+            throw new RegraNegocioException("Saldo insuficiente para transferência");
         }
 
         BigDecimal novoSaldoOrigem =
@@ -105,5 +109,23 @@ public class TransferenciaUseCase {
             valorTransferencia.doubleValue(),
             contaOrigem.getSaldo().doubleValue(), 
             transferencia.getDataHora().toString());
+    }
+
+    private void validar(String numeroContaOrigem, String numeroContaDestino, Double valor) {
+        if (numeroContaOrigem == null || numeroContaOrigem.isBlank()) {
+            throw new RequisicaoInvalidaException("Conta de origem é obrigatória");
+        }
+
+        if (numeroContaDestino == null || numeroContaDestino.isBlank()) {
+            throw new RequisicaoInvalidaException("Conta de destino é obrigatória");
+        }
+
+        if (valor == null) {
+            throw new RequisicaoInvalidaException("Valor da transferência é obrigatório");
+        }
+
+        if (valor <= 0) {
+            throw new RequisicaoInvalidaException("Valor deve ser maior que zero");
+        }
     }
 }

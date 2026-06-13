@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ufpr.bantads.conta.application.dto.command.AlterarLimiteContaCommand;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
+import com.ufpr.bantads.conta.domain.exception.ContaNaoEncontradaException;
+import com.ufpr.bantads.conta.domain.exception.RequisicaoInvalidaException;
 import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
 import com.ufpr.bantads.conta.domain.repository.ContaCommandRepository;
 import com.ufpr.bantads.conta.infrastructure.messaging.publisher.ContaEventPublisher;
@@ -29,7 +31,7 @@ public class AlterarLimiteContaUseCase {
         validar(command);
 
         ContaCommand conta = contaCommandRepository.findByClienteCpf(command.cpf())
-            .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada para o CPF " + command.cpf()));
+            .orElseThrow(() -> new ContaNaoEncontradaException("Conta não encontrada para o CPF " + command.cpf()));
 
         BigDecimal novoLimite = calcularLimite(command.salario(), conta.getSaldo());
         conta.setLimite(novoLimite);
@@ -43,11 +45,11 @@ public class AlterarLimiteContaUseCase {
 
     private void validar(AlterarLimiteContaCommand command) {
         if (command == null) {
-            throw new IllegalArgumentException("Dados de alteração de limite são obrigatórios");
+            throw new RequisicaoInvalidaException("Dados de alteração de limite são obrigatórios");
         }
 
         if (command.cpf() == null || command.cpf().isBlank()) {
-            throw new IllegalArgumentException("CPF do cliente é obrigatório");
+            throw new RequisicaoInvalidaException("CPF do cliente é obrigatório");
         }
     }
 

@@ -9,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 import com.ufpr.bantads.conta.application.dto.response.DepositoSaqueResponse;
+import com.ufpr.bantads.conta.domain.exception.ContaNaoEncontradaException;
+import com.ufpr.bantads.conta.domain.exception.RegraNegocioException;
+import com.ufpr.bantads.conta.domain.exception.RequisicaoInvalidaException;
 import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
 import com.ufpr.bantads.conta.domain.model.entity.SaqueCommand;
 import com.ufpr.bantads.conta.domain.model.enums.TipoMovimentacao;
@@ -36,13 +39,15 @@ public class SacarUseCase {
 
     @Transactional
     public DepositoSaqueResponse execute(String numeroConta, Double valor) {
+        validar(numeroConta, valor);
+
         ContaCommand conta = contaCommandRepository.findByNumeroConta(numeroConta)
-                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+                .orElseThrow(ContaNaoEncontradaException::new);
 
         BigDecimal valorSaque = BigDecimal.valueOf(valor).setScale(2, RoundingMode.HALF_UP);
 
         if (conta.getSaldo().add(conta.getLimite()).compareTo(valorSaque) < 0) {
-            throw new IllegalArgumentException("Saldo insuficiente considerando o limite");
+            throw new RegraNegocioException("Saldo insuficiente considerando o limite");
         }
 
 
@@ -80,5 +85,19 @@ public class SacarUseCase {
                 conta.getNumeroConta(),
                 conta.getSaldo().doubleValue(),
                 saque.getDataHora().toString());
+    }
+
+    private void validar(String numeroConta, Double valor) {
+        if (numeroConta == null || numeroConta.isBlank()) {
+            throw new RequisicaoInvalidaException("Número da conta é obrigatório");
+        }
+
+        if (valor == null) {
+            throw new RequisicaoInvalidaException("Valor do saque é obrigatório");
+        }
+
+        if (valor <= 0) {
+            throw new RequisicaoInvalidaException("Valor deve ser maior que zero");
+        }
     }
 }
