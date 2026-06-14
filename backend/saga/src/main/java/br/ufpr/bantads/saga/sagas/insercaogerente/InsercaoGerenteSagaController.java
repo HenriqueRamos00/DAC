@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.request.InserirGerenteRequest;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.response.GerenteResponse;
+import br.ufpr.bantads.saga.shared.dto.response.SagaErrorMapper;
 import br.ufpr.bantads.saga.shared.dto.response.SagaErrorResponse;
-import br.ufpr.bantads.saga.sagas.insercaogerente.InsercaoGerenteOrchestrator;
+import br.ufpr.bantads.saga.shared.dto.response.SagaResult;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -18,35 +19,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InsercaoGerenteSagaController {
 
-    private static final String MOTIVO_CPF_DUPLICADO = "CPF_DUPLICADO";
-
     private final InsercaoGerenteOrchestrator orchestrator;
 
     @PostMapping
-    public ResponseEntity<Object> inserir(@RequestBody InserirGerenteRequest request) {
-        Object result = orchestrator.iniciar(request);
+    public ResponseEntity<SagaResult> inserir(@RequestBody InserirGerenteRequest request) {
+        SagaResult result = orchestrator.iniciar(request);
 
-        if (result instanceof GerenteResponse response) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        }
-
-        if (result instanceof SagaErrorResponse error) {
-            HttpStatus status = isDuplicado(error.motivo()) ? HttpStatus.CONFLICT : HttpStatus.INTERNAL_SERVER_ERROR;
-            return ResponseEntity.status(status).body(error);
-        }
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new SagaErrorResponse(null, "FAILED", "Resposta inesperada da SAGA"));
-    }
-
-    private boolean isDuplicado(String motivo) {
-        if (motivo == null) {
-            return false;
-        }
-        String lower = motivo.toLowerCase();
-        return lower.contains(MOTIVO_CPF_DUPLICADO.toLowerCase())
-            || lower.contains("duplicado")
-            || lower.contains("já existe")
-            || lower.contains("ja existe");
+        return switch (result) {
+            case GerenteResponse response -> ResponseEntity.status(HttpStatus.CREATED).body(response);
+            case SagaErrorResponse error -> ResponseEntity.status(SagaErrorMapper.toHttpStatus(error)).body(error);
+            default -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new SagaErrorResponse(null, "FAILED", "Resposta inesperada da SAGA"));
+        };
     }
 }

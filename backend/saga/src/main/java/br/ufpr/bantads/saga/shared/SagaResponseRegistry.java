@@ -5,26 +5,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.springframework.stereotype.Component;
 
+import br.ufpr.bantads.saga.shared.dto.response.SagaResult;
+
 @Component
 public class SagaResponseRegistry {
 
-    private final ConcurrentMap<String, CompletableFuture<Object>> pending = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, CompletableFuture<SagaResult>> pending = new ConcurrentHashMap<>();
 
-    public CompletableFuture<Object> register(String sagaId) {
-        CompletableFuture<Object> future = new CompletableFuture<>();
+    public CompletableFuture<SagaResult> register(String sagaId) {
+        CompletableFuture<SagaResult> future = new CompletableFuture<>();
         pending.put(sagaId, future);
         return future;
     }
 
-    public void complete(String sagaId, Object payload) {
-        CompletableFuture<Object> future = pending.remove(sagaId);
+    public void complete(String sagaId, SagaResult payload) {
+        CompletableFuture<SagaResult> future = pending.remove(sagaId);
         if (future != null) {
             future.complete(payload);
         }
     }
 
     public void cancel(String sagaId) {
-        CompletableFuture<Object> future = pending.remove(sagaId);
+        CompletableFuture<SagaResult> future = pending.remove(sagaId);
         if (future != null) {
             future.cancel(true);
         }
