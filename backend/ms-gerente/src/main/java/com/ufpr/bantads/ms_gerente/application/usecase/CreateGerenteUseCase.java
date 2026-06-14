@@ -17,16 +17,26 @@ public class CreateGerenteUseCase {
 
     @Transactional
     public GerenteResponse execute(GerenteRequest request) {
-        if (gerenteRepository.existsByCpf(request.cpf()) || gerenteRepository.existsByEmail(request.email())) {
+        String cpf = onlyDigits(request.cpf());
+
+        if (cpf.length() != 11) {
+            throw new IllegalArgumentException("CPF inválido");
+        }
+
+        if (gerenteRepository.existsByCpf(cpf) || gerenteRepository.existsByEmail(request.email())) {
             throw new GerenteJaExisteException();
         }
 
         Gerente gerente = new Gerente();
-        gerente.setCpf(request.cpf());
+        gerente.setCpf(cpf);
         gerente.setNome(request.nome());
         gerente.setEmail(request.email());
         gerente.setTelefone(request.telefone());
 
         return GerenteResponse.fromEntity(gerenteRepository.save(gerente));
+    }
+
+    private String onlyDigits(String value) {
+        return value == null ? "" : value.replaceAll("\\D", "");
     }
 }

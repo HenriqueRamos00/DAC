@@ -8,7 +8,7 @@ import type { Route } from "./+types/adicionar-gerente";
 
 const gerenteSchema = z.object({
   nome: z.string().trim().min(1, "Nome obrigatório"),
-  cpf: z.string().trim().min(11, "CPF inválido"),
+  cpf: z.string().trim().length(11, "CPF inválido"),
   email: z.email("Email inválido"),
   telefone: z.string().trim().min(14, "Telefone obrigatório"),
   senha: z.string().trim().min(6, "A senha deve ter pelo menos 6 caracteres"),
@@ -19,6 +19,10 @@ type GerenteActionData = {
   formError?: string;
   success?: string;
 };
+
+function onlyDigits(value: FormDataEntryValue | null) {
+  return String(value ?? "").replace(/\D/g, "");
+}
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -33,7 +37,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   const rawValues = {
     nome: String(formData.get("nome") ?? ""),
-    cpf: String(formData.get("cpf") ?? ""),
+    cpf: onlyDigits(formData.get("cpf")),
     email: String(formData.get("email") ?? ""),
     telefone: String(formData.get("telefone") ?? ""),
     senha: String(formData.get("senha") ?? ""),
