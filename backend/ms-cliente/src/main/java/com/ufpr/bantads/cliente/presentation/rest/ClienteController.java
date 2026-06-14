@@ -14,11 +14,13 @@ import com.ufpr.bantads.cliente.application.usecase.CriarClientePendenteUseCase;
 import com.ufpr.bantads.cliente.application.usecase.GetClienteByCpfUseCase;
 import com.ufpr.bantads.cliente.application.usecase.ListAllClientesUseCase;
 import com.ufpr.bantads.cliente.application.usecase.ListClientesParaAprovarUseCase;
+import com.ufpr.bantads.cliente.application.usecase.NotificarClienteEmailUseCase;
 import com.ufpr.bantads.cliente.application.usecase.RejeitarClienteUseCase;
 import com.ufpr.bantads.cliente.infrastructure.config.ClienteSeedService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class ClienteController {
 
     private final CriarClientePendenteUseCase criarClientePendenteUseCase;
@@ -38,6 +41,7 @@ public class ClienteController {
     private final GetClienteByCpfUseCase getClienteByCpfUseCase;
     private final AprovarClienteUseCase aprovarClienteUseCase;
     private final RejeitarClienteUseCase rejeitarClienteUseCase;
+    private final NotificarClienteEmailUseCase notificarClienteEmailUseCase;
     private final ClienteSeedService clienteSeedService;
 
 
@@ -79,8 +83,16 @@ public class ClienteController {
         @PathVariable String cpf,
         @Valid @RequestBody RejeitarClienteRequest request
     ) {
-        ClienteResponse cliente = rejeitarClienteUseCase.execute(cpf, request.motivo());
-        return ResponseEntity.ok(cliente);
+        var cliente = rejeitarClienteUseCase.executeAndReturnEntity(cpf, request.motivo());
+
+        try {
+            notificarClienteEmailUseCase.notificarRejeicao(cliente);
+        } catch (Exception emailEx) {
+            log.error("Falha ao enviar email de rejeição para {}: {}",
+                cliente.getEmail(), emailEx.getMessage());
+        }
+
+        return ResponseEntity.ok(ClienteResponse.fromEntity(cliente));
     }
 
     @GetMapping("/reboot")
