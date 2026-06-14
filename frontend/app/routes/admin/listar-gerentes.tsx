@@ -5,7 +5,7 @@ import { TabelaAdminListarGerentes } from "~/features/tabela-admin-gerentes/tabe
 import type { Gerente } from "~/models/dto/Gerente";
 import type { Route } from "./+types/listar-gerentes";
 import { Button } from "~/components/ui/button";
-import { data, NavLink, redirect } from "react-router";
+import { data, NavLink, redirect, useActionData } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -28,6 +28,20 @@ export async function loader({ request }: Route.LoaderArgs) {
     return { gerentes: gerentesOrdenados };
 }
 
+async function getDeleteErrorMessage(response: Response) {
+  try {
+    const body = await response.json() as { motivo?: string; message?: string; error?: string };
+
+    if (body.motivo === "ULTIMO_GERENTE") {
+      return "Não é possível remover o último gerente do banco.";
+    }
+
+    return body.message || body.error || "Não foi possível remover o gerente.";
+  } catch {
+    return "Não foi possível remover o gerente.";
+  }
+}
+
 export async function action({ request }: Route.ActionArgs) {
   const { apiClient } = await getSessionAutenticada(request);
   const formData = await request.formData();
@@ -40,7 +54,10 @@ export async function action({ request }: Route.ActionArgs) {
   const response = await apiClient.delete(`/gerentes/${cpf}`);
 
   if (!response.ok) {
-    return data({ formError: "Não foi possível remover o gerente." }, { status: response.status });
+    return data(
+      { formError: await getDeleteErrorMessage(response) },
+      { status: response.status },
+    );
   }
 
   return redirect("/admin/gerentes");
@@ -49,6 +66,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function ListarGerentes({ loaderData }: Route.ComponentProps) {
     const { gerentes } = loaderData;
+    const actionData = useActionData<typeof action>();
 
 
     return (
@@ -80,6 +98,12 @@ export default function ListarGerentes({ loaderData }: Route.ComponentProps) {
                         <LayoutDashboard size={16} /> LISTA DE GERENTES
                     </span>
                 </div>
+
+                {actionData?.formError ? (
+                    <p className="border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+                        {actionData.formError}
+                    </p>
+                ) : null}
 
                 <TabelaAdminListarGerentes clientes={gerentes} />
             </div>

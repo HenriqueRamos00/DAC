@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { DialogAprovarCliente } from "~/components/approv-client";
 import { DialogRejeitarCliente } from "~/components/reject-client";
 import { data, useFetcher } from "react-router";
+import { toast } from "sonner";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -67,7 +68,12 @@ export async function action({ request }:Route.ActionArgs) {
     );
   }
 
-  return {ok: true};
+  return {
+    ok: true,
+    message: intent === "aprovar"
+      ? "Cliente aprovado com sucesso."
+      : "Cliente rejeitado com sucesso.",
+  };
 }
 
 export default function GerenteDashboard({ loaderData } : Route.ComponentProps) {
@@ -78,11 +84,15 @@ export default function GerenteDashboard({ loaderData } : Route.ComponentProps) 
   const [aprovarOpen, setAprovarOpen] = useState(false);
   const [rejeitarOpen, setRejeitarOpen] = useState(false);
 
-  const fetcher = useFetcher<{ ok: boolean; error?: string }>();
+  const fetcher = useFetcher<{ ok: boolean; error?: string; message?: string }>();
   const isSubmitting = fetcher.state !== "idle";
 
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data?.ok) {
+      if (fetcher.data.message) {
+        toast.success(fetcher.data.message);
+      }
+
       setAprovarOpen(false);
       setRejeitarOpen(false);
       setTimeout(() => setClienteSelecionado(null), CLOSE_ANIM_MS)
