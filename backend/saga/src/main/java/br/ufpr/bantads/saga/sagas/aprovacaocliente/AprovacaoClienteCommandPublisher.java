@@ -11,6 +11,7 @@ import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarUsuarioClien
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirContaClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirUsuarioClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ListarGerentesAtivosCommand;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.NotificarFalhaAutocadastroCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.SelecionarGerenteParaNovaContaCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,9 @@ public class AprovacaoClienteCommandPublisher {
 
     @Value("${saga.rabbitmq.routing-key.cliente.aprovar.command}")
     private String aprovarClienteRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.notificar-falha-autocadastro.command}")
+    private String notificarFalhaAutocadastroRoutingKey;
 
     public void publishConsultarClienteParaAprovacao(ConsultarClienteParaAprovacaoCommand command) {
         log.info("Publicando comando consultar cliente para aprovação: {}", command);
@@ -87,5 +91,10 @@ public class AprovacaoClienteCommandPublisher {
     public void publishAprovarCliente(AprovarClienteCommand command) {
         log.info("Publicando comando aprovar cliente: {}", command);
         rabbitTemplate.convertAndSend(exchange, aprovarClienteRoutingKey, command);
+    }
+
+    public void publishNotificarFalhaAutocadastro(NotificarFalhaAutocadastroCommand command) {
+        log.info("Publicando comando notificar falha de autocadastro: {}", command);
+        rabbitTemplate.convertAndSend(exchange, notificarFalhaAutocadastroRoutingKey, command);
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import com.ufpr.bantads.cliente.application.dto.command.AlterarPerfilClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.command.AprovarClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.command.ConsultarClienteParaAprovacaoCommand;
+import com.ufpr.bantads.cliente.application.dto.command.NotificarFalhaAutocadastroCommand;
 import com.ufpr.bantads.cliente.application.dto.command.ReverterAlteracaoPerfilClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.event.AprovacaoClienteFalhouEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClienteAlteracaoFalhouEvent;
@@ -66,6 +67,12 @@ public class RabbitMQConfig {
     @Value("${saga.rabbitmq.routing-key.cliente.reverter-alteracao-perfil.command}")
     private String reverterAlteracaoPerfilClienteCommandRoutingKey;
 
+    @Value("${saga.rabbitmq.queue.cliente.notificar-falha-autocadastro.command}")
+    private String notificarFalhaAutocadastroCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.notificar-falha-autocadastro.command}")
+    private String notificarFalhaAutocadastroCommandRoutingKey;
+
     @Bean
     public TopicExchange sagaExchange() {
         return new TopicExchange(exchange);
@@ -94,6 +101,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue reverterAlteracaoPerfilClienteCommandQueue() {
         return QueueBuilder.durable(reverterAlteracaoPerfilClienteCommandQueue).build();
+    }
+
+    @Bean
+    public Queue notificarFalhaAutocadastroCommandQueue() {
+        return QueueBuilder.durable(notificarFalhaAutocadastroCommandQueue).build();
     }
 
     @Bean
@@ -152,6 +164,17 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding notificarFalhaAutocadastroCommandBinding(
+        Queue notificarFalhaAutocadastroCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(notificarFalhaAutocadastroCommandQueue)
+            .to(sagaExchange)
+            .with(notificarFalhaAutocadastroCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
         jsonConverter.setClassMapper(clienteClassMapper());
@@ -170,6 +193,7 @@ public class RabbitMQConfig {
         idClassMapping.put("cliente.aprovar", AprovarClienteCommand.class);
         idClassMapping.put("cliente.aprovado", ClienteAprovadoEvent.class);
         idClassMapping.put("cliente.aprovacao.falhou", AprovacaoClienteFalhouEvent.class);
+        idClassMapping.put("cliente.notificar-falha-autocadastro", NotificarFalhaAutocadastroCommand.class);
         idClassMapping.put("cliente.alterar-perfil.command", AlterarPerfilClienteCommand.class);
         idClassMapping.put("cliente.perfil-alterado", ClientePerfilAlteradoEvent.class);
         idClassMapping.put("cliente.alteracao-perfil.falhou", ClienteAlteracaoFalhouEvent.class);
