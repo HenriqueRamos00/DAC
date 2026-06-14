@@ -25,7 +25,9 @@ const estadoSchema = z.enum(UF_OPTIONS, {
 const perfilSchema = z.object({
   nome: z.string().trim().min(1, "Nome obrigatório"),
   email: z.email("Email inválido"),
-  telefone: z.string().trim().min(14, "Telefone obrigatório"),
+  telefone: z.string().trim().refine((value) => value.replace(/\D/g, "").length === 11, {
+    message: "Telefone inválido",
+  }),
   endereco: z.string().trim().min(1, "Endereço obrigatório"),
   CEP: z.string().trim().refine((value) => value.replace(/\D/g, "").length === 8, {
     message: "CEP inválido",
@@ -74,7 +76,7 @@ function toFormValues(cliente: Cliente): PerfilFormValues {
   return {
     nome: cliente.nome,
     email: cliente.email,
-    telefone: cliente.telefone,
+    telefone: formatPhone(cliente.telefone),
     endereco: cliente.endereco,
     CEP: formatCep(cliente.cep),
     cidade: cliente.cidade,
@@ -94,6 +96,16 @@ function parseCurrencyValue(value: string): number {
 
 function onlyDigits(value: string): string {
   return value.replace(/\D/g, "");
+}
+
+function formatPhone(value: string): string {
+  const digits = onlyDigits(value).slice(0, 11);
+
+  if (digits.length !== 11) {
+    return value;
+  }
+
+  return digits.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
 }
 
 export function meta({}: Route.MetaArgs) {
