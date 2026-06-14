@@ -190,6 +190,31 @@ public class SagaPersistenceService {
         return objectMapper.convertValue(step.getResponsePayload(), responseType);
     }
 
+    @Transactional
+    public <T> T getCompletedStepPayload(
+        String sagaId,
+        String stepName,
+        Class<T> payloadType
+    ) {
+        SagaStep step = stepRepository
+            .findFirstBySagaSagaIdAndStepNameAndStatusOrderByIdDesc(
+                sagaId,
+                stepName,
+                SagaStepStatus.COMPLETED
+            )
+            .orElseThrow(() -> new IllegalStateException(
+                "Step completo não encontrado para sagaId=" + sagaId + ", stepName=" + stepName
+            ));
+
+        if (step.getPayload() == null) {
+            throw new IllegalStateException(
+                "Step completo não possui payload para sagaId=" + sagaId + ", stepName=" + stepName
+            );
+        }
+
+        return objectMapper.convertValue(step.getPayload(), payloadType);
+    }
+
     private Map<String, Object> toMap(Object payload) {
         if (payload == null) {
             return null;
