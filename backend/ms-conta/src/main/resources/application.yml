@@ -52,6 +52,8 @@ saga:
           command: ${SAGA_RABBITMQ_QUEUE_CONTA_SELECIONAR_GERENTE_PARA_NOVA_CONTA_COMMAND:conta.selecionar-gerente-para-nova-conta.command}
         reatribuir-contas-gerente:
           command: ${SAGA_RABBITMQ_QUEUE_CONTA_REATRIBUIR_CONTAS_GERENTE_COMMAND:conta.reatribuir-contas-gerente.command}
+        reverter-reatribuicao-contas-compensacao:
+          command: ${SAGA_RABBITMQ_QUEUE_CONTA_REVERTER_REATRIBUICAO_CONTAS_COMPENSACAO_COMMAND:conta.reverter-reatribuicao-contas-compensacao.command}
     routing-key:
       conta:
         criar:
@@ -82,3 +84,7 @@ saga:
           command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_REATRIBUIR_CONTAS_GERENTE_COMMAND:conta.reatribuir-contas-gerente}
           sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_REATRIBUIR_CONTAS_GERENTE_SUCESSO:conta.contas-reatribuidas}
           falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_REATRIBUIR_CONTAS_GERENTE_FALHA:conta.reatribuicao-contas.falhou}
+        reverter-reatribuicao-contas-compensacao:
+          command: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_REVERTER_REATRIBUICAO_CONTAS_COMPENSACAO_COMMAND:conta.reverter-reatribuicao-contas-compensacao}
+          sucesso: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_REVERTER_REATRIBUICAO_CONTAS_COMPENSACAO_SUCESSO:conta.reatribuicao-contas-revertida-compensacao}
+          falha: ${SAGA_RABBITMQ_ROUTING_KEY_CONTA_REVERTER_REATRIBUICAO_CONTAS_COMPENSACAO_FALHA:conta.reversao-reatribuicao-contas-compensacao.falhou}

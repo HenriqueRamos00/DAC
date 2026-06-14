@@ -47,6 +47,10 @@ public class ReatribuirContasGerenteListener {
                 .orElseThrow();
 
             List<ContaCommand> contasOrigem = commandRepository.findAllByGerenteCpf(command.cpfOrigem());
+            List<String> numerosMovidos = contasOrigem.stream()
+                .map(ContaCommand::getNumeroConta)
+                .toList();
+
             for (ContaCommand conta : contasOrigem) {
                 conta.setGerenteCpf(destino);
             }
@@ -59,7 +63,7 @@ public class ReatribuirContasGerenteListener {
             queryRepository.saveAll(contasOrigemQuery);
 
             publisher.publishContasReatribuidas(
-                new ContasReatribuidasEvent(command.sagaId(), destino, (long) contasOrigem.size())
+                new ContasReatribuidasEvent(command.sagaId(), destino, (long) contasOrigem.size(), numerosMovidos)
             );
         } catch (Exception ex) {
             log.error("Falha ao reatribuir contas saga {}", command.sagaId(), ex);

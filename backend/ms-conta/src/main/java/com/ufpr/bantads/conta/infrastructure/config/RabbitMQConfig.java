@@ -45,6 +45,11 @@ import com.ufpr.bantads.conta.application.dto.command.ReatribuirContasGerenteCom
 import com.ufpr.bantads.conta.application.dto.event.ContasReatribuidasEvent;
 import com.ufpr.bantads.conta.application.dto.event.ReatribuicaoContasFalhouEvent;
 
+// Saga Remoção de Gerente - compensação reverter reatribuição de contas
+import com.ufpr.bantads.conta.application.dto.command.ReverterReatribuicaoContasCompensacaoCommand;
+import com.ufpr.bantads.conta.application.dto.event.ReatribuicaoContasRevertidaCompensacaoEvent;
+import com.ufpr.bantads.conta.application.dto.event.ReversaoReatribuicaoContasCompensacaoFalhouEvent;
+
 @Configuration
 public class RabbitMQConfig {
 
@@ -101,6 +106,12 @@ public class RabbitMQConfig {
 
     @Value("${saga.rabbitmq.routing-key.conta.reatribuir-contas-gerente.command}")
     private String reatribuirContasGerenteCommandRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.conta.reverter-reatribuicao-contas-compensacao.command}")
+    private String reverterReatribuicaoContasCompensacaoCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.conta.reverter-reatribuicao-contas-compensacao.command}")
+    private String reverterReatribuicaoContasCompensacaoCommandRoutingKey;
 
     @Bean
     public TopicExchange productExchange() {
@@ -241,6 +252,22 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue reverterReatribuicaoContasCompensacaoCommandQueue() {
+        return QueueBuilder.durable(reverterReatribuicaoContasCompensacaoCommandQueue).build();
+    }
+
+    @Bean
+    public Binding reverterReatribuicaoContasCompensacaoCommandBinding(
+        @Qualifier("reverterReatribuicaoContasCompensacaoCommandQueue") Queue reverterReatribuicaoContasCompensacaoCommandQueue,
+        @Qualifier("sagaExchange") TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(reverterReatribuicaoContasCompensacaoCommandQueue)
+            .to(sagaExchange)
+            .with(reverterReatribuicaoContasCompensacaoCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
         jsonConverter.setClassMapper(contaClassMapper());
@@ -284,6 +311,9 @@ public class RabbitMQConfig {
         idClassMapping.put("conta.reatribuir-contas-gerente", ReatribuirContasGerenteCommand.class);
         idClassMapping.put("conta.contas-reatribuidas", ContasReatribuidasEvent.class);
         idClassMapping.put("conta.reatribuicao-contas.falhou", ReatribuicaoContasFalhouEvent.class);
+        idClassMapping.put("conta.reverter-reatribuicao-contas-compensacao", ReverterReatribuicaoContasCompensacaoCommand.class);
+        idClassMapping.put("conta.reatribuicao-contas-revertida-compensacao", ReatribuicaoContasRevertidaCompensacaoEvent.class);
+        idClassMapping.put("conta.reversao-reatribuicao-contas-compensacao.falhou", ReversaoReatribuicaoContasCompensacaoFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

@@ -54,6 +54,11 @@ import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteRemovidoCompe
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.RemocaoGerenteCompensacaoFalhouEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.UsuarioGerenteExcluidoCompensacaoEvent;
 
+// Saga Remoção de Gerente - compensação reverter reatribuição
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.command.ReverterReatribuicaoContasCompensacaoCommand;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ReatribuicaoContasRevertidaCompensacaoEvent;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ReversaoReatribuicaoContasCompensacaoFalhouEvent;
+
 @Configuration
 public class RabbitConfig {
 
@@ -185,6 +190,12 @@ public class RabbitConfig {
 
     @Value("${saga.rabbitmq.routing-key.gerente.remover.falha}")
     private String gerenteRemoverFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.reverter-reatribuicao-contas-compensacao.sucesso}")
+    private String contaReverterReatribuicaoContasCompensacaoSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.conta.reverter-reatribuicao-contas-compensacao.falha}")
+    private String contaReverterReatribuicaoContasCompensacaoFalhaRoutingKey;
 
     @Bean
     public TopicExchange sagaExchange() {
@@ -630,6 +641,28 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding contaReverterReatribuicaoContasCompensacaoSucessoBinding(
+        Queue remocaoGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(remocaoGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(contaReverterReatribuicaoContasCompensacaoSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding contaReverterReatribuicaoContasCompensacaoFalhaBinding(
+        Queue remocaoGerenteResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(remocaoGerenteResponseQueue)
+            .to(sagaExchange)
+            .with(contaReverterReatribuicaoContasCompensacaoFalhaRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
         jsonConverter.setClassMapper(sagaClassMapper());
@@ -680,6 +713,9 @@ public class RabbitConfig {
         idClassMapping.put("gerente.remover", RemoverGerenteCommand.class);
         idClassMapping.put("gerente.removido", GerenteRemovidoEvent.class);
         idClassMapping.put("gerente.remocao.falhou", RemocaoGerenteFalhouEvent.class);
+        idClassMapping.put("conta.reverter-reatribuicao-contas-compensacao", ReverterReatribuicaoContasCompensacaoCommand.class);
+        idClassMapping.put("conta.reatribuicao-contas-revertida-compensacao", ReatribuicaoContasRevertidaCompensacaoEvent.class);
+        idClassMapping.put("conta.reversao-reatribuicao-contas-compensacao.falhou", ReversaoReatribuicaoContasCompensacaoFalhouEvent.class);
 
         // Saga Aprovação de Cliente
         idClassMapping.put("cliente.consultar-para-aprovacao", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ConsultarClienteParaAprovacaoCommand.class);
