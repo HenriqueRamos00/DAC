@@ -2,7 +2,9 @@ package com.ufpr.bantads.cliente.application.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +26,8 @@ public record AlterarPerfilRequest(
 
     @NotNull(message = "Salário é obrigatório")
     @DecimalMin(value = "0.01", message = "Salário deve ser maior que zero")
+    @DecimalMax(value = "9999999999.99", message = "Salário deve ser menor ou igual a 9.999.999.999,99")
+    @Digits(integer = 10, fraction = 2, message = "Salário deve ter no máximo 10 dígitos inteiros e 2 casas decimais")
     BigDecimal salario,
 
     @JsonAlias("CEP")

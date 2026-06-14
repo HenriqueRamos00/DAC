@@ -57,12 +57,28 @@ export class ServiceUnavailableError extends GatewayError {
   }
 }
 
+function extractUpstreamMessage(body: unknown): string | undefined {
+  if (typeof body === 'string') {
+    const message = body.trim();
+    return message.length > 0 ? message : undefined;
+  }
+
+  if (body && typeof body === 'object' && 'message' in body) {
+    const message = (body as { message?: unknown }).message;
+    return typeof message === 'string' && message.trim().length > 0
+      ? message
+      : undefined;
+  }
+
+  return undefined;
+}
+
 export class UpstreamError extends GatewayError {
   public body: unknown;
   public url: string;
 
   constructor(status: number, body: unknown, url: string) {
-    super(status, `Upstream ${url} respondeu ${status}`);
+    super(status, extractUpstreamMessage(body) ?? `Upstream ${url} respondeu ${status}`);
     this.body = body;
     this.url = url;
     this.name = 'UpstreamError';

@@ -1,9 +1,13 @@
 import { data, useNavigate } from 'react-router';
+import { useCallback } from 'react';
 import { CrtMonitor } from '~/components/crt-monitor';
 import { RegisterStepper } from '~/components/register-stepper';
 import { parseCurrency } from '~/lib/utils/formatCurrency';
 import { api } from '~/services/api.server';
 import type { Route } from './+types/cadastro';
+
+const MAX_SALARIO = 9999999999.99;
+const SALARIO_INVALIDO = "Salário deve ser maior que zero e menor ou igual a R$ 9.999.999.999,99.";
 
 function formValue(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
@@ -24,13 +28,21 @@ async function getErrorMessage(response: Response) {
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
+  const salario = parseCurrency(formValue(formData.get("salario")));
+
+  if (!Number.isFinite(salario) || salario <= 0 || salario > MAX_SALARIO) {
+    return data(
+      { ok: false, error: SALARIO_INVALIDO },
+      { status: 400 },
+    );
+  }
 
   const payload = {
     cpf: onlyDigits(formData.get("cpf")),
     nome: formValue(formData.get("nome")),
     email: formValue(formData.get("email")),
     telefone: onlyDigits(formData.get("telefone")),
-    salario: parseCurrency(formValue(formData.get("salario"))),
+    salario,
     cep: onlyDigits(formData.get("cep")),
     logradouro: formValue(formData.get("logradouro")),
     cidade: formValue(formData.get("cidade")),
@@ -57,11 +69,14 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function Autocadastro() {
   const navigate = useNavigate();
+  const handleComplete = useCallback(() => {
+    navigate("/");
+  }, [navigate]);
 
   return (
     <div className="crt-page">
       <CrtMonitor title="">
-        <RegisterStepper onComplete={() => navigate("/")} />
+        <RegisterStepper onComplete={handleComplete} />
       </CrtMonitor>
     </div>
   );
