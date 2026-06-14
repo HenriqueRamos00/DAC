@@ -21,7 +21,7 @@ public class RemocaoGerenteSagaController {
     private final RemocaoGerenteOrchestrator orchestrator;
 
     @DeleteMapping("/{cpf}")
-    public ResponseEntity<Object> remover(@PathVariable String cpf) {
+    public ResponseEntity<SagaResult> remover(@PathVariable String cpf) {
         SagaResult result = orchestrator.iniciar(cpf);
 
         return switch (result) {

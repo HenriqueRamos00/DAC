@@ -22,7 +22,7 @@ public class AprovacaoClienteSagaController {
     private final AprovacaoClienteOrchestrator orchestrator;
 
     @PostMapping("/{cpf}/aprovar")
-    public ResponseEntity<Object> aprovar(@PathVariable String cpf) {
+    public ResponseEntity<SagaResult> aprovar(@PathVariable String cpf) {
         AprovarClienteSagaRequest request = new AprovarClienteSagaRequest(cpf);
         SagaResult result = orchestrator.iniciar(request);
 

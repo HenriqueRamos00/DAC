@@ -23,7 +23,7 @@ public class AlterarPerfilSagaController {
     private final AlteracaoPerfilOrchestrator orchestrator;
 
     @PutMapping("/{cpf}/perfil")
-    public ResponseEntity<Object> alterarPerfil(
+    public ResponseEntity<SagaResult> alterarPerfil(
         @PathVariable String cpf,
         @RequestBody AlterarPerfilRequest request
     ) {

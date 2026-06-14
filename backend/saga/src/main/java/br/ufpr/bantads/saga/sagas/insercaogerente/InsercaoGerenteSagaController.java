@@ -22,7 +22,7 @@ public class InsercaoGerenteSagaController {
     private final InsercaoGerenteOrchestrator orchestrator;
 
     @PostMapping
-    public ResponseEntity<Object> inserir(@RequestBody InserirGerenteRequest request) {
+    public ResponseEntity<SagaResult> inserir(@RequestBody InserirGerenteRequest request) {
         SagaResult result = orchestrator.iniciar(request);
 
         return switch (result) {
