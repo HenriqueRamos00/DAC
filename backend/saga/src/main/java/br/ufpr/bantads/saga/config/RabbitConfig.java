@@ -776,6 +776,7 @@ public class RabbitConfig {
         idClassMapping.put("cliente.aprovar", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.AprovarClienteCommand.class);
         idClassMapping.put("cliente.aprovado", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteAprovadoEvent.class);
         idClassMapping.put("cliente.aprovacao.falhou", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.AprovacaoClienteFalhouEvent.class);
+        idClassMapping.put("cliente.notificar-falha-autocadastro", br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.NotificarFalhaAutocadastroCommand.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

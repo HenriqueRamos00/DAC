@@ -22,6 +22,7 @@ import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.CriarUsuarioClien
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirContaClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ExcluirUsuarioClienteCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.ListarGerentesAtivosCommand;
+import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.NotificarFalhaAutocadastroCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.command.SelecionarGerenteParaNovaContaCommand;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.AprovacaoClienteFalhouEvent;
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.event.ClienteAprovadoEvent;
@@ -87,6 +88,11 @@ public class AprovacaoClienteOrchestrator {
         } catch (Exception ex) {
             log.error("SAGA aprovação cliente {} falhou no aguardo", sagaId, ex);
             responseRegistry.cancel(sagaId);
+            notificarFalhaAutocadastro(
+                sagaId,
+                request.cpf(),
+                "SAGA de aprovação de cliente não concluída: " + ex.getMessage()
+            );
             sagaPersistenceService.failSaga(
                 sagaId,
                 "SAGA de aprovação de cliente não concluída: " + ex.getMessage()
@@ -256,12 +262,15 @@ public class AprovacaoClienteOrchestrator {
     }
 
     public void handleCriacaoUsuarioClienteFalhou(CriacaoUsuarioClienteFalhouEvent event) {
-        fail(event.sagaId(), CRIAR_USUARIO_CLIENTE, "Falha ao criar usuário cliente: " + event.motivo());
+        String motivo = "Falha ao criar usuário cliente: " + event.motivo();
+        notificarFalhaAutocadastro(event.sagaId(), motivo);
+        fail(event.sagaId(), CRIAR_USUARIO_CLIENTE, motivo);
     }
 
     public void handleListagemGerentesAtivosFalhou(ListagemGerentesAtivosFalhouEvent event) {
         String motivo = "Falha ao listar gerentes ativos: " + event.motivo();
 
+        notificarFalhaAutocadastro(event.sagaId(), motivo);
         sagaPersistenceService.failStep(event.sagaId(), LISTAR_GERENTES_ATIVOS.stepName(), motivo);
         compensarUsuarioCriado(event.sagaId(), motivo);
     }
@@ -274,12 +283,14 @@ public class AprovacaoClienteOrchestrator {
             SELECIONAR_GERENTE_PARA_NOVA_CONTA.stepName(),
             motivo
         );
+        notificarFalhaAutocadastro(event.sagaId(), motivo);
         compensarUsuarioCriado(event.sagaId(), motivo);
     }
 
     public void handleCriacaoContaFalhou(CriacaoContaFalhouEvent event) {
         String motivo = "Falha ao criar conta: " + event.motivo();
 
+        notificarFalhaAutocadastro(event.sagaId(), event.clienteCpf(), motivo);
         sagaPersistenceService.failStep(event.sagaId(), CRIAR_CONTA.stepName(), motivo);
         compensarUsuarioCriado(event.sagaId(), motivo);
     }
@@ -287,6 +298,7 @@ public class AprovacaoClienteOrchestrator {
     public void handleAprovacaoClienteFalhou(AprovacaoClienteFalhouEvent event) {
         String motivo = "Falha ao aprovar cliente: " + event.motivo();
 
+        notificarFalhaAutocadastro(event.sagaId(), event.cpf(), motivo);
         sagaPersistenceService.failStep(event.sagaId(), APROVAR_CLIENTE.stepName(), motivo);
         compensarContaCriada(event.sagaId(), motivo);
     }
@@ -347,6 +359,44 @@ public class AprovacaoClienteOrchestrator {
     private void failPersistedStep(String sagaId, String stepName, String motivo) {
         sagaPersistenceService.failStep(sagaId, stepName, motivo);
         sagaPersistenceService.failSaga(sagaId, motivo);
+    }
+
+    private void notificarFalhaAutocadastro(String sagaId, String motivo) {
+        try {
+            ClienteAprovacaoDados cliente = sagaPersistenceService.getCompletedStepResponse(
+                sagaId,
+                CONSULTAR_CLIENTE.stepName(),
+                ClienteAprovacaoDados.class
+            );
+
+            notificarFalhaAutocadastro(sagaId, cliente.cpf(), motivo);
+        } catch (Exception ex) {
+            log.warn(
+                "SAGA aprovação cliente {} não conseguiu localizar CPF para notificação de falha: {}",
+                sagaId,
+                ex.getMessage()
+            );
+        }
+    }
+
+    private void notificarFalhaAutocadastro(String sagaId, String cpf, String motivo) {
+        if (cpf == null || cpf.isBlank()) {
+            log.warn("SAGA aprovação cliente {} sem CPF para notificação de falha", sagaId);
+            return;
+        }
+
+        try {
+            commandPublisher.publishNotificarFalhaAutocadastro(
+                new NotificarFalhaAutocadastroCommand(sagaId, cpf, motivo)
+            );
+        } catch (Exception ex) {
+            log.error(
+                "SAGA aprovação cliente {} falhou ao publicar notificação de falha para CPF {}: {}",
+                sagaId,
+                cpf,
+                ex.getMessage()
+            );
+        }
     }
 
     private void compensarContaCriada(String sagaId, String motivo) {
