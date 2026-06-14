@@ -10,12 +10,12 @@ interface PainelProps {
 
 export default function Painel({ icon: Icon, content, title, className }: PainelProps) {
   return (
-    <div className={cn("flex flex-col bg-sidebar border-6 p-3 gap-3 text-ring", className)}>
-      <div className="flex items-center gap-2">
+    <div className={cn("flex min-w-0 flex-col bg-sidebar border-6 p-3 gap-3 text-ring", className)}>
+      <div className="flex min-w-0 items-center gap-2">
         <Icon size={16} />
-        <p className="text-xs uppercase font-mono font-bold">{title}</p>
+        <p className="truncate text-xs uppercase font-mono font-bold">{title}</p>
       </div>
-      <p className="text-sm">{content}</p>
+      <p className="truncate text-sm" title={content}>{content}</p>
     </div>
   );
 }
