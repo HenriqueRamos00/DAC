@@ -20,11 +20,14 @@ import org.springframework.context.annotation.Configuration;
 import com.ufpr.bantads.cliente.application.dto.command.AlterarPerfilClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.command.AprovarClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.command.ConsultarClienteParaAprovacaoCommand;
+import com.ufpr.bantads.cliente.application.dto.command.ReverterAlteracaoPerfilClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.event.AprovacaoClienteFalhouEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClienteAlteracaoFalhouEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClienteAprovadoEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClienteConsultadoParaAprovacaoEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ClientePerfilAlteradoEvent;
+import com.ufpr.bantads.cliente.application.dto.event.ClientePerfilRevertidoEvent;
+import com.ufpr.bantads.cliente.application.dto.event.ClienteReversaoPerfilFalhouEvent;
 import com.ufpr.bantads.cliente.application.dto.event.ConsultaClienteParaAprovacaoFalhouEvent;
 
 @Configuration
@@ -57,6 +60,12 @@ public class RabbitMQConfig {
     @Value("${saga.rabbitmq.routing-key.cliente.alterar-perfil.command}")
     private String alterarPerfilClienteCommandRoutingKey;
 
+    @Value("${saga.rabbitmq.queue.cliente.reverter-alteracao-perfil.command}")
+    private String reverterAlteracaoPerfilClienteCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.reverter-alteracao-perfil.command}")
+    private String reverterAlteracaoPerfilClienteCommandRoutingKey;
+
     @Bean
     public TopicExchange sagaExchange() {
         return new TopicExchange(exchange);
@@ -80,6 +89,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue alterarPerfilClienteCommandQueue() {
         return QueueBuilder.durable(alterarPerfilClienteCommandQueue).build();
+    }
+
+    @Bean
+    public Queue reverterAlteracaoPerfilClienteCommandQueue() {
+        return QueueBuilder.durable(reverterAlteracaoPerfilClienteCommandQueue).build();
     }
 
     @Bean
@@ -127,6 +141,17 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding reverterAlteracaoPerfilClienteCommandBinding(
+        Queue reverterAlteracaoPerfilClienteCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(reverterAlteracaoPerfilClienteCommandQueue)
+            .to(sagaExchange)
+            .with(reverterAlteracaoPerfilClienteCommandRoutingKey);
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         JacksonJsonMessageConverter jsonConverter = new JacksonJsonMessageConverter();
         jsonConverter.setClassMapper(clienteClassMapper());
@@ -148,6 +173,9 @@ public class RabbitMQConfig {
         idClassMapping.put("cliente.alterar-perfil.command", AlterarPerfilClienteCommand.class);
         idClassMapping.put("cliente.perfil-alterado", ClientePerfilAlteradoEvent.class);
         idClassMapping.put("cliente.alteracao-perfil.falhou", ClienteAlteracaoFalhouEvent.class);
+        idClassMapping.put("cliente.reverter-alteracao-perfil", ReverterAlteracaoPerfilClienteCommand.class);
+        idClassMapping.put("cliente.perfil-revertido", ClientePerfilRevertidoEvent.class);
+        idClassMapping.put("cliente.reversao-perfil.falhou", ClienteReversaoPerfilFalhouEvent.class);
 
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;

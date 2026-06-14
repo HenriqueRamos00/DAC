@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.ufpr.bantads.cliente.application.dto.command.AlterarPerfilClienteCommand;
 import com.ufpr.bantads.cliente.application.dto.event.ClientePerfilAlteradoEvent;
+import com.ufpr.bantads.cliente.application.dto.event.ClientePerfilAlteradoEvent.DadosPerfil;
 import com.ufpr.bantads.cliente.domain.exception.ClienteNaoEncontradoException;
 import com.ufpr.bantads.cliente.domain.model.Cliente;
 import com.ufpr.bantads.cliente.domain.model.StatusCliente;
@@ -32,6 +33,8 @@ public class AlterarPerfilUseCase {
             throw new ClienteNaoEncontradoException(cpf);
         }
 
+        DadosPerfil dadosAnteriores = DadosPerfil.fromEntity(cliente);
+
         cliente.setNome(request.nome());
         cliente.setEmail(request.email());
         cliente.setTelefone(request.telefone());
@@ -53,6 +56,6 @@ public class AlterarPerfilUseCase {
 
         Cliente atualizado = clienteRepository.save(cliente);
 
-        return ClientePerfilAlteradoEvent.fromEntity(sagaId, atualizado);
+        return ClientePerfilAlteradoEvent.fromEntity(sagaId, atualizado, dadosAnteriores);
     }
 }
