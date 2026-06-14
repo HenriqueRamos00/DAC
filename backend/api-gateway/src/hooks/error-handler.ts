@@ -1,12 +1,28 @@
 import type { FastifyError, FastifyInstance } from 'fastify';
 import { GatewayError, ServiceUnavailableError, UpstreamError } from './errors.ts';
 
+function normalizeUpstreamErrorBody(error: UpstreamError) {
+  if (error.body && typeof error.body === 'object' && !Array.isArray(error.body)) {
+    return {
+      ...error.body,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
+  }
+
+  return {
+    statusCode: error.statusCode,
+    error: error.name,
+    message: error.message,
+  };
+}
+
 export function registerErrorHandler(gateway: FastifyInstance) {
   gateway.setErrorHandler<FastifyError | GatewayError>((error, request, reply) => {
     request.log.error(error);
 
     if (error instanceof UpstreamError) {
-      return reply.code(error.statusCode).send(error.body);
+      return reply.code(error.statusCode).send(normalizeUpstreamErrorBody(error));
     }
 
     if (error instanceof GatewayError) {
