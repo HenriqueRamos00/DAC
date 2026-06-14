@@ -18,6 +18,9 @@ import { usePhoneMask } from "~/lib/pipe/phone-mask";
 import type { Route } from "./+types/perfil";
 import { Shield, User, Wallet } from "lucide-react";
 
+const MAX_SALARIO = 9999999999.99;
+const SALARIO_INVALIDO = "Salário deve ser maior que zero e menor ou igual a R$ 9.999.999.999,99.";
+
 const estadoSchema = z.enum(UF_OPTIONS, {
   message: "UF inválida",
 });
@@ -160,9 +163,9 @@ export async function action({ request }: Route.ActionArgs) {
 
   const salario = parseCurrencyValue(parsed.data.salario);
 
-  if (!Number.isFinite(salario) || salario <= 0) {
+  if (!Number.isFinite(salario) || salario <= 0 || salario > MAX_SALARIO) {
     return data<PerfilActionData>(
-      { errors: { salario: "Salário inválido" } },
+      { errors: { salario: SALARIO_INVALIDO } },
       { status: 400 }
     );
   }
