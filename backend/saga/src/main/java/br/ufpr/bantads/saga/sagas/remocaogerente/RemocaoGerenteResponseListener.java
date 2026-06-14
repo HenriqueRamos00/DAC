@@ -10,6 +10,11 @@ import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.GerentesAtivosListado
 import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ListagemGerentesAtivosFalhouEvent;
 import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ReatribuicaoContasFalhouEvent;
 import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.RemocaoGerenteFalhouEvent;
+
+// Compensação saga remoção de gerente
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ReatribuicaoContasRevertidaCompensacaoEvent;
+import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.ReversaoReatribuicaoContasCompensacaoFalhouEvent;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,5 +60,17 @@ public class RemocaoGerenteResponseListener {
     public void handleRemocaoGerenteFalhou(RemocaoGerenteFalhouEvent event) {
         log.info("Recebido RemocaoGerenteFalhouEvent saga {}", event.getSagaId());
         orchestrator.handleRemocaoGerenteFalhou(event);
+    }
+
+    @RabbitHandler
+    public void handleReatribuicaoContasRevertidaCompensacao(ReatribuicaoContasRevertidaCompensacaoEvent event) {
+        log.info("Recebido ReatribuicaoContasRevertidaCompensacaoEvent saga {}", event.getSagaId());
+        orchestrator.handleReatribuicaoContasRevertidaCompensacao(event);
+    }
+
+    @RabbitHandler
+    public void handleReversaoReatribuicaoContasCompensacaoFalhou(ReversaoReatribuicaoContasCompensacaoFalhouEvent event) {
+        log.info("Recebido ReversaoReatribuicaoContasCompensacaoFalhouEvent saga {}", event.getSagaId());
+        orchestrator.handleReversaoReatribuicaoContasCompensacaoFalhou(event);
     }
 }

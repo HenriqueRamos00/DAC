@@ -1,4 +1,4 @@
-package br.ufpr.bantads.saga.sagas.remocaogerente.dto.event;
+package br.ufpr.bantads.saga.sagas.remocaogerente.dto.command;
 
 import java.util.List;
 
@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ContasReatribuidasEvent {
+public class ReverterReatribuicaoContasCompensacaoCommand {
 
     private String sagaId;
+    private String gerenteOriginalCpf;
     private String gerenteDestinoCpf;
-    private Long contasReatribuidas;
-    private List<String> numerosContasMovidas;
+    private List<String> numerosContas;
 }
