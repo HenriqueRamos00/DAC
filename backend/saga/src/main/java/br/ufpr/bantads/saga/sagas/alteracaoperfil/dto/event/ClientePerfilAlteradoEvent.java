@@ -23,5 +23,15 @@ public class ClientePerfilAlteradoEvent {
     private String estado;
     private String complemento;
     private String numero;
+    private String nomeAnterior;
+    private String emailAnterior;
+    private String telefoneAnterior;
+    private BigDecimal salarioAnterior;
+    private String cepAnterior;
+    private String logradouroAnterior;
+    private String cidadeAnterior;
+    private String estadoAnterior;
+    private String complementoAnterior;
+    private String numeroAnterior;
 
 }

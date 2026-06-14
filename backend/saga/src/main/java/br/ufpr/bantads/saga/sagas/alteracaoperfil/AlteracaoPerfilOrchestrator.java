@@ -9,8 +9,11 @@ import org.springframework.stereotype.Service;
 
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.AlterarLimiteContaCommand;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.AlterarPerfilClienteCommand;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.ReverterAlteracaoPerfilClienteCommand;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClienteAlteracaoFalhouEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClientePerfilAlteradoEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClientePerfilRevertidoEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClienteReversaoPerfilFalhouEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ContaLimiteAlteradoEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.request.AlterarPerfilRequest;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.response.AlterarPerfilSagaResponse;
@@ -31,6 +34,7 @@ public class AlteracaoPerfilOrchestrator {
 
     private static final String STEP_ALTERAR_PERFIL_CLIENTE = "ALTERAR_PERFIL_CLIENTE";
     private static final String STEP_ALTERAR_LIMITE_CONTA = "ALTERAR_LIMITE_CONTA";
+    private static final String STEP_REVERTER_PERFIL_CLIENTE = "REVERTER_PERFIL_CLIENTE";
 
     private final AlteracaoPerfilCommandPublisher commandPublisher;
     private final SagaResponseRegistry responseRegistry;
@@ -69,6 +73,7 @@ public class AlteracaoPerfilOrchestrator {
                 sagaId,
                 "SAGA de alteração de perfil não concluída: " + ex.getMessage()
             );
+
             return new SagaErrorResponse(sagaId, "FAILED",
                 "SAGA não concluída: " + ex.getMessage());
         }
@@ -134,6 +139,8 @@ public class AlteracaoPerfilOrchestrator {
     }
 
     public void handleContaAlteracaoLimiteFalhou(ClienteAlteracaoFalhouEvent event) {
+        String motivo = "Falha no MS Conta: " + event.motivo();
+
         sagaPersistenceService.failStep(
             event.sagaId(),
             STEP_ALTERAR_LIMITE_CONTA,
@@ -142,19 +149,75 @@ public class AlteracaoPerfilOrchestrator {
 
         sagaPersistenceService.requireCompensation(
             event.sagaId(),
-            "Falha no MS Conta: " + event.motivo()
+            motivo
         );
 
-        /*
-         * Aqui futuramente entra:
-         *
-         * 1. Buscar no banco o step ALTERAR_PERFIL_CLIENTE.
-         * 2. Ler o payload/response_payload antigo em JSONB.
-         * 3. Publicar cliente.reverter-alteracao-perfil.command.
-         * 4. Marcar a SAGA como COMPENSATED ou FAILED.
-         */
+        try {
+            ClientePerfilAlteradoEvent clienteEvent =
+                sagaPersistenceService.getCompletedStepResponse(
+                    event.sagaId(),
+                    STEP_ALTERAR_PERFIL_CLIENTE,
+                    ClientePerfilAlteradoEvent.class
+                );
 
-        fail(event.sagaId(), event.cpf(), "Falha no MS Conta: " + event.motivo());
+            ReverterAlteracaoPerfilClienteCommand command =
+                ReverterAlteracaoPerfilClienteCommand.fromEvent(clienteEvent);
+
+            sagaPersistenceService.markStepSent(
+                event.sagaId(),
+                3,
+                STEP_REVERTER_PERFIL_CLIENTE,
+                ReverterAlteracaoPerfilClienteCommand.class.getSimpleName(),
+                command,
+                SagaStatus.COMPENSATION_REQUIRED
+            );
+
+            commandPublisher.publishReverterAlteracaoPerfil(command);
+        } catch (Exception ex) {
+            fail(
+                event.sagaId(),
+                event.cpf(),
+                motivo + ". Não foi possível iniciar compensação: " + ex.getMessage()
+            );
+        }
+    }
+
+    public void handleClientePerfilRevertido(ClientePerfilRevertidoEvent event) {
+        log.info("SAGA {} recebeu compensação do MS Cliente", event.sagaId());
+
+        sagaPersistenceService.markStepCompensated(
+            event.sagaId(),
+            STEP_REVERTER_PERFIL_CLIENTE,
+            ClientePerfilRevertidoEvent.class.getSimpleName(),
+            event
+        );
+
+        String motivoOriginal = sagaPersistenceService.getSagaErrorMessage(event.sagaId());
+        String motivo = (motivoOriginal == null || motivoOriginal.isBlank())
+            ? "SAGA de alteração de perfil compensada"
+            : motivoOriginal + ". Perfil do cliente revertido no MS Cliente";
+
+        sagaPersistenceService.completeCompensation(event.sagaId());
+
+        responseRegistry.complete(
+            event.sagaId(),
+            new SagaErrorResponse(event.sagaId(), "COMPENSATED", motivo)
+        );
+    }
+
+    public void handleClienteReversaoPerfilFalhou(ClienteReversaoPerfilFalhouEvent event) {
+        String motivoOriginal = sagaPersistenceService.getSagaErrorMessage(event.sagaId());
+        String motivo = (motivoOriginal == null || motivoOriginal.isBlank())
+            ? "Falha ao compensar alteração de perfil no MS Cliente: " + event.motivo()
+            : motivoOriginal + ". Falha ao compensar alteração de perfil no MS Cliente: " + event.motivo();
+
+        sagaPersistenceService.failStep(
+            event.sagaId(),
+            STEP_REVERTER_PERFIL_CLIENTE,
+            event.motivo()
+        );
+
+        fail(event.sagaId(), event.cpf(), motivo);
     }
 
     private void fail(String sagaId, String cpf, String motivo) {

@@ -19,12 +19,15 @@ import org.springframework.context.annotation.Configuration;
 
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.AlterarLimiteContaCommand;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.AlterarPerfilClienteCommand;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.ReverterAlteracaoPerfilClienteCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.AtribuirGerenteContaCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.ConsultarGerenteMaisContasCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.InserirGerenteCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.AtribuicaoGerenteContaFalhouEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClienteAlteracaoFalhouEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClientePerfilAlteradoEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClientePerfilRevertidoEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClienteReversaoPerfilFalhouEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.ConsultaGerenteMaisContasFalhouEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ContaLimiteAlteradoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteAtribuidoContaEvent;
@@ -118,6 +121,12 @@ public class RabbitConfig {
 
     @Value("${saga.rabbitmq.routing-key.conta.alterar-limite.falha}")
     private String contaAlterarLimiteFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.reverter-alteracao-perfil.sucesso}")
+    private String clienteReverterAlteracaoPerfilSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.cliente.reverter-alteracao-perfil.falha}")
+    private String clienteReverterAlteracaoPerfilFalhaRoutingKey;
 
     @Value("${saga.rabbitmq.queue.remocao-gerente.response}")
     private String remocaoGerenteResponseQueue;
@@ -386,6 +395,28 @@ public class RabbitConfig {
             .bind(alteracaoPerfilResponseQueue)
             .to(sagaExchange)
             .with(contaAlterarLimiteFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding clienteReverterAlteracaoPerfilSucessoBinding(
+        Queue alteracaoPerfilResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(alteracaoPerfilResponseQueue)
+            .to(sagaExchange)
+            .with(clienteReverterAlteracaoPerfilSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding clienteReverterAlteracaoPerfilFalhaBinding(
+        Queue alteracaoPerfilResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(alteracaoPerfilResponseQueue)
+            .to(sagaExchange)
+            .with(clienteReverterAlteracaoPerfilFalhaRoutingKey);
     }
 
     @Bean
@@ -682,6 +713,9 @@ public class RabbitConfig {
         idClassMapping.put("conta.limite-alterado", ContaLimiteAlteradoEvent.class);
         idClassMapping.put("conta.operacao.limite-alterado", ContaLimiteAlteradoEvent.class);
         idClassMapping.put("conta.alteracao-limite.falhou", ClienteAlteracaoFalhouEvent.class);
+        idClassMapping.put("cliente.reverter-alteracao-perfil", ReverterAlteracaoPerfilClienteCommand.class);
+        idClassMapping.put("cliente.perfil-revertido", ClientePerfilRevertidoEvent.class);
+        idClassMapping.put("cliente.reversao-perfil.falhou", ClienteReversaoPerfilFalhouEvent.class);
 
         // Saga Inserir Gerente
         idClassMapping.put("conta.consultar-gerente-mais-contas", ConsultarGerenteMaisContasCommand.class);
