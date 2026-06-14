@@ -2,7 +2,7 @@ import { Input } from "~/components/ui/input";
 import type { Route } from "./+types/transferir";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { useCurrencyMask } from "~/lib/pipe/currency-mask";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeftRight, Play } from "lucide-react"
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
@@ -10,7 +10,8 @@ import { getSessionAutenticada } from "~/services/auth.server";
 import type { Cliente } from "~/models/dto/Cliente";
 import { getFormattedCurrency, parseCurrency } from "~/lib/utils/formatCurrency";
 import { preventNegativeKey, preventNegativePaste } from "~/lib/utils/preventNegative";
-import { data, Form, redirect } from "react-router";
+import { data, Form } from "react-router";
+import { toast } from "sonner";
 
 export function meta({}: Route.MetaArgs) {
     return [{ title: "Transferência" }, { name: "description", content: "Tela de transferência do cliente" }];
@@ -74,17 +75,26 @@ export async function action({ request } : Route.ActionArgs) {
         return data({error: "Operação falhou"}, {status: res.status});
     }
 
-    return redirect("/cliente");
+    return data({success: "Transferência realizada com sucesso."}, {status: 200});
 }
 
 export default function Transferencia({loaderData, actionData} : Route.ComponentProps) {
     const { saldoLimite } = loaderData;
     const currencyRef = useCurrencyMask();
     const [form, setForm] = useState<FormData>({ contaDestino: "", valor: "" });
+    const successMessage = actionData && "success" in actionData ? actionData.success : undefined;
+    const errorMessage = actionData && "error" in actionData ? actionData.error : undefined;
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     }
+
+    useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            setForm(EMPTY_FORM);
+        }
+    }, [actionData, successMessage]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -138,9 +148,9 @@ export default function Transferencia({loaderData, actionData} : Route.Component
                         />
                     </div>
 
-                    {actionData?.error ? (
+                    {errorMessage ? (
                         <p id="saque-error" className="text-sm text-destructive">
-                            {actionData.error}
+                            {errorMessage}
                         </p>
                     ) : null}
 

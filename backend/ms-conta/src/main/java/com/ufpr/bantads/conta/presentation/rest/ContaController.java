@@ -2,7 +2,6 @@ package com.ufpr.bantads.conta.presentation.rest;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,8 +28,7 @@ import com.ufpr.bantads.conta.application.usecase.GetResumoContasGerentesUseCase
 import com.ufpr.bantads.conta.application.usecase.GetSaldoUseCase;
 import com.ufpr.bantads.conta.application.usecase.SacarUseCase;
 import com.ufpr.bantads.conta.application.usecase.TransferenciaUseCase;
-import com.ufpr.bantads.conta.domain.exception.ContaJaExisteException;
-import com.ufpr.bantads.conta.domain.exception.NumeroContaIndisponivelException;
+import com.ufpr.bantads.conta.domain.exception.RequisicaoInvalidaException;
 import com.ufpr.bantads.conta.domain.repository.ContaQueryRepository;
 import com.ufpr.bantads.conta.infrastructure.config.ContaSeedService;
 
@@ -59,12 +57,8 @@ public class ContaController {
 
     @PostMapping("/contas")
     public ResponseEntity<ContaResponse> criar(@RequestBody CriarContaRequest request) {
-        try {
-            ContaCriadaEvent event = criarContaUseCase.execute(request.toCommand());
-            return ResponseEntity.status(HttpStatus.CREATED).body(criarContaUseCase.toResponse(event));
-        } catch (ContaJaExisteException | NumeroContaIndisponivelException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        ContaCriadaEvent event = criarContaUseCase.execute(request == null ? null : request.toCommand());
+        return ResponseEntity.status(201).body(criarContaUseCase.toResponse(event));
     }
 
     @GetMapping(value = "/contas", params = "clienteCpf")
@@ -105,7 +99,7 @@ public class ContaController {
             @PathVariable String conta,
             @RequestBody ValorRequest request) {
         if (request == null || request.valor() == null) {
-            return ResponseEntity.badRequest().build();
+            throw new RequisicaoInvalidaException("Valor do depósito é obrigatório");
         }
 
         DepositoSaqueResponse depositoResponse = depositarUseCase.execute(conta, request.valor());
@@ -117,7 +111,7 @@ public class ContaController {
             @PathVariable String conta,
             @RequestBody ValorRequest request) {
         if (request == null || request.valor() == null) {
-            return ResponseEntity.badRequest().build();
+            throw new RequisicaoInvalidaException("Valor do saque é obrigatório");
         }
 
         DepositoSaqueResponse depositoResponse = sacarUseCase.execute(conta, request.valor());
@@ -129,7 +123,7 @@ public class ContaController {
             @PathVariable String conta,
             @RequestBody TransferenciaRequest request) {
         if (request == null || request.valor() == null) {
-            return ResponseEntity.badRequest().build();
+            throw new RequisicaoInvalidaException("Valor da transferência é obrigatório");
         }
 
         TransferenciaResponse transferenciaResponse = transferenciaUseCase.execute(conta, request.destino(),

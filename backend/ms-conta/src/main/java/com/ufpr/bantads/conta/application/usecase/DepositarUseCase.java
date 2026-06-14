@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
 import com.ufpr.bantads.conta.application.dto.response.DepositoSaqueResponse;
+import com.ufpr.bantads.conta.domain.exception.ContaNaoEncontradaException;
+import com.ufpr.bantads.conta.domain.exception.RequisicaoInvalidaException;
 import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
 import com.ufpr.bantads.conta.domain.model.entity.DepositoCommand;
 import com.ufpr.bantads.conta.domain.model.enums.TipoMovimentacao;
@@ -36,8 +38,10 @@ public class DepositarUseCase {
 
     @Transactional
     public DepositoSaqueResponse execute(String numeroConta, Double valor) {
+        validar(numeroConta, valor, "Valor do depósito é obrigatório");
+
         ContaCommand conta = contaCommandRepository.findByNumeroConta(numeroConta)
-            .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+            .orElseThrow(ContaNaoEncontradaException::new);
 
         BigDecimal valorDeposito = BigDecimal.valueOf(valor).setScale(2, RoundingMode.HALF_UP);
         BigDecimal novoSaldo = conta.getSaldo().add(valorDeposito).setScale(2, RoundingMode.HALF_UP);
@@ -75,5 +79,19 @@ public class DepositarUseCase {
             conta.getNumeroConta(), 
             conta.getSaldo().doubleValue(), 
             deposito.getDataHora().toString());
+    }
+
+    private void validar(String numeroConta, Double valor, String mensagemValorObrigatorio) {
+        if (numeroConta == null || numeroConta.isBlank()) {
+            throw new RequisicaoInvalidaException("Número da conta é obrigatório");
+        }
+
+        if (valor == null) {
+            throw new RequisicaoInvalidaException(mensagemValorObrigatorio);
+        }
+
+        if (valor <= 0) {
+            throw new RequisicaoInvalidaException("Valor deve ser maior que zero");
+        }
     }
 }

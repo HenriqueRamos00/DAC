@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ufpr.bantads.conta.application.dto.command.ExcluirContaClienteCommand;
 import com.ufpr.bantads.conta.application.dto.event.ContaExcluidaEvent;
+import com.ufpr.bantads.conta.domain.exception.RegraNegocioException;
+import com.ufpr.bantads.conta.domain.exception.RequisicaoInvalidaException;
 import com.ufpr.bantads.conta.domain.model.entity.ContaCommand;
 import com.ufpr.bantads.conta.domain.repository.ContaCommandRepository;
 import com.ufpr.bantads.conta.domain.repository.MovimentacaoQueryRepository;
@@ -49,11 +51,11 @@ public class ExcluirContaClienteUseCase {
 
     private void validar(ExcluirContaClienteCommand command) {
         if (command == null) {
-            throw new IllegalArgumentException("Dados da exclusão de conta são obrigatórios");
+            throw new RequisicaoInvalidaException("Dados da exclusão de conta são obrigatórios");
         }
 
         if (command.clienteCpf() == null || command.clienteCpf().isBlank()) {
-            throw new IllegalArgumentException("CPF do cliente é obrigatório");
+            throw new RequisicaoInvalidaException("CPF do cliente é obrigatório");
         }
     }
 
@@ -63,13 +65,13 @@ public class ExcluirContaClienteUseCase {
         }
 
         if (!command.numeroConta().equals(conta.getNumeroConta())) {
-            throw new IllegalStateException("Número da conta não pertence ao CPF informado");
+            throw new RegraNegocioException("Número da conta não pertence ao CPF informado");
         }
     }
 
     private void validarContaSemUso(ContaCommand conta) {
         if (conta.getSaldo() != null && conta.getSaldo().compareTo(BigDecimal.ZERO) != 0) {
-            throw new IllegalStateException("Conta possui saldo diferente de zero");
+            throw new RegraNegocioException("Conta possui saldo diferente de zero");
         }
 
         boolean possuiMovimentacao = !movimentacaoQueryRepository
@@ -77,7 +79,7 @@ public class ExcluirContaClienteUseCase {
             .isEmpty();
 
         if (possuiMovimentacao) {
-            throw new IllegalStateException("Conta possui movimentações");
+            throw new RegraNegocioException("Conta possui movimentações");
         }
     }
 

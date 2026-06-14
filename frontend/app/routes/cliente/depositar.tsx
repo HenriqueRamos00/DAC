@@ -3,16 +3,17 @@ import type { Route } from "./+types/depositar";
 import { api } from "~/services/api.server";
 import type { Saldo } from "~/models/dto/Saldo";
 import { useCurrencyMask } from "~/lib/pipe/currency-mask";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { getFormattedCurrency, parseCurrency } from "~/lib/utils/formatCurrency";
 import { ArrowDownFromLine, Play } from "lucide-react";
 import { Label } from "~/components/ui/label";
-import { data, Form, redirect } from "react-router";
+import { data, Form } from "react-router";
 import { getSessionAutenticada } from "~/services/auth.server";
 import { preventNegativeKey, preventNegativePaste } from "~/lib/utils/preventNegative";
+import { toast } from "sonner";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -59,7 +60,7 @@ export async function action({ request } : Route.ActionArgs) {
         return data({error: "Operação falhou"}, {status: res.status});
     }
 
-    return redirect("/cliente")
+    return data({success: "Depósito realizado com sucesso."}, {status: 200});
 }
 
 type FormData = {
@@ -73,10 +74,19 @@ const EMPTY_FORM: FormData = {
 export default function Depositar( {loaderData, actionData} : Route.ComponentProps ) {
   const currencyRef = useCurrencyMask();
   const [form, setForm] = useState<FormData>({ valor: "" });
+  const successMessage = actionData && "success" in actionData ? actionData.success : undefined;
+  const errorMessage = actionData && "error" in actionData ? actionData.error : undefined;
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     }
   const { saldo } = loaderData;
+
+  useEffect(() => {
+    if (successMessage) {
+        toast.success(successMessage);
+        setForm(EMPTY_FORM);
+    }
+  }, [actionData, successMessage]);
 
   return (
         <div className="flex flex-col gap-6">
@@ -119,9 +129,9 @@ export default function Depositar( {loaderData, actionData} : Route.ComponentPro
                         />
                     </div>
 
-                    {actionData?.error ? (
+                    {errorMessage ? (
                         <p id="saque-error" className="text-sm text-destructive">
-                            {actionData.error}
+                            {errorMessage}
                         </p>
                     ) : null}
 

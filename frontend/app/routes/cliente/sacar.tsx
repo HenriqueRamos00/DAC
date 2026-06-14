@@ -2,15 +2,16 @@ import { Input } from "~/components/ui/input";
 import type { Route } from "./+types/sacar";
 import { AppBreadcrumb } from "~/components/app-breadcrumb";
 import { useCurrencyMask } from "~/lib/pipe/currency-mask";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { ArrowUpFromLine, Play } from "lucide-react"
 import { getSessionAutenticada } from "~/services/auth.server";
 import type { Cliente } from "~/models/dto/Cliente";
 import { getFormattedCurrency, parseCurrency } from "~/lib/utils/formatCurrency";
-import { data, Form, redirect } from "react-router";
+import { data, Form } from "react-router";
 import { preventNegativeKey, preventNegativePaste } from "~/lib/utils/preventNegative";
+import { toast } from "sonner";
 
 export function meta({}: Route.MetaArgs) {
     return [{ title: "Saque" }, { name: "description", content: "Tela de saque do cliente" }];
@@ -18,6 +19,10 @@ export function meta({}: Route.MetaArgs) {
 
 type FormData = {
     valor: string;
+};
+
+const EMPTY_FORM: FormData = {
+    valor: "",
 };
 
 export async function loader({ request } : Route.LoaderArgs) {
@@ -57,16 +62,25 @@ export async function action({ request } : Route.ActionArgs) {
         return data({error: "Operação falhou"}, {status: res.status});
     }
 
-    return redirect("/cliente");
+    return data({success: "Saque realizado com sucesso."}, {status: 200});
 }
 
 export default function Saque( {loaderData, actionData} : Route.ComponentProps ) {
     const { saldoLimite } = loaderData;
     const currencyRef = useCurrencyMask();
     const [form, setForm] = useState<FormData>({ valor: "" });
+    const successMessage = actionData && "success" in actionData ? actionData.success : undefined;
+    const errorMessage = actionData && "error" in actionData ? actionData.error : undefined;
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     }
+
+    useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            setForm(EMPTY_FORM);
+        }
+    }, [actionData, successMessage]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -118,9 +132,9 @@ export default function Saque( {loaderData, actionData} : Route.ComponentProps )
                         />
                     </div>
 
-                    {actionData?.error ? (
+                    {errorMessage ? (
                         <p id="saque-error" className="text-sm text-destructive">
-                            {actionData.error}
+                            {errorMessage}
                         </p>
                     ) : null}
 

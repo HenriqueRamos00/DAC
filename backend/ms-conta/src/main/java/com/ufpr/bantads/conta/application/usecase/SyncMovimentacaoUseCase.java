@@ -8,6 +8,8 @@ import com.ufpr.bantads.conta.application.dto.event.ContaCriadaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaExcluidaEvent;
 import com.ufpr.bantads.conta.application.dto.event.ContaLimiteAlteradoEvent;
 import com.ufpr.bantads.conta.application.dto.event.MovimentacaoEvent;
+import com.ufpr.bantads.conta.domain.exception.ContaNaoEncontradaException;
+import com.ufpr.bantads.conta.domain.exception.RequisicaoInvalidaException;
 import com.ufpr.bantads.conta.domain.model.entity.ContaQuery;
 import com.ufpr.bantads.conta.domain.model.entity.MovimentacaoQuery;
 import com.ufpr.bantads.conta.domain.repository.ContaQueryRepository;
@@ -56,7 +58,7 @@ public class SyncMovimentacaoUseCase {
     @Transactional
     public void sincronizarLimiteAlterado(ContaLimiteAlteradoEvent event) {
         ContaQuery conta = contaQueryRepository.findByClienteCpf(event.cpf())
-            .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada para o CPF " + event.cpf()));
+            .orElseThrow(() -> new ContaNaoEncontradaException("Conta não encontrada para o CPF " + event.cpf()));
 
         conta.setSaldo(event.saldo());
         conta.setLimite(event.limite());
@@ -68,7 +70,7 @@ public class SyncMovimentacaoUseCase {
     public void execute(MovimentacaoEvent event) {
 
         if (event.getEventId() == null || event.getEventId().isBlank()) {
-            throw new IllegalArgumentException("Evento de movimentação sem eventId");
+            throw new RequisicaoInvalidaException("Evento de movimentação sem eventId");
         }
 
         if (movimentacaoQueryRepository.existsByEventId(event.getEventId())) {
@@ -95,12 +97,12 @@ public class SyncMovimentacaoUseCase {
 
     private void sincronoizarTransferencia(MovimentacaoEvent event) {
         ContaQuery contaOrigem = contaQueryRepository.findByNumeroConta(event.getNumeroContaOrigem())
-            .orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada"));
+            .orElseThrow(() -> new ContaNaoEncontradaException("Conta de origem não encontrada"));
         contaOrigem.setSaldo(event.getNovoSaldoContaOrigem());
         contaQueryRepository.save(contaOrigem);
 
         ContaQuery contaDestino = contaQueryRepository.findByNumeroConta(event.getNumeroContaDestino())
-            .orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada"));
+            .orElseThrow(() -> new ContaNaoEncontradaException("Conta de destino não encontrada"));
         contaDestino.setSaldo(event.getNovoSaldoContaDestino());
         contaQueryRepository.save(contaDestino);
 
@@ -119,7 +121,7 @@ public class SyncMovimentacaoUseCase {
 
     private void sincronizarSaque(MovimentacaoEvent event) {
         ContaQuery conta = contaQueryRepository.findByNumeroConta(event.getNumeroContaOrigem())
-            .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+            .orElseThrow(ContaNaoEncontradaException::new);
         conta.setSaldo(event.getNovoSaldoContaOrigem());
         contaQueryRepository.save(conta);
 
@@ -138,7 +140,7 @@ public class SyncMovimentacaoUseCase {
 
     private void sincronizarDeposito(MovimentacaoEvent event) {
         ContaQuery conta = contaQueryRepository.findByNumeroConta(event.getNumeroContaOrigem())
-            .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+            .orElseThrow(ContaNaoEncontradaException::new);
         conta.setSaldo(event.getNovoSaldoContaOrigem());
         contaQueryRepository.save(conta);
 
