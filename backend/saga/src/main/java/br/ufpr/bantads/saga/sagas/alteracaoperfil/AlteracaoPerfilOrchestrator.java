@@ -15,6 +15,7 @@ import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ContaLimiteAlteradoE
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.request.AlterarPerfilRequest;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.response.AlterarPerfilSagaResponse;
 import br.ufpr.bantads.saga.shared.dto.response.SagaErrorResponse;
+import br.ufpr.bantads.saga.shared.dto.response.SagaResult;
 import br.ufpr.bantads.saga.shared.enums.SagaStatus;
 import br.ufpr.bantads.saga.shared.service.SagaPersistenceService;
 import br.ufpr.bantads.saga.shared.SagaResponseRegistry;
@@ -38,14 +39,14 @@ public class AlteracaoPerfilOrchestrator {
     @Value("${saga.step.timeout-ms:10000}")
     private Long timeoutMs;
 
-    public AlterarPerfilSagaResponse iniciar(String cpf, AlterarPerfilRequest request) {
+    public SagaResult iniciar(String cpf, AlterarPerfilRequest request) {
         String sagaId = UUID.randomUUID().toString();
 
         sagaPersistenceService.createSaga(sagaId, SAGA_TYPE);
 
-        CompletableFuture<Object> future = responseRegistry.register(sagaId);
+        CompletableFuture<SagaResult> future = responseRegistry.register(sagaId);
 
-        AlterarPerfilClienteCommand command = 
+        AlterarPerfilClienteCommand command =
             AlterarPerfilClienteCommand.fromRequest(cpf, sagaId, request);
 
         sagaPersistenceService.markStepSent(
@@ -60,25 +61,16 @@ public class AlteracaoPerfilOrchestrator {
         commandPublisher.publishAlterarPerfil(command);
 
         try {
-            Object result = future.get(timeoutMs, TimeUnit.MILLISECONDS);
-            if (result instanceof AlterarPerfilSagaResponse response) {
-                return response;
-            }
-            if (result instanceof SagaErrorResponse error) {
-                //Implementar Error handler
-                throw new IllegalStateException(error.motivo());
-            }
-            throw new IllegalStateException("Resposta inesperada da SAGA de alteração de perfil");
+            return future.get(timeoutMs, TimeUnit.MILLISECONDS);
         } catch (Exception ex) {
+            log.error("SAGA alteração de perfil {} falhou no aguardo", sagaId, ex);
             responseRegistry.cancel(sagaId);
-
             sagaPersistenceService.failSaga(
                 sagaId,
                 "SAGA de alteração de perfil não concluída: " + ex.getMessage()
             );
-
-            throw new IllegalStateException(
-                "SAGA de alteração de perfil não concluída: " + ex.getMessage(), ex);
+            return new SagaErrorResponse(sagaId, "FAILED",
+                "SAGA não concluída: " + ex.getMessage());
         }
     }
 

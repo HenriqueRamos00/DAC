@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClientePerfilAlteradoEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ContaLimiteAlteradoEvent;
+import br.ufpr.bantads.saga.shared.dto.response.SagaResult;
 
 public record AlterarPerfilSagaResponse(
     String cpf,
@@ -16,7 +17,7 @@ public record AlterarPerfilSagaResponse(
     BigDecimal saldo,
     BigDecimal limite,
     String gerente
-) {
+) implements SagaResult {
 
     public static AlterarPerfilSagaResponse fromEvent(
         ClientePerfilAlteradoEvent clienteEvent,

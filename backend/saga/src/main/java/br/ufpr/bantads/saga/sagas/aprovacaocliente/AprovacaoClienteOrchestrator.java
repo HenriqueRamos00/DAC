@@ -44,6 +44,7 @@ import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.response.ClienteAprovadoS
 import br.ufpr.bantads.saga.sagas.aprovacaocliente.dto.shared.ClienteAprovacaoDados;
 import br.ufpr.bantads.saga.shared.SagaResponseRegistry;
 import br.ufpr.bantads.saga.shared.dto.response.SagaErrorResponse;
+import br.ufpr.bantads.saga.shared.dto.response.SagaResult;
 import br.ufpr.bantads.saga.shared.enums.SagaStatus;
 import br.ufpr.bantads.saga.shared.service.SagaPersistenceService;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +64,7 @@ public class AprovacaoClienteOrchestrator {
     @Value("${saga.step.timeout-ms:10000}")
     private Long timeoutMs;
 
-    public Object iniciar(AprovarClienteSagaRequest request) {
+    public SagaResult iniciar(AprovarClienteSagaRequest request) {
         String sagaId = UUID.randomUUID().toString();
         ConsultarClienteParaAprovacaoCommand command =
             new ConsultarClienteParaAprovacaoCommand(sagaId, request.cpf());

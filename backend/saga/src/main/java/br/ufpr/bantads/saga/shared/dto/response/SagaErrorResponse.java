@@ -6,5 +6,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public record SagaErrorResponse(
     String sagaId,
     String status,
-    String motivo
-) {}
+    String motivo,
+    SagaErrorCode errorCode
+) implements SagaResult {
+    public SagaErrorResponse(String sagaId, String status, String motivo) {
+        this(sagaId, status, motivo, null);
+    }
+}

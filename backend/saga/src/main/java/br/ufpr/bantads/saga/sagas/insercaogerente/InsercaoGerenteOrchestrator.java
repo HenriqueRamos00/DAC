@@ -37,6 +37,7 @@ import br.ufpr.bantads.saga.sagas.insercaogerente.dto.request.InserirGerenteRequ
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.response.GerenteResponse;
 import br.ufpr.bantads.saga.shared.SagaResponseRegistry;
 import br.ufpr.bantads.saga.shared.dto.response.SagaErrorResponse;
+import br.ufpr.bantads.saga.shared.dto.response.SagaResult;
 import br.ufpr.bantads.saga.shared.enums.SagaStatus;
 import br.ufpr.bantads.saga.shared.service.SagaPersistenceService;
 
@@ -57,9 +58,9 @@ public class InsercaoGerenteOrchestrator {
     @Value("${saga.step.timeout-ms:10000}")
     private Long timeoutMs;
 
-    public Object iniciar(InserirGerenteRequest request) {
+    public SagaResult iniciar(InserirGerenteRequest request) {
         String sagaId = UUID.randomUUID().toString();
-        CompletableFuture<Object> future = responseRegistry.register(sagaId);
+        CompletableFuture<SagaResult> future = responseRegistry.register(sagaId);
 
         sagaPersistenceService.createSaga(sagaId, SAGA_TYPE);
         persistirRequestInicial(sagaId, request);

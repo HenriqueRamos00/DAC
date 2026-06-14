@@ -24,6 +24,7 @@ import br.ufpr.bantads.saga.sagas.remocaogerente.dto.event.RemocaoGerenteFalhouE
 import br.ufpr.bantads.saga.sagas.remocaogerente.dto.response.RemocaoGerenteResponse;
 import br.ufpr.bantads.saga.shared.SagaResponseRegistry;
 import br.ufpr.bantads.saga.shared.dto.response.SagaErrorResponse;
+import br.ufpr.bantads.saga.shared.dto.response.SagaResult;
 import br.ufpr.bantads.saga.shared.enums.SagaStatus;
 import br.ufpr.bantads.saga.shared.service.SagaPersistenceService;
 
@@ -51,9 +52,9 @@ public class RemocaoGerenteOrchestrator {
     @Value("${saga.step.timeout-ms:10000}")
     private Long timeoutMs;
 
-    public Object iniciar(String cpf) {
+    public SagaResult iniciar(String cpf) {
         String sagaId = UUID.randomUUID().toString();
-        CompletableFuture<Object> future = responseRegistry.register(sagaId);
+        CompletableFuture<SagaResult> future = responseRegistry.register(sagaId);
 
         sagaPersistenceService.createSaga(sagaId, SAGA_TYPE);
 
