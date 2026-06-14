@@ -1,5 +1,5 @@
 import { defineStepper } from "@stepperize/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useFetcher } from "react-router";
 import { useCpfMask } from "~/lib/pipe/cpf-mask";
 import { useCepMask } from "~/lib/pipe/cep-mask";
@@ -172,6 +172,7 @@ function RegisterStepperContent({ initialForm, onComplete }: { initialForm: Form
   const phoneRef = usePhoneMask();
   const currencyRef = useCurrencyMask();
   const fetcher = useFetcher<CadastroActionData>();
+  const handledResultRef = useRef(false);
 
   const [form, setForm] = useState<FormData>(initialForm);
   const isSubmitting = fetcher.state !== "idle";
@@ -242,9 +243,16 @@ function RegisterStepperContent({ initialForm, onComplete }: { initialForm: Form
   }, [stepper, form]);
 
   useEffect(() => {
-    if (fetcher.state !== "idle" || !fetcher.data) {
+    if (fetcher.state !== "idle") {
+      handledResultRef.current = false;
       return;
     }
+
+    if (!fetcher.data || handledResultRef.current) {
+      return;
+    }
+
+    handledResultRef.current = true;
 
     if (fetcher.data.ok) {
       toast.success("Solicitação enviada com sucesso! Aguarde a análise do gerente.");

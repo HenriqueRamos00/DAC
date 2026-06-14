@@ -1,4 +1,5 @@
 import { data, useNavigate } from 'react-router';
+import { useCallback } from 'react';
 import { CrtMonitor } from '~/components/crt-monitor';
 import { RegisterStepper } from '~/components/register-stepper';
 import { parseCurrency } from '~/lib/utils/formatCurrency';
@@ -57,11 +58,14 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function Autocadastro() {
   const navigate = useNavigate();
+  const handleComplete = useCallback(() => {
+    navigate("/");
+  }, [navigate]);
 
   return (
     <div className="crt-page">
       <CrtMonitor title="">
-        <RegisterStepper onComplete={() => navigate("/")} />
+        <RegisterStepper onComplete={handleComplete} />
       </CrtMonitor>
     </div>
   );
