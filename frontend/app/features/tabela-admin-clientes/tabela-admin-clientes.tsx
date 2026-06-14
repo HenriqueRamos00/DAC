@@ -17,14 +17,24 @@ const columns: ColumnDef<Cliente>[] = [
   {
     accessorKey: "nome",
     header: "Nome",
+    cell: ({ row }) => (
+      <span className="block max-w-20 truncate" title={row.getValue("nome")}>
+        {row.getValue("nome")}
+      </span>
+    ),
   },
   {
     accessorKey: "email",
     header: "E-mail",
+    cell: ({ row }) => (
+      <span className="block max-w-32 truncate" title={row.getValue("email")}>
+        {row.getValue("email")}
+      </span>
+    ),
   },
   {
     accessorKey: "salario",
-    header: "Salário",
+    header: "Sal.",
     cell: ({ row }) => {
       const salario = parseFloat(row.getValue("salario"));
       return (
@@ -36,7 +46,7 @@ const columns: ColumnDef<Cliente>[] = [
   },
   {
     accessorKey: "conta",
-    header: "Conta",
+    header: "Cta.",
   },
   {
     accessorKey: "saldo",
@@ -44,7 +54,9 @@ const columns: ColumnDef<Cliente>[] = [
     cell: ({ row }) => {
       const saldo = parseFloat(row.getValue("saldo"));
       return (
-        <span className={`font-mono font-bold ${saldo >= 0 ? "text-info" : "text-destructive"}`}>
+        <span
+          className={`font-mono font-bold ${saldo >= 0 ? "text-info" : "text-destructive"}`}
+        >
           {getFormattedCurrency(saldo)}
         </span>
       );
@@ -52,7 +64,7 @@ const columns: ColumnDef<Cliente>[] = [
   },
   {
     accessorKey: "limite",
-    header: "Limite",
+    header: "Lim.",
     cell: ({ row }) => (
       <span className="font-mono">
         {getFormattedCurrency(row.getValue("limite"))}
@@ -61,38 +73,41 @@ const columns: ColumnDef<Cliente>[] = [
   },
   {
     accessorKey: "gerente",
-    header: "Gerente",
-      cell: ({ row }) => {
-        const { gerente: cpf_gerente, gerente_nome } = row.original;
+    header: "Ger.",
+    cell: ({ row }) => {
+      const { gerente: cpf_gerente, gerente_nome } = row.original;
 
-        return (
-          <div className="flex flex-col text-xs">
-            <span>
-              {gerente_nome}
-            </span>
-            <span>
-              {formatCpf(cpf_gerente)}
-            </span>
-          </div>
-        );
-      }
-  }
+      return (
+        <div className="flex max-w-24 flex-col text-[11px]">
+          <span className="truncate" title={gerente_nome}>
+            {gerente_nome}
+          </span>
+          <span>
+            {formatCpf(cpf_gerente)}
+          </span>
+        </div>
+      );
+    },
+  },
 ];
 
 interface TabelaAdminClientesProps {
   clientes: Cliente[];
   pageSize?: number;
+  compact?: boolean;
 }
 
 export function TabelaAdminClientes({
   clientes,
   pageSize = 10,
+  compact = false,
 }: TabelaAdminClientesProps) {
   return (
     <DataTable
       columns={columns}
       data={clientes}
       pageSize={pageSize}
+      compact={compact}
     />
   );
 }

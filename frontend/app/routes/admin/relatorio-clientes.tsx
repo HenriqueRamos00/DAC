@@ -32,7 +32,7 @@ export default function RelatorioClientes({ loaderData }: Route.ComponentProps) 
     const { clientes } = loaderData;
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-3">
             <AppBreadcrumb
                 items={[
                     { label: "Home", href: "/" },
@@ -44,14 +44,14 @@ export default function RelatorioClientes({ loaderData }: Route.ComponentProps) 
                 Relatório de clientes
             </h1>
 
-            <div className="flex flex-col bg-card border-3 border-border p-4 gap-4">
-                <div className="border-b border-border pb-4">
+            <div className="flex min-w-0 flex-col bg-card border-3 border-border p-2 gap-2">
+                <div className="border-b border-border pb-2">
                     <span className="text-primary text-xs uppercase flex items-center gap-2">
                         <Clipboard size={16}/> Relatório completo
                     </span>
                 </div>
 
-                <TabelaAdminClientes clientes={clientes} />
+                <TabelaAdminClientes clientes={clientes} pageSize={6} compact />
             </div>
         </div>
     );

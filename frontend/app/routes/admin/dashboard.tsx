@@ -46,7 +46,7 @@ export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
     const totalNegativo = gerentes.reduce((sum, g) => sum + (g.totalSaldoNegativo ?? 0), 0);
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-4">
             <AppBreadcrumb
                 items={[
                     { label: "Home", href: "/" },
@@ -79,14 +79,14 @@ export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
                 />
             </div>
 
-            <div className="flex flex-col bg-card border-3 border-border p-4 gap-4">
-                <div className="border-b border-border pb-4">
+            <div className="flex min-w-0 flex-col bg-card border-3 border-border p-3 gap-3">
+                <div className="border-b border-border pb-3">
                     <span className="text-primary text-xs uppercase flex items-center gap-2">
                         RESUMO POR GERENTE
                     </span>
                 </div>
 
-                <TabelaGerentes gerentes={gerentes} />
+                <TabelaGerentes gerentes={gerentes} pageSize={6} compact />
             </div>
         </div>
     );

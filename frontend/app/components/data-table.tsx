@@ -25,6 +25,7 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   pageSize?: number;
+  compact?: boolean;
   columnFilters?: ColumnFiltersState;
   onFilteredRowsChange?: (rows: TData[]) => void;
 }
@@ -33,6 +34,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   pageSize = 10,
+  compact = false,
   columnFilters: externalFilters,
   onFilteredRowsChange,
 }: DataTableProps<TData, TValue>) {
@@ -67,13 +69,13 @@ export function DataTable<TData, TValue>({
   }, [activeFilters, data, onFilteredRowsChange, table]);
 
   return (
-    <div>
-      <Table>
+    <div className="min-w-0">
+      <Table className={compact ? "text-xs" : undefined}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
+                <TableHead key={header.id} className={compact ? "h-8 px-1.5 text-xs" : undefined}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -85,12 +87,12 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody className="font-mono text-sm">
+        <TableBody className={compact ? "font-mono text-xs" : "font-mono text-sm"}>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell key={cell.id} className={compact ? "px-1.5 py-1" : undefined}>
                     {flexRender(
                       cell.column.columnDef.cell,
                       cell.getContext()
@@ -112,7 +114,7 @@ export function DataTable<TData, TValue>({
         </TableBody>
       </Table>
 
-      <DataTablePagination table={table} />
+      <DataTablePagination table={table} compact={compact} />
     </div>
   );
 }

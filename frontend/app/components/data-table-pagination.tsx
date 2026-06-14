@@ -9,18 +9,20 @@ import { Button } from "~/components/ui/button";
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
+  compact?: boolean;
 }
 
 export function DataTablePagination<TData>({
   table,
+  compact = false,
 }: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex items-baseline justify-between pt-4">
-      <div className="text-xs text-muted-foreground">
+    <div className={compact ? "flex items-baseline justify-between pt-3" : "flex items-baseline justify-between pt-4"}>
+      <div className={compact ? "text-[11px] text-muted-foreground" : "text-xs text-muted-foreground"}>
         Página {table.getState().pagination.pageIndex + 1} de{" "}
         {table.getPageCount()}
       </div>
-      <div className="flex items-center gap-2">
+      <div className={compact ? "flex items-center gap-1.5" : "flex items-center gap-2"}>
         <Button
           variant="outline"
           size="icon-sm"
