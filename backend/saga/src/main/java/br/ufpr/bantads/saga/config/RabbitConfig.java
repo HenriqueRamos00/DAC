@@ -19,7 +19,9 @@ import org.springframework.context.annotation.Configuration;
 
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.AlterarLimiteContaCommand;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.AlterarPerfilClienteCommand;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.AlterarUsuarioClienteAuthCommand;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.ReverterAlteracaoPerfilClienteCommand;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.command.ReverterAlteracaoUsuarioClienteAuthCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.AtribuirGerenteContaCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.ConsultarGerenteMaisContasCommand;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.command.InserirGerenteCommand;
@@ -30,6 +32,10 @@ import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClientePerfilReverti
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClienteReversaoPerfilFalhouEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.ConsultaGerenteMaisContasFalhouEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ContaLimiteAlteradoEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.AlteracaoUsuarioClienteAuthFalhouEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ReversaoUsuarioClienteAuthFalhouEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.UsuarioClienteAuthAlteradoEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.UsuarioClienteAuthRevertidoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteAtribuidoContaEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteInseridoEvent;
 import br.ufpr.bantads.saga.sagas.insercaogerente.dto.event.GerenteMaisContasConsultadoEvent;
@@ -122,11 +128,23 @@ public class RabbitConfig {
     @Value("${saga.rabbitmq.routing-key.conta.alterar-limite.falha}")
     private String contaAlterarLimiteFalhaRoutingKey;
 
+    @Value("${saga.rabbitmq.routing-key.auth.alterar-usuario-cliente.sucesso}")
+    private String authAlterarUsuarioClienteSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.alterar-usuario-cliente.falha}")
+    private String authAlterarUsuarioClienteFalhaRoutingKey;
+
     @Value("${saga.rabbitmq.routing-key.cliente.reverter-alteracao-perfil.sucesso}")
     private String clienteReverterAlteracaoPerfilSucessoRoutingKey;
 
     @Value("${saga.rabbitmq.routing-key.cliente.reverter-alteracao-perfil.falha}")
     private String clienteReverterAlteracaoPerfilFalhaRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.reverter-alteracao-usuario-cliente.sucesso}")
+    private String authReverterAlteracaoUsuarioClienteSucessoRoutingKey;
+
+    @Value("${saga.rabbitmq.routing-key.auth.reverter-alteracao-usuario-cliente.falha}")
+    private String authReverterAlteracaoUsuarioClienteFalhaRoutingKey;
 
     @Value("${saga.rabbitmq.queue.remocao-gerente.response}")
     private String remocaoGerenteResponseQueue;
@@ -398,6 +416,28 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding authAlterarUsuarioClienteSucessoBinding(
+        Queue alteracaoPerfilResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(alteracaoPerfilResponseQueue)
+            .to(sagaExchange)
+            .with(authAlterarUsuarioClienteSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding authAlterarUsuarioClienteFalhaBinding(
+        Queue alteracaoPerfilResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(alteracaoPerfilResponseQueue)
+            .to(sagaExchange)
+            .with(authAlterarUsuarioClienteFalhaRoutingKey);
+    }
+
+    @Bean
     public Binding clienteReverterAlteracaoPerfilSucessoBinding(
         Queue alteracaoPerfilResponseQueue,
         TopicExchange sagaExchange
@@ -417,6 +457,28 @@ public class RabbitConfig {
             .bind(alteracaoPerfilResponseQueue)
             .to(sagaExchange)
             .with(clienteReverterAlteracaoPerfilFalhaRoutingKey);
+    }
+
+    @Bean
+    public Binding authReverterAlteracaoUsuarioClienteSucessoBinding(
+        Queue alteracaoPerfilResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(alteracaoPerfilResponseQueue)
+            .to(sagaExchange)
+            .with(authReverterAlteracaoUsuarioClienteSucessoRoutingKey);
+    }
+
+    @Bean
+    public Binding authReverterAlteracaoUsuarioClienteFalhaBinding(
+        Queue alteracaoPerfilResponseQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(alteracaoPerfilResponseQueue)
+            .to(sagaExchange)
+            .with(authReverterAlteracaoUsuarioClienteFalhaRoutingKey);
     }
 
     @Bean
@@ -713,9 +775,15 @@ public class RabbitConfig {
         idClassMapping.put("conta.limite-alterado", ContaLimiteAlteradoEvent.class);
         idClassMapping.put("conta.operacao.limite-alterado", ContaLimiteAlteradoEvent.class);
         idClassMapping.put("conta.alteracao-limite.falhou", ClienteAlteracaoFalhouEvent.class);
+        idClassMapping.put("auth.alterar-usuario-cliente.command", AlterarUsuarioClienteAuthCommand.class);
+        idClassMapping.put("auth.usuario-cliente-alterado", UsuarioClienteAuthAlteradoEvent.class);
+        idClassMapping.put("auth.alteracao-usuario-cliente.falhou", AlteracaoUsuarioClienteAuthFalhouEvent.class);
         idClassMapping.put("cliente.reverter-alteracao-perfil", ReverterAlteracaoPerfilClienteCommand.class);
         idClassMapping.put("cliente.perfil-revertido", ClientePerfilRevertidoEvent.class);
         idClassMapping.put("cliente.reversao-perfil.falhou", ClienteReversaoPerfilFalhouEvent.class);
+        idClassMapping.put("auth.reverter-alteracao-usuario-cliente", ReverterAlteracaoUsuarioClienteAuthCommand.class);
+        idClassMapping.put("auth.usuario-cliente-revertido", UsuarioClienteAuthRevertidoEvent.class);
+        idClassMapping.put("auth.reversao-usuario-cliente.falhou", ReversaoUsuarioClienteAuthFalhouEvent.class);
 
         // Saga Inserir Gerente
         idClassMapping.put("conta.consultar-gerente-mais-contas", ConsultarGerenteMaisContasCommand.class);

@@ -12,6 +12,10 @@ import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClientePerfilAlterad
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClientePerfilRevertidoEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ClienteReversaoPerfilFalhouEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ContaLimiteAlteradoEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.AlteracaoUsuarioClienteAuthFalhouEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.ReversaoUsuarioClienteAuthFalhouEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.UsuarioClienteAuthAlteradoEvent;
+import br.ufpr.bantads.saga.sagas.alteracaoperfil.dto.event.UsuarioClienteAuthRevertidoEvent;
 import br.ufpr.bantads.saga.sagas.alteracaoperfil.AlteracaoPerfilOrchestrator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +50,24 @@ public class AlteracaoPerfilResponseListener {
     }
 
     @RabbitHandler
+    public void handleUsuarioClienteAuthAlterado(
+        UsuarioClienteAuthAlteradoEvent event,
+        @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey
+    ) {
+        log.info("Recebido evento da SAGA alteração de perfil com routing-key {}", routingKey);
+        orchestrator.handleUsuarioClienteAuthAlterado(event);
+    }
+
+    @RabbitHandler
+    public void handleAlteracaoUsuarioClienteAuthFalhou(
+        AlteracaoUsuarioClienteAuthFalhouEvent event,
+        @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey
+    ) {
+        log.info("Recebida falha do auth na SAGA alteração de perfil com routing-key {}", routingKey);
+        orchestrator.handleAlteracaoUsuarioClienteAuthFalhou(event);
+    }
+
+    @RabbitHandler
     public void handleAlteracaoFalhou(
         ClienteAlteracaoFalhouEvent event,
         @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey
@@ -67,6 +89,24 @@ public class AlteracaoPerfilResponseListener {
     ) {
         log.info("Recebido evento de compensação da SAGA alteração de perfil com routing-key {}", routingKey);
         orchestrator.handleClientePerfilRevertido(event);
+    }
+
+    @RabbitHandler
+    public void handleUsuarioClienteAuthRevertido(
+        UsuarioClienteAuthRevertidoEvent event,
+        @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey
+    ) {
+        log.info("Recebido evento de compensação do auth na SAGA alteração de perfil com routing-key {}", routingKey);
+        orchestrator.handleUsuarioClienteAuthRevertido(event);
+    }
+
+    @RabbitHandler
+    public void handleReversaoUsuarioClienteAuthFalhou(
+        ReversaoUsuarioClienteAuthFalhouEvent event,
+        @Header(AmqpHeaders.RECEIVED_ROUTING_KEY) String routingKey
+    ) {
+        log.info("Recebida falha de compensação do auth na SAGA alteração de perfil com routing-key {}", routingKey);
+        orchestrator.handleReversaoUsuarioClienteAuthFalhou(event);
     }
 
     @RabbitHandler
