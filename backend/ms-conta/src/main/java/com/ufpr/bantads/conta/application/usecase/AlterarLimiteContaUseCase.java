@@ -51,6 +51,10 @@ public class AlterarLimiteContaUseCase {
         if (command.cpf() == null || command.cpf().isBlank()) {
             throw new RequisicaoInvalidaException("CPF do cliente é obrigatório");
         }
+
+        if (command.salario().compareTo(BigDecimal.ZERO) < 0) {
+            throw new RequisicaoInvalidaException("Salário negativo é inválido");
+        }
     }
 
     private BigDecimal calcularLimite(BigDecimal salario, BigDecimal saldoAtual) {
