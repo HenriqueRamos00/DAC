@@ -19,11 +19,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.ufpr.bantads.auth.application.dto.command.CriarUsuarioClienteCommand;
+import com.ufpr.bantads.auth.application.dto.command.AlterarUsuarioClienteCommand;
 import com.ufpr.bantads.auth.application.dto.command.ExcluirUsuarioClienteCommand;
+import com.ufpr.bantads.auth.application.dto.command.ReverterAlteracaoUsuarioClienteCommand;
+import com.ufpr.bantads.auth.application.dto.event.AlteracaoUsuarioClienteFalhouEvent;
 import com.ufpr.bantads.auth.application.dto.event.CriacaoUsuarioClienteFalhouEvent;
 import com.ufpr.bantads.auth.application.dto.event.ExclusaoUsuarioClienteFalhouEvent;
+import com.ufpr.bantads.auth.application.dto.event.ReversaoUsuarioClienteFalhouEvent;
+import com.ufpr.bantads.auth.application.dto.event.UsuarioClienteAlteradoEvent;
 import com.ufpr.bantads.auth.application.dto.event.UsuarioClienteCriadoEvent;
 import com.ufpr.bantads.auth.application.dto.event.UsuarioClienteExcluidoEvent;
+import com.ufpr.bantads.auth.application.dto.event.UsuarioClienteRevertidoEvent;
 
 // Criar Usuario Gerente (consumido pela saga inserir gerente)
 import com.ufpr.bantads.auth.application.dto.command.CriarUsuarioGerenteCommand;
@@ -53,6 +59,18 @@ public class RabbitMQConfig {
     @Value("${saga.rabbitmq.routing-key.auth.excluir-usuario-cliente.command}")
     private String excluirUsuarioClienteCommandRoutingKey;
 
+    @Value("${saga.rabbitmq.queue.auth.alterar-usuario-cliente.command}")
+    private String alterarUsuarioClienteCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.auth.alterar-usuario-cliente.command}")
+    private String alterarUsuarioClienteCommandRoutingKey;
+
+    @Value("${saga.rabbitmq.queue.auth.reverter-alteracao-usuario-cliente.command}")
+    private String reverterAlteracaoUsuarioClienteCommandQueue;
+
+    @Value("${saga.rabbitmq.routing-key.auth.reverter-alteracao-usuario-cliente.command}")
+    private String reverterAlteracaoUsuarioClienteCommandRoutingKey;
+
     @Value("${saga.rabbitmq.queue.auth.criar-usuario-gerente.command}")
     private String criarUsuarioGerenteCommandQueue;
 
@@ -81,6 +99,16 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue alterarUsuarioClienteCommandQueue() {
+        return QueueBuilder.durable(alterarUsuarioClienteCommandQueue).build();
+    }
+
+    @Bean
+    public Queue reverterAlteracaoUsuarioClienteCommandQueue() {
+        return QueueBuilder.durable(reverterAlteracaoUsuarioClienteCommandQueue).build();
+    }
+
+    @Bean
     public Queue criarUsuarioGerenteCommandQueue() {
         return QueueBuilder.durable(criarUsuarioGerenteCommandQueue).build();
     }
@@ -105,6 +133,28 @@ public class RabbitMQConfig {
             .bind(excluirUsuarioClienteCommandQueue)
             .to(sagaExchange)
             .with(excluirUsuarioClienteCommandRoutingKey);
+    }
+
+    @Bean
+    public Binding alterarUsuarioClienteCommandBinding(
+        @Qualifier("alterarUsuarioClienteCommandQueue") Queue alterarUsuarioClienteCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(alterarUsuarioClienteCommandQueue)
+            .to(sagaExchange)
+            .with(alterarUsuarioClienteCommandRoutingKey);
+    }
+
+    @Bean
+    public Binding reverterAlteracaoUsuarioClienteCommandBinding(
+        @Qualifier("reverterAlteracaoUsuarioClienteCommandQueue") Queue reverterAlteracaoUsuarioClienteCommandQueue,
+        TopicExchange sagaExchange
+    ) {
+        return BindingBuilder
+            .bind(reverterAlteracaoUsuarioClienteCommandQueue)
+            .to(sagaExchange)
+            .with(reverterAlteracaoUsuarioClienteCommandRoutingKey);
     }
 
     @Bean
@@ -153,6 +203,12 @@ public class RabbitMQConfig {
         idClassMapping.put("auth.excluir-usuario-cliente.command", ExcluirUsuarioClienteCommand.class);
         idClassMapping.put("auth.usuario-cliente-excluido", UsuarioClienteExcluidoEvent.class);
         idClassMapping.put("auth.exclusao-usuario-cliente.falhou", ExclusaoUsuarioClienteFalhouEvent.class);
+        idClassMapping.put("auth.alterar-usuario-cliente.command", AlterarUsuarioClienteCommand.class);
+        idClassMapping.put("auth.usuario-cliente-alterado", UsuarioClienteAlteradoEvent.class);
+        idClassMapping.put("auth.alteracao-usuario-cliente.falhou", AlteracaoUsuarioClienteFalhouEvent.class);
+        idClassMapping.put("auth.reverter-alteracao-usuario-cliente", ReverterAlteracaoUsuarioClienteCommand.class);
+        idClassMapping.put("auth.usuario-cliente-revertido", UsuarioClienteRevertidoEvent.class);
+        idClassMapping.put("auth.reversao-usuario-cliente.falhou", ReversaoUsuarioClienteFalhouEvent.class);
         idClassMapping.put("auth.criar-usuario-gerente.command", CriarUsuarioGerenteCommand.class);
         idClassMapping.put("auth.usuario-gerente-criado", UsuarioGerenteCriadoEvent.class);
         idClassMapping.put("auth.criacao-usuario-gerente.falhou", CriacaoUsuarioGerenteFalhouEvent.class);
