@@ -70,6 +70,18 @@ function extractUpstreamMessage(body: unknown): string | undefined {
       : undefined;
   }
 
+  if (body && typeof body === 'object' && 'motivo' in body) {
+    const motivo = (body as { motivo?: unknown }).motivo;
+
+    if (motivo === 'ULTIMO_GERENTE') {
+      return 'Não é possível remover o último gerente do banco.';
+    }
+
+    return typeof motivo === 'string' && motivo.trim().length > 0
+      ? motivo
+      : undefined;
+  }
+
   return undefined;
 }
 
